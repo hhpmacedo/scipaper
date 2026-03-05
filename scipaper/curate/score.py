@@ -8,7 +8,6 @@ import re
 from typing import List, Optional
 from dataclasses import dataclass
 
-import httpx
 
 from .models import Paper, AnchorDocument, ScoredPaper
 from ..retry import api_retry

@@ -15,15 +15,15 @@ from pathlib import Path
 from typing import List, Optional
 
 from .curate.ingest import IngestConfig, ingest_papers
-from .curate.models import AnchorDocument, Paper, ScoredPaper
+from .curate.models import AnchorDocument, Paper
 from .curate.score import ScoringConfig, score_papers
 from .curate.select import SelectionConfig, get_runners_up, select_edition_papers
 from .generate.edition import AssemblyConfig, Edition, assemble_edition
 from .generate.pdf_parser import ParserConfig, download_paper_pdf, parse_paper_pdf
-from .generate.writer import GenerationConfig, Piece, generate_piece
+from .generate.writer import GenerationConfig, generate_piece
 from .publish.email import ButtondownConfig, DeliveryReport, send_edition_email
 from .publish.web import WebConfig, generate_web_archive
-from .verify.checker import VerificationConfig, VerificationReport, attempt_auto_fix, verify_piece
+from .verify.checker import VerificationConfig, attempt_auto_fix, verify_piece
 from .verify.style import StyleConfig, check_style_compliance
 
 logger = logging.getLogger(__name__)

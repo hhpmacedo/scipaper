@@ -5,15 +5,13 @@ Web archive generation for Signal editions.
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime
 from html import escape
 from pathlib import Path
 from typing import List, Optional
 from xml.sax.saxutils import escape as xml_escape
 
 from ..generate.edition import Edition
-from ..generate.writer import Piece
-from .email import render_edition_html, _content_to_html
+from .email import _content_to_html
 
 logger = logging.getLogger(__name__)
 

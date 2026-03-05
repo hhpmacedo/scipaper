@@ -10,7 +10,6 @@ from .conftest import run_async
 
 from scipaper.publish.email import (
     ButtondownConfig,
-    DeliveryReport,
     _content_to_html,
     render_edition_html,
     render_edition_text,
@@ -221,7 +220,7 @@ class TestSendEditionEmail:
             mock_client_cls.return_value.__aexit__ = AsyncMock(return_value=False)
             mock_client.post = AsyncMock(return_value=mock_response)
 
-            report = run_async(send_edition_email(edition, config, WEB_BASE_URL))
+            run_async(send_edition_email(edition, config, WEB_BASE_URL))
 
         # Verify it POSTed to the right endpoint
         call_args = mock_client.post.call_args

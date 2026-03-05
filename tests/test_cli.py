@@ -2,9 +2,7 @@
 Tests for the top-level CLI entrypoint (python -m scipaper).
 """
 
-import sys
 from datetime import datetime, timezone
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest

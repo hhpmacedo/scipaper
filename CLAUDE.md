@@ -7,11 +7,11 @@ Autonomous weekly newsletter pipeline that curates AI research papers and transl
 - **Status**: Active Development
 - **Live URL**: N/A (not yet deployed)
 - **Last session**: 2026-03-05
-- **Current focus**: Project scaffolded with full pipeline architecture, data models, prompts, and stubs. No pipeline stages implemented yet -- all raise `NotImplementedError`. Ready for Phase 0 implementation.
+- **Current focus**: Phases 0-5 fully implemented. All 186 tests pass. All technical decisions (DEC-001 through DEC-005) resolved. Pipeline has CLI, retry logic, structured logging, GitHub Actions CI/CD, and Buttondown email integration.
 - **Next steps**:
-  1. Resolve open technical decisions (DEC-001 through DEC-004 in `docs/DECISIONS.md`)
-  2. Implement Phase 0: ArXiv API integration, basic PDF parsing, CLI entrypoint
-  3. Set up Python virtual environment and verify dependency installation
+  1. Phase 6: First real edition end-to-end with live API keys
+  2. Deploy to production (Railway/Fly.io or GitHub Actions cron)
+  3. Set up monitoring and alerting for weekly runs
 - **Blockers**: None
 
 ## Team
