@@ -4,15 +4,15 @@ Autonomous weekly newsletter pipeline that curates AI research papers and transl
 
 ## Project Status
 
-- **Status**: Active Development
+- **Status**: Ready for First Edition
 - **Live URL**: https://signal.hugohmacedo.com
 - **Last session**: 2026-03-05
-- **Current focus**: Site live with brutalist design, Buttondown configured, subscribe flow working. 205 tests pass, lint clean.
+- **Current focus**: Full pipeline implemented, site live, 205 tests passing. Ready to run first real edition.
 - **Next steps**:
-  1. Implement pipeline stubs (ingest, score, pdf_parser, writer, edition, checker, email) for first real edition
-  2. Create sample anchor document (`data/anchors/`)
-  3. Set up `.env` with API keys (Anthropic, Semantic Scholar, Buttondown)
-- **Blockers**: None
+  1. Set environment variables (`ANTHROPIC_API_KEY`, `BUTTONDOWN_API_KEY`)
+  2. Update anchor document for current week (`data/anchors/`)
+  3. Run first edition: `python -m scipaper --run`
+- **Blockers**: None (API keys needed)
 
 ## Team
 
@@ -34,10 +34,16 @@ This project uses the MetaDeveloper agent team. Agents are defined in `~/Develop
 # Install dependencies
 pip install -r requirements.txt
 
-# Run pipeline stages (once implemented)
-python -m signal.curate      # Fetch, score, and select papers
-python -m signal.generate    # Generate citation-grounded pieces
-python -m signal.publish     # Publish via email and web
+# Run full pipeline end-to-end
+python -m scipaper --run                    # Uses latest anchor document
+python -m scipaper --run --week 2025-W10    # Override anchor week
+python -m scipaper --run --json-logs        # JSON log output (for CI)
+
+# Run curation stage only
+python -m scipaper.curate --fetch           # Fetch papers from ArXiv
+python -m scipaper.curate --score           # Score papers
+python -m scipaper.curate --select          # Select papers for edition
+python -m scipaper.curate --run             # Run full curation pipeline
 
 # Run tests
 pytest
@@ -50,50 +56,53 @@ black .
 
 ## Architecture
 
-The `signal/` package has four subpackages matching the pipeline stages:
+The `scipaper/` package has four subpackages matching the pipeline stages:
 
 ```
 Ingest --> Curate --> Generate --> Verify --> Publish
 ```
 
-### `signal/curate/` -- Paper discovery and selection
+### `scipaper/curate/` -- Paper discovery and selection
 
 - `models.py` -- Core data models: `Paper`, `Author`, `AnchorDocument`, `ScoredPaper`
 - `ingest.py` -- Sources: `ArxivSource`, `SemanticScholarSource`, `SocialSignalSource`
 - `score.py` -- Two-axis scoring: `score_relevance()` (embeddings + anchor doc) and `score_narrative_potential()` (LLM-based, uses `NARRATIVE_POTENTIAL_PROMPT`)
 - `select.py` -- Greedy selection with diversity constraints (max same institution/topic). Relaxes constraints if minimum count not met.
 
-### `signal/generate/` -- Content production
+### `scipaper/generate/` -- Content production
 
 - `pdf_parser.py` -- Fallback chain: PyMuPDF -> GROBID -> LLM extraction. Also handles PDF download from ArXiv.
 - `writer.py` -- Citation-grounded generation using `GENERATION_SYSTEM_PROMPT`. Every claim must cite `[section X.Y]`, `[Abstract]`, `[Table N]`, or `[Figure N]`. Includes `extract_citations()` and `validate_citations()` utilities.
 - `edition.py` -- Assembles `Edition` from verified `Piece` objects plus `QuickTake` summaries for runners-up.
 
-### `signal/verify/` -- Adversarial quality control
+### `scipaper/verify/` -- Adversarial quality control
 
 - `checker.py` -- Second LLM pass verifies each claim against cited passage. Issues classified by severity (minor/major/critical) and type (unsupported/overstated/misrepresented/missing_context). Rejects on any critical issue or 3+ major issues.
 - `style.py` -- Checks against Style Constitution: banned words, required structure (Hook -> Problem -> What They Did -> Results -> Why It Matters), word count (800-1200), citation density. **Fully implemented** (not a stub).
 
-### `signal/publish/` -- Delivery
+### `scipaper/publish/` -- Delivery
 
-- `email.py` -- HTML + plain text rendering via Jinja2, sending via Resend/Postmark/SendGrid
-- `web.py` -- Static archive: edition pages, index, RSS, JSON feed
+- `email.py` -- HTML + plain text rendering, sending via Buttondown API (creates draft email)
+- `web.py` -- Static archive with brutalist design: landing page, edition pages, archive, RSS, JSON feed
 
 ## Implementation Status
 
-| Module                   | Status | Notes                                                                         |
-| ------------------------ | ------ | ----------------------------------------------------------------------------- |
-| `curate/models.py`       | Done   | All data models complete                                                      |
-| `curate/ingest.py`       | Stub   | ArXiv, Semantic Scholar, Social -- all `NotImplementedError`                  |
-| `curate/score.py`        | Stub   | Prompts written, scoring logic stubbed                                        |
-| `curate/select.py`       | Done   | Selection + diversity logic implemented                                       |
-| `generate/pdf_parser.py` | Stub   | Download works, all parsers stubbed                                           |
-| `generate/writer.py`     | Stub   | Prompts written, `extract_citations()` and `validate_citations()` implemented |
-| `generate/edition.py`    | Stub   | Assembly logic written, Quick Take generation stubbed                         |
-| `verify/checker.py`      | Stub   | Prompts written, rejection logic implemented, verification stubbed            |
-| `verify/style.py`        | Done   | Fully implemented -- banned words, structure, citations, word count           |
-| `publish/email.py`       | Stub   | All rendering and sending stubbed                                             |
-| `publish/web.py`         | Stub   | All generation stubbed                                                        |
+All modules are fully implemented. Key entry points:
+
+| Module                   | Notes                                                                         |
+| ------------------------ | ----------------------------------------------------------------------------- |
+| `curate/models.py`       | Core data models: `Paper`, `Author`, `AnchorDocument`, `ScoredPaper`          |
+| `curate/ingest.py`       | ArXiv fetch, Semantic Scholar enrichment, HN social signals                   |
+| `curate/score.py`        | Relevance scoring (keyword/institution/citation/social) + LLM narrative score |
+| `curate/select.py`       | Greedy selection with diversity constraints                                   |
+| `generate/pdf_parser.py` | PyMuPDF → GROBID → LLM fallback chain                                         |
+| `generate/writer.py`     | LLM generation with citation grounding + validation                           |
+| `generate/edition.py`    | Edition assembly with Quick Takes for runners-up                              |
+| `verify/checker.py`      | LLM fact-checking with auto-fix, heuristic fallback                           |
+| `verify/style.py`        | Rule-based: banned words, structure, citations, word count                    |
+| `publish/email.py`       | HTML/text rendering, Buttondown API (creates draft)                           |
+| `publish/web.py`         | Brutalist static site: landing, archive, editions, RSS, JSON feed             |
+| `pipeline.py`            | End-to-end orchestrator wiring all stages together                            |
 
 ## Key Design Decisions
 
@@ -108,16 +117,17 @@ Ingest --> Curate --> Generate --> Verify --> Publish
 - `docs/PRODUCT_SPEC.md` -- Vision, audience, success metrics, piece structure
 - `docs/ARCHITECTURE.md` -- Technical design, pipeline diagrams, data stores
 - `docs/STYLE_CONSTITUTION.md` -- Writing guidelines (version-controlled, locked)
-- `docs/DECISIONS.md` -- Technical decisions log (4 open: LLM model, PDF parsing, email provider, failure handling)
+- `docs/DECISIONS.md` -- Technical decisions log (all resolved: DEC-000 through DEC-005)
 - `docs/PHASES.md` -- Development phases (0-6), ~8 weeks to first public edition
 
 ## Environment Variables
 
-Required API keys (see `.env.example`):
+Required for running the pipeline:
 
-- `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` -- LLM for scoring, generation, verification
-- `SEMANTIC_SCHOLAR_KEY` -- Paper enrichment
-- Email provider key (Resend/Postmark/SendGrid)
+- `ANTHROPIC_API_KEY` -- LLM for scoring, generation, verification (Claude Sonnet)
+- `BUTTONDOWN_API_KEY` -- Email delivery (creates draft in Buttondown)
+- `SEMANTIC_SCHOLAR_KEY` -- Paper enrichment (optional, graceful fallback)
+- `SIGNAL_WEB_URL` -- Web archive base URL (default: `https://signal.hugohmacedo.com`)
 
 ## Tech Stack
 
