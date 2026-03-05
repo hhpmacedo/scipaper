@@ -1,57 +1,720 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Signal #1 &mdash; 2025-W10</title>
-<link rel="alternate" type="application/rss+xml" title="Signal RSS" href="https://signal.hugohmacedo.com/rss.xml">
-<link rel="alternate" type="application/json" title="Signal JSON Feed" href="https://signal.hugohmacedo.com/feed.json">
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: Georgia, 'Times New Roman', serif; max-width: 720px; margin: 0 auto; padding: 40px 20px; color: #000; line-height: 1.7; }
-.top-rule { border: none; border-top: 8px solid #000; margin-bottom: 60px; }
-header { padding: 0 0 20px; font-family: "Helvetica Neue", Arial, sans-serif; }
-header h1 { font-size: 48px; font-weight: 900; letter-spacing: -2px; text-transform: uppercase; line-height: 0.9; }
-header h1 a { text-decoration: none; color: inherit; }
-header p { font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; font-family: "Helvetica Neue", Arial, sans-serif; }
-.divider { border: none; border-top: 4px solid #000; margin: 0 0 40px; }
-.piece { margin-bottom: 40px; padding-bottom: 30px; border-bottom: 2px solid #000; }
-.piece h2 { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 24px; font-weight: 900; margin-bottom: 4px; }
-.piece h2 a { text-decoration: none; color: inherit; border-bottom: 2px solid #000; }
-.piece h2 a:hover { color: #e63b19; border-bottom-color: #e63b19; }
-.piece .authors { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #666; margin-bottom: 12px; }
-.hook { color: #333; font-style: italic; margin-top: 0; margin-bottom: 16px; }
-.content { font-size: 17px; }
-.content p { margin-bottom: 14px; }
-.quick-takes { margin-top: 40px; padding-top: 30px; border-top: 4px solid #000; }
-.quick-takes h2 { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
-.quick-takes ul { list-style: none; padding: 0; }
-.quick-takes li { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #ddd; }
-.quick-takes a { color: #000; font-weight: 700; text-decoration: none; border-bottom: 2px solid #000; }
-.quick-takes a:hover { color: #e63b19; border-bottom-color: #e63b19; }
-.quick-takes p { margin-top: 4px; color: #333; font-size: 15px; }
-footer { margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
-footer .meta { margin-bottom: 12px; color: #666; }
-footer a { color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }
-footer a:hover { color: #e63b19; }
-</style>
-</head>
-<body>
-<hr class="top-rule">
-<header>
-<h1><a href="https://signal.hugohmacedo.com">Signal</a></h1>
-<p>Issue #1 &middot; 2025-W10</p>
-</header>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signal #1 &mdash; 2025-W10</title>
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="Signal RSS"
+      href="https://signal.hugohmacedo.com/rss.xml"
+    />
+    <link
+      rel="alternate"
+      type="application/json"
+      title="Signal JSON Feed"
+      href="https://signal.hugohmacedo.com/feed.json"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Georgia, "Times New Roman", serif;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        color: #000;
+        line-height: 1.7;
+      }
+      .top-rule {
+        border: none;
+        border-top: 8px solid #000;
+        margin-bottom: 60px;
+      }
+      header {
+        padding: 0 0 20px;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+      }
+      header h1 {
+        font-size: 48px;
+        font-weight: 900;
+        letter-spacing: -2px;
+        text-transform: uppercase;
+        line-height: 0.9;
+      }
+      header h1 a {
+        text-decoration: none;
+        color: inherit;
+      }
+      header p {
+        font-size: 14px;
+        font-weight: 400;
+        color: #000;
+        margin-top: 8px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+      }
+      .divider {
+        border: none;
+        border-top: 4px solid #000;
+        margin: 0 0 40px;
+      }
+      .piece {
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 2px solid #000;
+      }
+      .piece h2 {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 24px;
+        font-weight: 900;
+        margin-bottom: 4px;
+      }
+      .piece h2 a {
+        text-decoration: none;
+        color: inherit;
+        border-bottom: 2px solid #000;
+      }
+      .piece h2 a:hover {
+        color: #e63b19;
+        border-bottom-color: #e63b19;
+      }
+      .piece .authors {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 12px;
+      }
+      .hook {
+        color: #333;
+        font-style: italic;
+        margin-top: 0;
+        margin-bottom: 16px;
+      }
+      .content {
+        font-size: 17px;
+      }
+      .content p {
+        margin-bottom: 14px;
+      }
+      .quick-takes {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 4px solid #000;
+      }
+      .quick-takes h2 {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 20px;
+      }
+      .quick-takes ul {
+        list-style: none;
+        padding: 0;
+      }
+      .quick-takes li {
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #ddd;
+      }
+      .quick-takes a {
+        color: #000;
+        font-weight: 700;
+        text-decoration: none;
+        border-bottom: 2px solid #000;
+      }
+      .quick-takes a:hover {
+        color: #e63b19;
+        border-bottom-color: #e63b19;
+      }
+      .quick-takes p {
+        margin-top: 4px;
+        color: #333;
+        font-size: 15px;
+      }
+      footer {
+        margin-top: 60px;
+        padding-top: 20px;
+        border-top: 2px solid #000;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      footer .meta {
+        margin-bottom: 12px;
+        color: #666;
+      }
+      footer a {
+        color: #000;
+        text-decoration: none;
+        margin-right: 16px;
+        font-weight: 700;
+      }
+      footer a:hover {
+        color: #e63b19;
+      }
+    </style>
+  </head>
+  <body>
+    <hr class="top-rule" />
+    <header>
+      <h1><a href="https://signal.hugohmacedo.com">Signal</a></h1>
+      <p>Issue #1 &middot; 2025-W10</p>
+    </header>
 
-<hr class="divider">
+    <hr class="divider" />
 
-<article class="piece" id="2603.04212v1"><h2><a href="https://arxiv.org/pdf/2603.04212v1">Can You Tell Which AI Wrote That Code? A New Method Tries to Fingerprint LLM-Generated Programs</a></h2><p class="authors">Jiaxun Guo, Ziyuan Yang, Mengyu Sun, Hui Wang, Jingfeng Lu, Yi Zhang</p><p class="hook">Researchers propose a method to identify not just whether code was written by an AI, but which specific AI model produced it—by separating what the code does from how it does it.</p><div class="content"><p style="margin: 12px 0;">Researchers propose a method to identify not just whether code was written by an AI, but which specific AI model produced it—by separating what the code does from how it does it.</p><h3 style="font-size: 18px; margin-top: 24px;">The Problem</h3><p style="margin: 12px 0;">Most existing research on AI-generated code focuses on a binary question: did a human or a machine write this? But in practice, that&#x27;s often not enough. When a vulnerability surfaces, a licensing conflict arises, or an incident investigation begins, the relevant question is more specific: *which* AI model produced this code? [§1] This is the problem of LLM Code Source Attribution (LLMCSA)—figuring out whether a snippet came from ChatGPT, Claude, DeepSeek, Qwen, or another model.</p><p style="margin: 12px 0;">The challenge is that code generated by different LLMs for the same task tends to look very similar on the surface. If you ask four models to implement a binary search in Python, they&#x27;ll all produce syntactically valid code that follows the same algorithmic logic. The differences are subtle: variable naming conventions, comment styles, structural organization, whitespace preferences. These are what the authors call &quot;generative fingerprints&quot;—model-dependent stylistic and structural variations introduced by differences in training data, architectures, alignment strategies, and decoding mechanisms [§1].</p><p style="margin: 12px 0;">Prior passive attribution methods (ones that work without modifying the generation process) have relied on handcrafted stylometric features or language-specific indicators, which limits their scalability across programming languages [§2]. Active methods like watermarking require access to the generation pipeline, making them impractical for forensic scenarios where you&#x27;re analyzing code after the fact [§2].</p><h3 style="font-size: 18px; margin-top: 24px;">What They Did</h3><p style="margin: 12px 0;">A team from Sichuan University proposes the Disentangled Code Attribution Network (DCAN), which frames the attribution problem as a representation disentanglement task [§1]. The core idea: any code snippet contains two types of information tangled together. There&#x27;s **source-agnostic information**—the functional semantics dictated by the programming task (&quot;implement a sorting algorithm&quot;). And there&#x27;s **source-specific information**—the stylistic fingerprints unique to the model that generated it (how it names variables, how deeply it nests structures, how verbose it is) [§3.1].</p><p style="margin: 12px 0;">Conventional detection methods learn representations dominated by task-dependent semantics, since functional correctness and solution structure are the most prominent patterns in code. As a result, subtle model-specific fingerprints get overshadowed [§3.1]. DCAN&#x27;s approach is to explicitly pull these two types of information apart.</p><p style="margin: 12px 0;">Concretely, the system assumes that a code snippet&#x27;s latent representation can be decomposed additively: h = z_c + z_s, where z_c captures the task logic and z_s captures the model&#x27;s stylistic signature [§3.1]. The framework uses a base encoder to produce an initial representation, then a disentanglement module to separate these components. A &quot;representation consistency loss&quot; aligns the source-agnostic representations of code generated by different models for the same task—the intuition being that if two models solve the same problem, their task-related representations should be similar, and whatever&#x27;s left over is the model-specific signal [§3.1, Figure 2]. A contrastive learning objective helps isolate these discriminative signals, and a linear classifier then uses the source-specific component to predict which LLM produced the code [Figure 2].</p><p style="margin: 12px 0;">To evaluate this, the team built what they describe as the first large-scale benchmark dataset for LLMCSA: 91,804 code samples generated by four LLMs (DeepSeek, Claude, Qwen, and ChatGPT) across four programming languages (Python, Java, C, and Go), collected under two settings—with and without comments [§1]. The dataset uses a controlled generation and quality-control pipeline to ensure reliability and diversity [§1].</p><h3 style="font-size: 18px; margin-top: 24px;">The Results</h3><p style="margin: 12px 0;">The paper states that DCAN achieves &quot;reliable attribution performance across diverse settings&quot; [Abstract]. The framework is evaluated across all four languages and both coding settings (with and without comments).</p><p style="margin: 12px 0;">The authors frame the source-specific signals they extract in terms of concrete stylistic dimensions visible in Figure 1: code verbosity (how much boilerplate or explanation a model includes), lexical density (token-level preferences), naming convention bias (camelCase vs. snake_case tendencies), structural depth (nesting patterns), and what they call &quot;generative distinctiveness&quot; [Figure 1]. These aren&#x27;t hand-engineered features—they emerge from the disentanglement process.</p><p style="margin: 12px 0;">It&#x27;s worth noting several limitations. The benchmark covers only four LLMs and four languages. Real-world attribution scenarios might involve dozens of models, including fine-tuned variants and open-source derivatives that share architectural DNA. The paper&#x27;s conditional invariance assumptions—that source-agnostic information is truly invariant across models, and source-specific information is stable across tasks—are stated as approximations (using ≈ rather than =) [§3.1, Equation 2], acknowledging these are idealizations. The approach also assumes you know the candidate set of models in advance; it&#x27;s a closed-set classification problem, not an open-world detection task.</p><p style="margin: 12px 0;">Additionally, the evaluation uses code generated under controlled conditions from competitive programming problems. Production code—with its dependencies, boilerplate, and human edits layered on top of AI suggestions—would present a much harder attribution target.</p><h3 style="font-size: 18px; margin-top: 24px;">Why It Matters</h3><p style="margin: 12px 0;">For practitioners, this work matters because it addresses a gap between what current AI-code detection tools do (binary human-vs-machine classification) and what governance scenarios actually require (identifying the specific source) [§1]. If your organization needs to audit which AI tools contributed to a codebase—for licensing compliance, security triage, or policy enforcement—binary detection isn&#x27;t sufficient.</p><p style="margin: 12px 0;">The disentanglement approach is conceptually clean: rather than trying to find model fingerprints in a sea of task-related noise, explicitly remove the noise first. The dataset and implementation are publicly available [§1, footnote], which means other researchers can build on this benchmark. But the gap between a four-model lab setting and the messy reality of modern software supply chains—where code passes through multiple models, gets edited by humans, and is mixed with library code—remains substantial. This is a first step toward model-level code forensics, not a finished tool.</p></div></article><article class="piece" id="2603.04257v1"><h2><a href="https://arxiv.org/pdf/2603.04257v1">Memex: Teaching AI Agents to Take Notes Instead of Forgetting</a></h2><p class="authors">Zhenting Wang, Huancheng Chen, Jiayun Wang, Wei Wei</p><p class="hook">When AI agents tackle tasks requiring dozens or hundreds of steps, they inevitably run out of working memory—and the standard fix of summarizing past work throws away the very details they&#x27;ll need later.</p><div class="content"><p style="margin: 12px 0;">When AI agents tackle tasks requiring dozens or hundreds of steps, they inevitably run out of working memory—and the standard fix of summarizing past work throws away the very details they&#x27;ll need later.</p><h3 style="font-size: 18px; margin-top: 24px;">The Problem</h3><p style="margin: 12px 0;">LLM-based agents are increasingly asked to do complex, multi-step work: searching scientific literature, exploring code configurations, orchestrating multi-API business processes, or iteratively refining analyses [§1]. These tasks can span dozens to hundreds of tool calls, each producing observations, outputs, and reasoning traces that pile up in the agent&#x27;s context window.</p><p style="margin: 12px 0;">The trouble is that context windows are finite, while agent trajectories keep growing [§1]. The naive approach—just keep everything in context—quickly breaks down. Prompts become prohibitively long, eventually exceed the context budget, and &quot;make distant evidence harder to use even when it is still present&quot; [§1]. Think of an agent that found a critical API error message at step 12 but doesn&#x27;t effectively use it at step 87, even though it&#x27;s technically still in the prompt.</p><p style="margin: 12px 0;">The standard workarounds are truncation (cutting old content) or running summaries (condensing history into shorter text). But both are &quot;fundamentally lossy because they compress or discard past evidence itself&quot; [Abstract]. Once a tool output is summarized away, the exact numbers, error codes, or configuration details it contained are gone. An alternative—logging everything to external memory and retrieving by semantic similarity—sounds appealing but turns out to be brittle in practice. &quot;When memory consists of a large pool of noisy, near-duplicate fragments, retrieval becomes ambiguous&quot; [§1]. Similarity search doesn&#x27;t help the agent decide which results deserve stable references, which branches are dead ends, or how to name artifacts so later access is precise rather than fuzzy [§1].</p><h3 style="font-size: 18px; margin-top: 24px;">What They Did</h3><p style="margin: 12px 0;">Researchers at Accenture introduced Memex, a memory mechanism built around what they call Indexed Experience Memory. The core idea is simple: compress context without discarding evidence [§1].</p><p style="margin: 12px 0;">Here&#x27;s how it works concretely. As an agent works through a task, it periodically performs a `CompressExperience` action. This replaces a long stretch of tool calls and outputs in the working context with a compact indexed summary—essentially a table of contents with entries like &quot;Index A: Description A, Index B: Description B&quot; [Figure 1]. The full, unabridged content of each interaction gets stored in an external key-value store under those indices. Later, when the agent needs specific past evidence, it calls `ReadExperience(Index I)` to dereference an index and pull the exact archived content back into its working context [Figure 1]. The analogy to how humans work is explicit in the paper: &quot;external artifacts such as notes, file names, and bookmarks serve as stable access routes to detailed evidence without requiring everything to remain in working memory&quot; [§1].</p><p style="margin: 12px 0;">Critically, the memory operations aren&#x27;t hardcoded rules. Writing indexed summaries, archiving artifacts, and dereferencing indices are treated as &quot;first-class actions in the same decision space as environment tools&quot; [§1]. The agent decides what to summarize, what to archive, how to index it, and when to retrieve it.</p><p style="margin: 12px 0;">To train these behaviors, the team developed MemexRL, a reinforcement learning framework. This is where the hard problem lies: a well-designed index might only pay off many steps later by enabling precise evidence recovery, while &quot;a locally plausible but poorly structured summary can silently derail downstream reasoning&quot; [§1]. MemexRL uses reward shaping tailored to indexed memory usage under a context budget, combined with what the authors call a compression-adaptive training procedure that preserves learning signal for delayed memory decisions across long trajectories [§1]. The system also exposes context status to the agent through a soft triggering mechanism, so compression timing becomes &quot;a learnable skill rather than a fixed system rule&quot; [§1].</p><h3 style="font-size: 18px; margin-top: 24px;">The Results</h3><p style="margin: 12px 0;">The paper reports that on challenging long-horizon tasks, &quot;Memex agent trained with MemexRL improves task success while using a significantly smaller working context&quot; [Abstract]. The tasks tested require agents to &quot;interleave planning and tool calls over dozens to hundreds of steps while revisiting fine-grained evidence long after it first appears&quot; [§1]—exactly the regime where lossy compression hurts most.</p><p style="margin: 12px 0;">The authors also provide a theoretical analysis showing that the Memex loop has the potential to preserve decision quality with bounded dereferencing while keeping effective in-context computation bounded as history grows [§1]. However, they are careful to note this is about potential, not a guarantee: &quot;This analysis is not meant to claim that MemexRL always learns such summaries in practice. Rather, it characterizes the regime in which compact indexed summaries together with bounded retrieval are sufficient to support accurate decisions&quot; [§1].</p><p style="margin: 12px 0;">Several limitations deserve attention. The paper&#x27;s empirical evaluation covers challenging long-horizon tasks, though the available excerpts don&#x27;t include detailed benchmark comparisons or ablation numbers. The theoretical analysis explicitly acknowledges it describes a best-case regime rather than typical learned behavior. And the approach introduces additional complexity: the agent must now learn not just how to solve tasks but how to manage its own memory—a credit assignment problem that the authors themselves flag as distinctive and difficult [§1]. The reliance on reinforcement learning for memory management also means training costs and stability are open questions.</p><h3 style="font-size: 18px; margin-top: 24px;">Why It Matters</h3><p style="margin: 12px 0;">For practitioners building agents that handle multi-step workflows, Memex addresses a real pain point. Today&#x27;s approaches to context management are mostly engineering heuristics—sliding windows, periodic summarization, retrieval-augmented generation—that either lose information or retrieve imprecisely. Memex offers a middle path: keep a small working set in context, but maintain exact records externally with explicit, agent-chosen references.</p><p style="margin: 12px 0;">The design pattern of treating memory management as learnable agent actions rather than system-level heuristics is worth watching. If agents can learn to organize their own experience—deciding what&#x27;s worth a stable reference versus what&#x27;s noise—that could reduce the brittle hand-engineering that currently goes into long-running agent systems. But the gap between the theoretical potential the authors describe and reliably learned memory behavior in practice remains the key open question. The idea that agents should take structured notes rather than either remembering everything or summarizing lossy is intuitive. Whether RL can consistently teach them to do it well is the harder bet.</p></div></article><article class="piece" id="2603.03825v1"><h2><a href="https://arxiv.org/pdf/2603.03825v1">The Paradox of Multimodal Training: Why Text-Only Data Makes Vision Models See Better</a></h2><p class="authors">Ruilin Luo, Chufan Shi, Yizhen Zhang, Cheng Yang, Songtao Jiang, Tongkun Guan, Ruizhe Chen, Ruihang Chu, Peng Wang, Mingkun Yang, Yujiu Yang, Junyang Lin, Zhibo Yang</p><p class="hook">Training a vision-language model on text-only reasoning data makes it pay more attention to images than training it on multimodal data does — and a new metric explains why.</p><div class="content"><h3 style="font-size: 18px; margin-top: 24px;">The Problem</h3><p style="margin: 12px 0;">Building AI models that can reason about images — solving geometry problems from diagrams, interpreting charts, or answering questions that require understanding visual content — has become a major focus of AI research. The standard recipe involves two stages: a &quot;cold-start&quot; phase where the model learns reasoning patterns from supervised examples, followed by reinforcement learning (RL) to refine those skills.</p><p style="margin: 12px 0;">But practitioners have noticed something strange. When you initialize these Multimodal Large Reasoning Models (MLRMs) with text-only reasoning data — math proofs, logic puzzles, no images at all — they perform better on subsequent visual reasoning tasks than when you initialize them with multimodal data that includes images [§1]. This is counterintuitive: you&#x27;d expect that showing a model images during its formative training stage would help it reason about images later. Several groups had observed this pattern [§1], but nobody had a quantitative explanation for why it happens.</p><p style="margin: 12px 0;">The stakes are practical. If multimodal cold-start data doesn&#x27;t help, teams are wasting compute generating and training on image-text reasoning examples. And without understanding the mechanism, there&#x27;s no principled way to fix it.</p><h3 style="font-size: 18px; margin-top: 24px;">What They Did</h3><p style="margin: 12px 0;">The researchers started by building a diagnostic tool. They introduced the **Visual Attention Score (VAS)**, which measures how much a model&#x27;s internal attention mechanism focuses on image tokens versus system prompt tokens [§3.1]. Concretely, for each layer and attention head in a transformer, VAS computes the ratio of attention weight directed at visual tokens to attention weight directed at system tokens, then averages across all layers, heads, and query positions [§3.1, Equations 1-2]. A high VAS means the model is actively looking at the image; a low VAS means it&#x27;s mostly attending to boilerplate system instructions.</p><p style="margin: 12px 0;">They computed VAS for ten 7-billion-parameter models — Qwen2.5-VL-7B, R1-OneVision, ThinkLite-VL, MM-Eureka, Revisual-R1-CS, Revisual-R1-RL, OVR-CS, OVR-RL, MiMo-VL-CS, and MiMo-VL-RL — using 200 samples from the MathVista benchmark, then correlated VAS with average reasoning accuracy across four multimodal benchmarks [§3.1].</p><p style="margin: 12px 0;">The correlation was striking: a Pearson coefficient of r = 0.9616 between VAS and reasoning performance [§3.2, Figure 1a]. Models with VAS below 10 (which they call &quot;Narrow-View Models,&quot; like Qwen2.5-VL-7B and R1-OneVision) consistently underperformed. Models with VAS above 15 (&quot;Panoramic-View Models,&quot; like OVR-RL and MiMo-VL) achieved the strongest results [§3.2].</p><p style="margin: 12px 0;">Here&#x27;s the key finding: models cold-started with multimodal data showed attention distributions nearly identical to the base model — they didn&#x27;t learn to look at images any harder. But specific text-only cold-started models like OVR-CS and Revisual-R1-CS showed 15–20% higher attention to visual features compared to multimodal cold-started models like R1-OneVision and ThinkLite-VL [§3.3]. The authors call this **Lazy Attention Localization**: multimodal cold-start training fails to shift attention toward visual tokens, while text-only initialization somehow induces stronger visual grounding [§3.3].</p><p style="margin: 12px 0;">To test whether this was causal rather than just correlational, they designed training-free interventions that directly manipulated attention weights at inference time — amplifying attention to visual tokens and reducing attention to system tokens [§4]. Without any retraining, this produced consistent 1–2% accuracy gains across multiple models including Qwen2.5-VL-7B, Revisual-R1-CS, and OVR-CS [§1, §4].</p><p style="margin: 12px 0;">Finally, they built a full training framework called **AVAR** (Attention-Guided Visual Anchoring and Reflection) that operationalizes these insights [§5]. AVAR has three components: (1) a data synthesis pipeline that embeds &quot;visual anchors&quot; — explicit references back to the image — throughout generated reasoning chains, (2) attention-guided training objectives that encourage the model to attend to visual tokens and suppress over-reliance on system tokens during cold-start, and (3) visual-anchored reward shaping during RL that rewards not just correct answers but also maintained visual grounding across long reasoning chains [§5].</p><h3 style="font-size: 18px; margin-top: 24px;">The Results</h3><p style="margin: 12px 0;">Applied to Qwen2.5-VL-7B, AVAR achieved an average gain of 7.0% across seven multimodal reasoning benchmarks [Abstract]. The largest improvements came on MathVision (+12.2%), which tests multi-step geometric reasoning, and HallusionBench (+8.8%), which measures robustness against visual hallucinations [§1]. Ablation studies confirmed that each of AVAR&#x27;s three components contributed incrementally — removing any one reduced performance [§1, §6].</p><p style="margin: 12px 0;">The training-free attention interventions, while more modest at 1–2%, are notable precisely because they require zero additional training [§4]. They serve as both a diagnostic confirmation and a lightweight practical tool.</p><p style="margin: 12px 0;">**Limitations worth noting:** The VAS metric was computed on only 200 MathVista samples [§3.1], and all experiments used 7B-parameter models [§3.1]. The correlation between VAS and performance, while strong, was measured across just ten models [Figure 1a] — a small sample for drawing broad conclusions. The authors also don&#x27;t fully explain the mechanism behind Lazy Attention Localization; they observe that text-only cold-start &quot;internalizes reasoning patterns&quot; that preserve visual grounding [§1], but the precise causal chain from text-only training to higher visual attention remains somewhat speculative. Additionally, the benchmarks are heavily math-focused, and it&#x27;s unclear how well these findings generalize to other multimodal reasoning domains.</p><h3 style="font-size: 18px; margin-top: 24px;">Why It Matters</h3><p style="margin: 12px 0;">For practitioners building multimodal reasoning systems, this work offers an actionable diagnostic: compute VAS for your model and check whether it&#x27;s actually attending to visual inputs. If it&#x27;s below 10, your model may be largely ignoring the image regardless of what multimodal data you trained on [§3.2]. The training-free attention reweighting provides an immediate, zero-cost intervention [§4].</p><p style="margin: 12px 0;">More broadly, the finding challenges a natural assumption in multimodal AI development — that training on multimodal data is always better for multimodal tasks. The evidence here suggests that what matters during cold-start isn&#x27;t modality coverage but the quality of reasoning patterns learned, and that these patterns can transfer across modalities in ways that reshape how the model allocates its internal resources [§3.3]. For teams deciding how to allocate their data curation budgets, that&#x27;s a concrete and somewhat surprising signal.</p></div></article>
+    <article class="piece" id="2603.04212v1">
+      <h2>
+        <a href="https://arxiv.org/pdf/2603.04212v1"
+          >Can You Tell Which AI Wrote That Code? A New Method Tries to
+          Fingerprint LLM-Generated Programs</a
+        >
+      </h2>
+      <p class="authors">
+        Jiaxun Guo, Ziyuan Yang, Mengyu Sun, Hui Wang, Jingfeng Lu, Yi Zhang
+      </p>
+      <p class="hook">
+        Researchers propose a method to identify not just whether code was
+        written by an AI, but which specific AI model produced it—by separating
+        what the code does from how it does it.
+      </p>
+      <div class="content">
+        <p style="margin: 12px 0">
+          Researchers propose a method to identify not just whether code was
+          written by an AI, but which specific AI model produced it—by
+          separating what the code does from how it does it.
+        </p>
+        <h3 style="font-size: 18px; margin-top: 24px">The Problem</h3>
+        <p style="margin: 12px 0">
+          Most existing research on AI-generated code focuses on a binary
+          question: did a human or a machine write this? But in practice,
+          that&#x27;s often not enough. When a vulnerability surfaces, a
+          licensing conflict arises, or an incident investigation begins, the
+          relevant question is more specific: *which* AI model produced this
+          code? [§1] This is the problem of LLM Code Source Attribution
+          (LLMCSA)—figuring out whether a snippet came from ChatGPT, Claude,
+          DeepSeek, Qwen, or another model.
+        </p>
+        <p style="margin: 12px 0">
+          The challenge is that code generated by different LLMs for the same
+          task tends to look very similar on the surface. If you ask four models
+          to implement a binary search in Python, they&#x27;ll all produce
+          syntactically valid code that follows the same algorithmic logic. The
+          differences are subtle: variable naming conventions, comment styles,
+          structural organization, whitespace preferences. These are what the
+          authors call &quot;generative fingerprints&quot;—model-dependent
+          stylistic and structural variations introduced by differences in
+          training data, architectures, alignment strategies, and decoding
+          mechanisms [§1].
+        </p>
+        <p style="margin: 12px 0">
+          Prior passive attribution methods (ones that work without modifying
+          the generation process) have relied on handcrafted stylometric
+          features or language-specific indicators, which limits their
+          scalability across programming languages [§2]. Active methods like
+          watermarking require access to the generation pipeline, making them
+          impractical for forensic scenarios where you&#x27;re analyzing code
+          after the fact [§2].
+        </p>
+        <h3 style="font-size: 18px; margin-top: 24px">What They Did</h3>
+        <p style="margin: 12px 0">
+          A team from Sichuan University proposes the Disentangled Code
+          Attribution Network (DCAN), which frames the attribution problem as a
+          representation disentanglement task [§1]. The core idea: any code
+          snippet contains two types of information tangled together.
+          There&#x27;s **source-agnostic information**—the functional semantics
+          dictated by the programming task (&quot;implement a sorting
+          algorithm&quot;). And there&#x27;s **source-specific information**—the
+          stylistic fingerprints unique to the model that generated it (how it
+          names variables, how deeply it nests structures, how verbose it is)
+          [§3.1].
+        </p>
+        <p style="margin: 12px 0">
+          Conventional detection methods learn representations dominated by
+          task-dependent semantics, since functional correctness and solution
+          structure are the most prominent patterns in code. As a result, subtle
+          model-specific fingerprints get overshadowed [§3.1]. DCAN&#x27;s
+          approach is to explicitly pull these two types of information apart.
+        </p>
+        <p style="margin: 12px 0">
+          Concretely, the system assumes that a code snippet&#x27;s latent
+          representation can be decomposed additively: h = z_c + z_s, where z_c
+          captures the task logic and z_s captures the model&#x27;s stylistic
+          signature [§3.1]. The framework uses a base encoder to produce an
+          initial representation, then a disentanglement module to separate
+          these components. A &quot;representation consistency loss&quot; aligns
+          the source-agnostic representations of code generated by different
+          models for the same task—the intuition being that if two models solve
+          the same problem, their task-related representations should be
+          similar, and whatever&#x27;s left over is the model-specific signal
+          [§3.1, Figure 2]. A contrastive learning objective helps isolate these
+          discriminative signals, and a linear classifier then uses the
+          source-specific component to predict which LLM produced the code
+          [Figure 2].
+        </p>
+        <p style="margin: 12px 0">
+          To evaluate this, the team built what they describe as the first
+          large-scale benchmark dataset for LLMCSA: 91,804 code samples
+          generated by four LLMs (DeepSeek, Claude, Qwen, and ChatGPT) across
+          four programming languages (Python, Java, C, and Go), collected under
+          two settings—with and without comments [§1]. The dataset uses a
+          controlled generation and quality-control pipeline to ensure
+          reliability and diversity [§1].
+        </p>
+        <h3 style="font-size: 18px; margin-top: 24px">The Results</h3>
+        <p style="margin: 12px 0">
+          The paper states that DCAN achieves &quot;reliable attribution
+          performance across diverse settings&quot; [Abstract]. The framework is
+          evaluated across all four languages and both coding settings (with and
+          without comments).
+        </p>
+        <p style="margin: 12px 0">
+          The authors frame the source-specific signals they extract in terms of
+          concrete stylistic dimensions visible in Figure 1: code verbosity (how
+          much boilerplate or explanation a model includes), lexical density
+          (token-level preferences), naming convention bias (camelCase vs.
+          snake_case tendencies), structural depth (nesting patterns), and what
+          they call &quot;generative distinctiveness&quot; [Figure 1]. These
+          aren&#x27;t hand-engineered features—they emerge from the
+          disentanglement process.
+        </p>
+        <p style="margin: 12px 0">
+          It&#x27;s worth noting several limitations. The benchmark covers only
+          four LLMs and four languages. Real-world attribution scenarios might
+          involve dozens of models, including fine-tuned variants and
+          open-source derivatives that share architectural DNA. The paper&#x27;s
+          conditional invariance assumptions—that source-agnostic information is
+          truly invariant across models, and source-specific information is
+          stable across tasks—are stated as approximations (using ≈ rather than
+          =) [§3.1, Equation 2], acknowledging these are idealizations. The
+          approach also assumes you know the candidate set of models in advance;
+          it&#x27;s a closed-set classification problem, not an open-world
+          detection task.
+        </p>
+        <p style="margin: 12px 0">
+          Additionally, the evaluation uses code generated under controlled
+          conditions from competitive programming problems. Production code—with
+          its dependencies, boilerplate, and human edits layered on top of AI
+          suggestions—would present a much harder attribution target.
+        </p>
+        <h3 style="font-size: 18px; margin-top: 24px">Why It Matters</h3>
+        <p style="margin: 12px 0">
+          For practitioners, this work matters because it addresses a gap
+          between what current AI-code detection tools do (binary
+          human-vs-machine classification) and what governance scenarios
+          actually require (identifying the specific source) [§1]. If your
+          organization needs to audit which AI tools contributed to a
+          codebase—for licensing compliance, security triage, or policy
+          enforcement—binary detection isn&#x27;t sufficient.
+        </p>
+        <p style="margin: 12px 0">
+          The disentanglement approach is conceptually clean: rather than trying
+          to find model fingerprints in a sea of task-related noise, explicitly
+          remove the noise first. The dataset and implementation are publicly
+          available [§1, footnote], which means other researchers can build on
+          this benchmark. But the gap between a four-model lab setting and the
+          messy reality of modern software supply chains—where code passes
+          through multiple models, gets edited by humans, and is mixed with
+          library code—remains substantial. This is a first step toward
+          model-level code forensics, not a finished tool.
+        </p>
+      </div>
+    </article>
+    <article class="piece" id="2603.04257v1">
+      <h2>
+        <a href="https://arxiv.org/pdf/2603.04257v1"
+          >Memex: Teaching AI Agents to Take Notes Instead of Forgetting</a
+        >
+      </h2>
+      <p class="authors">Zhenting Wang, Huancheng Chen, Jiayun Wang, Wei Wei</p>
+      <p class="hook">
+        When AI agents tackle tasks requiring dozens or hundreds of steps, they
+        inevitably run out of working memory—and the standard fix of summarizing
+        past work throws away the very details they&#x27;ll need later.
+      </p>
+      <div class="content">
+        <p style="margin: 12px 0">
+          When AI agents tackle tasks requiring dozens or hundreds of steps,
+          they inevitably run out of working memory—and the standard fix of
+          summarizing past work throws away the very details they&#x27;ll need
+          later.
+        </p>
+        <h3 style="font-size: 18px; margin-top: 24px">The Problem</h3>
+        <p style="margin: 12px 0">
+          LLM-based agents are increasingly asked to do complex, multi-step
+          work: searching scientific literature, exploring code configurations,
+          orchestrating multi-API business processes, or iteratively refining
+          analyses [§1]. These tasks can span dozens to hundreds of tool calls,
+          each producing observations, outputs, and reasoning traces that pile
+          up in the agent&#x27;s context window.
+        </p>
+        <p style="margin: 12px 0">
+          The trouble is that context windows are finite, while agent
+          trajectories keep growing [§1]. The naive approach—just keep
+          everything in context—quickly breaks down. Prompts become
+          prohibitively long, eventually exceed the context budget, and
+          &quot;make distant evidence harder to use even when it is still
+          present&quot; [§1]. Think of an agent that found a critical API error
+          message at step 12 but doesn&#x27;t effectively use it at step 87,
+          even though it&#x27;s technically still in the prompt.
+        </p>
+        <p style="margin: 12px 0">
+          The standard workarounds are truncation (cutting old content) or
+          running summaries (condensing history into shorter text). But both are
+          &quot;fundamentally lossy because they compress or discard past
+          evidence itself&quot; [Abstract]. Once a tool output is summarized
+          away, the exact numbers, error codes, or configuration details it
+          contained are gone. An alternative—logging everything to external
+          memory and retrieving by semantic similarity—sounds appealing but
+          turns out to be brittle in practice. &quot;When memory consists of a
+          large pool of noisy, near-duplicate fragments, retrieval becomes
+          ambiguous&quot; [§1]. Similarity search doesn&#x27;t help the agent
+          decide which results deserve stable references, which branches are
+          dead ends, or how to name artifacts so later access is precise rather
+          than fuzzy [§1].
+        </p>
+        <h3 style="font-size: 18px; margin-top: 24px">What They Did</h3>
+        <p style="margin: 12px 0">
+          Researchers at Accenture introduced Memex, a memory mechanism built
+          around what they call Indexed Experience Memory. The core idea is
+          simple: compress context without discarding evidence [§1].
+        </p>
+        <p style="margin: 12px 0">
+          Here&#x27;s how it works concretely. As an agent works through a task,
+          it periodically performs a `CompressExperience` action. This replaces
+          a long stretch of tool calls and outputs in the working context with a
+          compact indexed summary—essentially a table of contents with entries
+          like &quot;Index A: Description A, Index B: Description B&quot;
+          [Figure 1]. The full, unabridged content of each interaction gets
+          stored in an external key-value store under those indices. Later, when
+          the agent needs specific past evidence, it calls `ReadExperience(Index
+          I)` to dereference an index and pull the exact archived content back
+          into its working context [Figure 1]. The analogy to how humans work is
+          explicit in the paper: &quot;external artifacts such as notes, file
+          names, and bookmarks serve as stable access routes to detailed
+          evidence without requiring everything to remain in working
+          memory&quot; [§1].
+        </p>
+        <p style="margin: 12px 0">
+          Critically, the memory operations aren&#x27;t hardcoded rules. Writing
+          indexed summaries, archiving artifacts, and dereferencing indices are
+          treated as &quot;first-class actions in the same decision space as
+          environment tools&quot; [§1]. The agent decides what to summarize,
+          what to archive, how to index it, and when to retrieve it.
+        </p>
+        <p style="margin: 12px 0">
+          To train these behaviors, the team developed MemexRL, a reinforcement
+          learning framework. This is where the hard problem lies: a
+          well-designed index might only pay off many steps later by enabling
+          precise evidence recovery, while &quot;a locally plausible but poorly
+          structured summary can silently derail downstream reasoning&quot;
+          [§1]. MemexRL uses reward shaping tailored to indexed memory usage
+          under a context budget, combined with what the authors call a
+          compression-adaptive training procedure that preserves learning signal
+          for delayed memory decisions across long trajectories [§1]. The system
+          also exposes context status to the agent through a soft triggering
+          mechanism, so compression timing becomes &quot;a learnable skill
+          rather than a fixed system rule&quot; [§1].
+        </p>
+        <h3 style="font-size: 18px; margin-top: 24px">The Results</h3>
+        <p style="margin: 12px 0">
+          The paper reports that on challenging long-horizon tasks, &quot;Memex
+          agent trained with MemexRL improves task success while using a
+          significantly smaller working context&quot; [Abstract]. The tasks
+          tested require agents to &quot;interleave planning and tool calls over
+          dozens to hundreds of steps while revisiting fine-grained evidence
+          long after it first appears&quot; [§1]—exactly the regime where lossy
+          compression hurts most.
+        </p>
+        <p style="margin: 12px 0">
+          The authors also provide a theoretical analysis showing that the Memex
+          loop has the potential to preserve decision quality with bounded
+          dereferencing while keeping effective in-context computation bounded
+          as history grows [§1]. However, they are careful to note this is about
+          potential, not a guarantee: &quot;This analysis is not meant to claim
+          that MemexRL always learns such summaries in practice. Rather, it
+          characterizes the regime in which compact indexed summaries together
+          with bounded retrieval are sufficient to support accurate
+          decisions&quot; [§1].
+        </p>
+        <p style="margin: 12px 0">
+          Several limitations deserve attention. The paper&#x27;s empirical
+          evaluation covers challenging long-horizon tasks, though the available
+          excerpts don&#x27;t include detailed benchmark comparisons or ablation
+          numbers. The theoretical analysis explicitly acknowledges it describes
+          a best-case regime rather than typical learned behavior. And the
+          approach introduces additional complexity: the agent must now learn
+          not just how to solve tasks but how to manage its own memory—a credit
+          assignment problem that the authors themselves flag as distinctive and
+          difficult [§1]. The reliance on reinforcement learning for memory
+          management also means training costs and stability are open questions.
+        </p>
+        <h3 style="font-size: 18px; margin-top: 24px">Why It Matters</h3>
+        <p style="margin: 12px 0">
+          For practitioners building agents that handle multi-step workflows,
+          Memex addresses a real pain point. Today&#x27;s approaches to context
+          management are mostly engineering heuristics—sliding windows, periodic
+          summarization, retrieval-augmented generation—that either lose
+          information or retrieve imprecisely. Memex offers a middle path: keep
+          a small working set in context, but maintain exact records externally
+          with explicit, agent-chosen references.
+        </p>
+        <p style="margin: 12px 0">
+          The design pattern of treating memory management as learnable agent
+          actions rather than system-level heuristics is worth watching. If
+          agents can learn to organize their own experience—deciding what&#x27;s
+          worth a stable reference versus what&#x27;s noise—that could reduce
+          the brittle hand-engineering that currently goes into long-running
+          agent systems. But the gap between the theoretical potential the
+          authors describe and reliably learned memory behavior in practice
+          remains the key open question. The idea that agents should take
+          structured notes rather than either remembering everything or
+          summarizing lossy is intuitive. Whether RL can consistently teach them
+          to do it well is the harder bet.
+        </p>
+      </div>
+    </article>
+    <article class="piece" id="2603.03825v1">
+      <h2>
+        <a href="https://arxiv.org/pdf/2603.03825v1"
+          >The Paradox of Multimodal Training: Why Text-Only Data Makes Vision
+          Models See Better</a
+        >
+      </h2>
+      <p class="authors">
+        Ruilin Luo, Chufan Shi, Yizhen Zhang, Cheng Yang, Songtao Jiang, Tongkun
+        Guan, Ruizhe Chen, Ruihang Chu, Peng Wang, Mingkun Yang, Yujiu Yang,
+        Junyang Lin, Zhibo Yang
+      </p>
+      <p class="hook">
+        Training a vision-language model on text-only reasoning data makes it
+        pay more attention to images than training it on multimodal data does —
+        and a new metric explains why.
+      </p>
+      <div class="content">
+        <h3 style="font-size: 18px; margin-top: 24px">The Problem</h3>
+        <p style="margin: 12px 0">
+          Building AI models that can reason about images — solving geometry
+          problems from diagrams, interpreting charts, or answering questions
+          that require understanding visual content — has become a major focus
+          of AI research. The standard recipe involves two stages: a
+          &quot;cold-start&quot; phase where the model learns reasoning patterns
+          from supervised examples, followed by reinforcement learning (RL) to
+          refine those skills.
+        </p>
+        <p style="margin: 12px 0">
+          But practitioners have noticed something strange. When you initialize
+          these Multimodal Large Reasoning Models (MLRMs) with text-only
+          reasoning data — math proofs, logic puzzles, no images at all — they
+          perform better on subsequent visual reasoning tasks than when you
+          initialize them with multimodal data that includes images [§1]. This
+          is counterintuitive: you&#x27;d expect that showing a model images
+          during its formative training stage would help it reason about images
+          later. Several groups had observed this pattern [§1], but nobody had a
+          quantitative explanation for why it happens.
+        </p>
+        <p style="margin: 12px 0">
+          The stakes are practical. If multimodal cold-start data doesn&#x27;t
+          help, teams are wasting compute generating and training on image-text
+          reasoning examples. And without understanding the mechanism,
+          there&#x27;s no principled way to fix it.
+        </p>
+        <h3 style="font-size: 18px; margin-top: 24px">What They Did</h3>
+        <p style="margin: 12px 0">
+          The researchers started by building a diagnostic tool. They introduced
+          the **Visual Attention Score (VAS)**, which measures how much a
+          model&#x27;s internal attention mechanism focuses on image tokens
+          versus system prompt tokens [§3.1]. Concretely, for each layer and
+          attention head in a transformer, VAS computes the ratio of attention
+          weight directed at visual tokens to attention weight directed at
+          system tokens, then averages across all layers, heads, and query
+          positions [§3.1, Equations 1-2]. A high VAS means the model is
+          actively looking at the image; a low VAS means it&#x27;s mostly
+          attending to boilerplate system instructions.
+        </p>
+        <p style="margin: 12px 0">
+          They computed VAS for ten 7-billion-parameter models — Qwen2.5-VL-7B,
+          R1-OneVision, ThinkLite-VL, MM-Eureka, Revisual-R1-CS, Revisual-R1-RL,
+          OVR-CS, OVR-RL, MiMo-VL-CS, and MiMo-VL-RL — using 200 samples from
+          the MathVista benchmark, then correlated VAS with average reasoning
+          accuracy across four multimodal benchmarks [§3.1].
+        </p>
+        <p style="margin: 12px 0">
+          The correlation was striking: a Pearson coefficient of r = 0.9616
+          between VAS and reasoning performance [§3.2, Figure 1a]. Models with
+          VAS below 10 (which they call &quot;Narrow-View Models,&quot; like
+          Qwen2.5-VL-7B and R1-OneVision) consistently underperformed. Models
+          with VAS above 15 (&quot;Panoramic-View Models,&quot; like OVR-RL and
+          MiMo-VL) achieved the strongest results [§3.2].
+        </p>
+        <p style="margin: 12px 0">
+          Here&#x27;s the key finding: models cold-started with multimodal data
+          showed attention distributions nearly identical to the base model —
+          they didn&#x27;t learn to look at images any harder. But specific
+          text-only cold-started models like OVR-CS and Revisual-R1-CS showed
+          15–20% higher attention to visual features compared to multimodal
+          cold-started models like R1-OneVision and ThinkLite-VL [§3.3]. The
+          authors call this **Lazy Attention Localization**: multimodal
+          cold-start training fails to shift attention toward visual tokens,
+          while text-only initialization somehow induces stronger visual
+          grounding [§3.3].
+        </p>
+        <p style="margin: 12px 0">
+          To test whether this was causal rather than just correlational, they
+          designed training-free interventions that directly manipulated
+          attention weights at inference time — amplifying attention to visual
+          tokens and reducing attention to system tokens [§4]. Without any
+          retraining, this produced consistent 1–2% accuracy gains across
+          multiple models including Qwen2.5-VL-7B, Revisual-R1-CS, and OVR-CS
+          [§1, §4].
+        </p>
+        <p style="margin: 12px 0">
+          Finally, they built a full training framework called **AVAR**
+          (Attention-Guided Visual Anchoring and Reflection) that
+          operationalizes these insights [§5]. AVAR has three components: (1) a
+          data synthesis pipeline that embeds &quot;visual anchors&quot; —
+          explicit references back to the image — throughout generated reasoning
+          chains, (2) attention-guided training objectives that encourage the
+          model to attend to visual tokens and suppress over-reliance on system
+          tokens during cold-start, and (3) visual-anchored reward shaping
+          during RL that rewards not just correct answers but also maintained
+          visual grounding across long reasoning chains [§5].
+        </p>
+        <h3 style="font-size: 18px; margin-top: 24px">The Results</h3>
+        <p style="margin: 12px 0">
+          Applied to Qwen2.5-VL-7B, AVAR achieved an average gain of 7.0% across
+          seven multimodal reasoning benchmarks [Abstract]. The largest
+          improvements came on MathVision (+12.2%), which tests multi-step
+          geometric reasoning, and HallusionBench (+8.8%), which measures
+          robustness against visual hallucinations [§1]. Ablation studies
+          confirmed that each of AVAR&#x27;s three components contributed
+          incrementally — removing any one reduced performance [§1, §6].
+        </p>
+        <p style="margin: 12px 0">
+          The training-free attention interventions, while more modest at 1–2%,
+          are notable precisely because they require zero additional training
+          [§4]. They serve as both a diagnostic confirmation and a lightweight
+          practical tool.
+        </p>
+        <p style="margin: 12px 0">
+          **Limitations worth noting:** The VAS metric was computed on only 200
+          MathVista samples [§3.1], and all experiments used 7B-parameter models
+          [§3.1]. The correlation between VAS and performance, while strong, was
+          measured across just ten models [Figure 1a] — a small sample for
+          drawing broad conclusions. The authors also don&#x27;t fully explain
+          the mechanism behind Lazy Attention Localization; they observe that
+          text-only cold-start &quot;internalizes reasoning patterns&quot; that
+          preserve visual grounding [§1], but the precise causal chain from
+          text-only training to higher visual attention remains somewhat
+          speculative. Additionally, the benchmarks are heavily math-focused,
+          and it&#x27;s unclear how well these findings generalize to other
+          multimodal reasoning domains.
+        </p>
+        <h3 style="font-size: 18px; margin-top: 24px">Why It Matters</h3>
+        <p style="margin: 12px 0">
+          For practitioners building multimodal reasoning systems, this work
+          offers an actionable diagnostic: compute VAS for your model and check
+          whether it&#x27;s actually attending to visual inputs. If it&#x27;s
+          below 10, your model may be largely ignoring the image regardless of
+          what multimodal data you trained on [§3.2]. The training-free
+          attention reweighting provides an immediate, zero-cost intervention
+          [§4].
+        </p>
+        <p style="margin: 12px 0">
+          More broadly, the finding challenges a natural assumption in
+          multimodal AI development — that training on multimodal data is always
+          better for multimodal tasks. The evidence here suggests that what
+          matters during cold-start isn&#x27;t modality coverage but the quality
+          of reasoning patterns learned, and that these patterns can transfer
+          across modalities in ways that reshape how the model allocates its
+          internal resources [§3.3]. For teams deciding how to allocate their
+          data curation budgets, that&#x27;s a concrete and somewhat surprising
+          signal.
+        </p>
+      </div>
+    </article>
 
-<section class="quick-takes"><h2>Quick Takes</h2><ul><li><a href="https://arxiv.org/pdf/2603.03823v1">SWE-CI: Evaluating Agent Capabilities in Maintaining Codebases via Continuous Integration</a><p>Large language model (LLM)-powered agents have demonstrated strong capabilities in automating software engineering tasks such as static bug fixing, as evidenced by benchmarks like SWE-bench.</p></li><li><a href="https://arxiv.org/pdf/2603.03824v1">In-Context Environments Induce Evaluation-Awareness in Language Models</a><p>Humans often become more self-aware under threat, yet can lose self-awareness when absorbed in a task; we hypothesize that language models exhibit environment-dependent \textit{evaluation awareness}.</p></li><li><a href="https://arxiv.org/pdf/2603.04380v1">TaxonRL: Reinforcement Learning with Intermediate Rewards for Interpretable Fine-Grained Visual Reasoning</a><p>Traditional vision-language models struggle with contrastive fine-grained taxonomic reasoning, particularly when distinguishing between visually similar species within the same genus or family.</p></li><li><a href="https://arxiv.org/pdf/2603.04370v1">$τ$-Knowledge: Evaluating Conversational Agents over Unstructured Knowledge</a><p>Conversational agents are increasingly deployed in knowledge-intensive settings, where correct behavior depends on retrieving and applying domain-specific knowledge from large, proprietary, and unstructured corpora during live interactions with users.</p></li><li><a href="https://arxiv.org/pdf/2603.04304v1">$V_1$: Unifying Generation and Self-Verification for Parallel Reasoners</a><p>Test-time scaling for complex reasoning tasks shows that leveraging inference-time compute, by methods such as independently sampling and aggregating multiple solutions, results in significantly better task outcomes.</p></li></ul></section>
+    <section class="quick-takes">
+      <h2>Quick Takes</h2>
+      <ul>
+        <li>
+          <a href="https://arxiv.org/pdf/2603.03823v1"
+            >SWE-CI: Evaluating Agent Capabilities in Maintaining Codebases via
+            Continuous Integration</a
+          >
+          <p>
+            Large language model (LLM)-powered agents have demonstrated strong
+            capabilities in automating software engineering tasks such as static
+            bug fixing, as evidenced by benchmarks like SWE-bench.
+          </p>
+        </li>
+        <li>
+          <a href="https://arxiv.org/pdf/2603.03824v1"
+            >In-Context Environments Induce Evaluation-Awareness in Language
+            Models</a
+          >
+          <p>
+            Humans often become more self-aware under threat, yet can lose
+            self-awareness when absorbed in a task; we hypothesize that language
+            models exhibit environment-dependent \textit{evaluation awareness}.
+          </p>
+        </li>
+        <li>
+          <a href="https://arxiv.org/pdf/2603.04380v1"
+            >TaxonRL: Reinforcement Learning with Intermediate Rewards for
+            Interpretable Fine-Grained Visual Reasoning</a
+          >
+          <p>
+            Traditional vision-language models struggle with contrastive
+            fine-grained taxonomic reasoning, particularly when distinguishing
+            between visually similar species within the same genus or family.
+          </p>
+        </li>
+        <li>
+          <a href="https://arxiv.org/pdf/2603.04370v1"
+            >$τ$-Knowledge: Evaluating Conversational Agents over Unstructured
+            Knowledge</a
+          >
+          <p>
+            Conversational agents are increasingly deployed in
+            knowledge-intensive settings, where correct behavior depends on
+            retrieving and applying domain-specific knowledge from large,
+            proprietary, and unstructured corpora during live interactions with
+            users.
+          </p>
+        </li>
+        <li>
+          <a href="https://arxiv.org/pdf/2603.04304v1"
+            >$V_1$: Unifying Generation and Self-Verification for Parallel
+            Reasoners</a
+          >
+          <p>
+            Test-time scaling for complex reasoning tasks shows that leveraging
+            inference-time compute, by methods such as independently sampling
+            and aggregating multiple solutions, results in significantly better
+            task outcomes.
+          </p>
+        </li>
+      </ul>
+    </section>
 
-<footer>
-<p class="meta">#1 &middot; 2845 words &middot; 3 pieces</p>
-<nav><a href="https://signal.hugohmacedo.com">Home</a> <a href="https://signal.hugohmacedo.com/archive.html">Archive</a> <a href="https://signal.hugohmacedo.com/rss.xml">RSS</a></nav>
-</footer>
-</body>
+    <footer>
+      <p class="meta">#1 &middot; 2845 words &middot; 3 pieces</p>
+      <nav>
+        <a href="https://signal.hugohmacedo.com">Home</a>
+        <a href="https://signal.hugohmacedo.com/archive.html">Archive</a>
+        <a href="https://signal.hugohmacedo.com/about.html">About</a>
+        <a href="https://signal.hugohmacedo.com/rss.xml">RSS</a>
+      </nav>
+    </footer>
+  </body>
 </html>

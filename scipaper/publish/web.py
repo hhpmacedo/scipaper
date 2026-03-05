@@ -118,7 +118,7 @@ footer a:hover {{ color: #e63b19; }}
 
 <footer>
 <p class="meta">#{edition.issue_number} &middot; {edition.total_words} words &middot; {len(edition.pieces)} pieces</p>
-<nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
+<nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
 </footer>
 </body>
 </html>"""
@@ -228,7 +228,7 @@ document.getElementById('subscribe-form').addEventListener('submit', function(e)
 {latest_html}
 
 <footer>
-<nav><a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
+<nav><a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
 </footer>
 </body>
 </html>"""
@@ -280,7 +280,7 @@ footer a:hover {{ color: #e63b19; }}
 </div>
 
 <footer>
-<nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
+<nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
 </footer>
 </body>
 </html>"""
@@ -347,7 +347,95 @@ footer a:hover {{ color: #e63b19; }}
 </ul>
 
 <footer>
-<nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/rss.xml">RSS</a> <a href="{config.site_url}/feed.json">JSON Feed</a></nav>
+<nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a> <a href="{config.site_url}/feed.json">JSON Feed</a></nav>
+</footer>
+</body>
+</html>"""
+
+
+def generate_about_page(config: Optional[WebConfig] = None) -> str:
+    """
+    Generate the About / How It Works page.
+    """
+    config = config or WebConfig()
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How It Works &mdash; Signal</title>
+<link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
+<style>
+* {{ margin: 0; padding: 0; box-sizing: border-box; }}
+body {{ font-family: Georgia, 'Times New Roman', serif; max-width: 720px; margin: 0 auto; padding: 40px 20px; color: #000; line-height: 1.7; }}
+.top-rule {{ border: none; border-top: 8px solid #000; margin-bottom: 60px; }}
+header {{ padding: 0 0 20px; font-family: "Helvetica Neue", Arial, sans-serif; }}
+header h1 {{ font-size: 48px; font-weight: 900; letter-spacing: -2px; text-transform: uppercase; line-height: 0.9; }}
+header h1 a {{ text-decoration: none; color: inherit; }}
+header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; font-family: "Helvetica Neue", Arial, sans-serif; }}
+.divider {{ border: none; border-top: 4px solid #000; margin: 0 0 40px; }}
+.about-section {{ margin-bottom: 40px; padding-bottom: 30px; border-bottom: 2px solid #000; }}
+.about-section:last-of-type {{ border-bottom: none; }}
+.about-section h2 {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; }}
+.about-section p {{ font-size: 17px; margin-bottom: 14px; }}
+.about-section ul {{ font-size: 17px; margin: 0 0 14px 24px; }}
+.about-section li {{ margin-bottom: 8px; }}
+.pipeline-step {{ font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 700; }}
+footer {{ margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
+footer a {{ color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }}
+footer a:hover {{ color: #e63b19; }}
+</style>
+</head>
+<body>
+<hr class="top-rule">
+<header>
+<h1><a href="{config.site_url}">Signal</a></h1>
+<p>How It Works</p>
+</header>
+
+<hr class="divider">
+
+<div class="about-section">
+<h2>What This Is</h2>
+<p>Signal is a weekly newsletter that translates AI research papers into clear, rigorous prose. Every claim is grounded in the source paper. No hype, no speculation, no &ldquo;this changes everything.&rdquo; Just what the researchers did, what they found, and why it matters.</p>
+<p>The entire pipeline &mdash; from finding papers to writing about them to checking the writing against the source &mdash; runs autonomously. This page explains how.</p>
+</div>
+
+<div class="about-section">
+<h2>How Papers Are Selected</h2>
+<p>Each week, the pipeline pulls new papers from ArXiv across four categories: artificial intelligence, machine learning, computational linguistics, and statistical ML. It also checks Semantic Scholar for citation data and scans Hacker News for social signals.</p>
+<p>Every paper is scored on two axes:</p>
+<ul>
+<li><span class="pipeline-step">Relevance</span> &mdash; How important is this paper to the current AI conversation? Scored using keyword matching against a weekly anchor document, institutional signals, citation velocity, and social mentions.</li>
+<li><span class="pipeline-step">Narrative potential</span> &mdash; Can we tell a compelling, concrete story about this paper? An LLM evaluates whether the paper has a clear problem, a surprising result, and enough detail to ground an 800&ndash;1200 word piece.</li>
+</ul>
+<p>The top papers are selected with diversity constraints: no more than two papers from the same institution or topic area. The goal is a well-rounded edition, not a deep dive into one corner of the field.</p>
+<p>The only human input in the entire system is a weekly anchor document &mdash; a short list of hot topics, declining topics, and keywords that steer what counts as &ldquo;relevant&rdquo; this week. Everything else is automated.</p>
+</div>
+
+<div class="about-section">
+<h2>How Papers Are Written</h2>
+<p>Each selected paper goes through a three-stage pipeline:</p>
+<p><span class="pipeline-step">1. Citation-grounded generation.</span> The full paper is parsed (PDF to text), and an LLM generates an 800&ndash;1200 word piece following a fixed structure: Hook, The Problem, What They Did, The Results, Why It Matters. Every factual claim must cite a specific passage &mdash; a section number, table, figure, or the abstract. If a claim can&rsquo;t be grounded, it doesn&rsquo;t get included.</p>
+<p><span class="pipeline-step">2. Adversarial verification.</span> A second LLM reads the draft alongside the original paper and checks each claim against its cited passage. It classifies issues by severity: minor, major, or critical. Types include unsupported claims, overstatements, misrepresentations, and missing context. If any critical issue is found, or three or more major issues, the paper is dropped from the edition entirely &mdash; not patched, dropped.</p>
+<p><span class="pipeline-step">3. Style checking.</span> A rule-based pass enforces the style constitution: no banned words (revolutionary, groundbreaking, game-changing), required structure, citation density minimums, and word count limits. This keeps the writing consistent across editions.</p>
+</div>
+
+<div class="about-section">
+<h2>What You Won&rsquo;t Find Here</h2>
+<p>Signal follows a locked style constitution. A few of the rules:</p>
+<ul>
+<li>The words &ldquo;revolutionary,&rdquo; &ldquo;groundbreaking,&rdquo; &ldquo;breakthrough,&rdquo; and &ldquo;game-changing&rdquo; are banned.</li>
+<li>Every piece must include what the paper does <em>not</em> show &mdash; specific limitations, not hand-waving.</li>
+<li>No speculation beyond what the paper claims. &ldquo;This could change X&rdquo; only appears if the authors themselves make that argument, and even then it&rsquo;s hedged.</li>
+<li>Technical terms are either explained in plain language or avoided.</li>
+</ul>
+<p>The goal is that after reading a piece, you could explain the paper to a colleague &mdash; accurately, without overselling it.</p>
+</div>
+
+<footer>
+<nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
 </footer>
 </body>
 </html>"""
@@ -390,6 +478,10 @@ async def generate_web_archive(
     # Generate archive
     archive_html = generate_archive_page(editions, config)
     (output / "archive.html").write_text(archive_html)
+
+    # Generate about page
+    about_html = generate_about_page(config)
+    (output / "about.html").write_text(about_html)
 
     # Generate edition pages
     for edition in editions:
