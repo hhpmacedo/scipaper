@@ -38,20 +38,53 @@ def _og_tags(
     ]
     if image_url:
         tags.append(f'<meta property="og:image" content="{escape(image_url)}">')
+        tags.append(f'<meta property="og:image:width" content="1200">')
+        tags.append(f'<meta property="og:image:height" content="630">')
         tags.append(f'<meta name="twitter:image" content="{escape(image_url)}">')
     return "\n".join(tags)
 
 
-OG_IMAGE_SVG = """<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#fff"/>
-  <rect y="0" width="1200" height="16" fill="#000"/>
-  <text x="80" y="280" font-family="Helvetica Neue, Arial, sans-serif" font-size="120" font-weight="900" letter-spacing="-4" text-transform="uppercase" fill="#000">SIGNAL</text>
-  <text x="80" y="360" font-family="Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="400" letter-spacing="2" fill="#000">AI RESEARCH FOR THE CURIOUS</text>
-  <rect x="80" y="400" width="1040" height="4" fill="#000"/>
-  <text x="80" y="460" font-family="Georgia, Times New Roman, serif" font-size="24" fill="#333">Weekly. Grounded in the source. No hype.</text>
-  <rect x="80" y="520" width="160" height="48" rx="0" fill="#e63b19"/>
-  <text x="96" y="552" font-family="Helvetica Neue, Arial, sans-serif" font-size="16" font-weight="700" letter-spacing="1" fill="#fff">SUBSCRIBE</text>
-</svg>"""
+def _generate_og_image(output_path: Path) -> None:
+    """Generate a 1200x630 PNG Open Graph image matching the brutalist site design."""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except ImportError:
+        logger.warning("Pillow not installed — skipping OG image generation")
+        return
+
+    W, H = 1200, 630
+    img = Image.new("RGB", (W, H), "#ffffff")
+    draw = ImageDraw.Draw(img)
+
+    # Top rule
+    draw.rectangle([0, 0, W, 16], fill="#000000")
+
+    # Load fonts with fallback
+    def _font(name: str, size: int) -> ImageFont.FreeTypeFont:
+        for path in [
+            f"/usr/share/fonts/truetype/dejavu/{name}",
+            f"/usr/share/fonts/{name}",
+        ]:
+            try:
+                return ImageFont.truetype(path, size)
+            except (OSError, IOError):
+                continue
+        return ImageFont.load_default()
+
+    font_title = _font("DejaVuSans-Bold.ttf", 100)
+    font_subtitle = _font("DejaVuSans.ttf", 26)
+    font_body = _font("DejaVuSerif.ttf", 22)
+    font_btn = _font("DejaVuSans-Bold.ttf", 15)
+
+    draw.text((80, 160), "SIGNAL", fill="#000000", font=font_title)
+    draw.text((80, 300), "AI RESEARCH FOR THE CURIOUS", fill="#000000", font=font_subtitle)
+    draw.rectangle([80, 370, 1120, 374], fill="#000000")
+    draw.text((80, 410), "Weekly. Grounded in the source. No hype.", fill="#333333", font=font_body)
+    draw.rectangle([80, 490, 260, 545], fill="#e63b19")
+    draw.text((100, 505), "SUBSCRIBE", fill="#ffffff", font=font_btn)
+
+    img.save(str(output_path), "PNG", optimize=True)
+    logger.info(f"Generated OG image: {output_path}")
 
 
 @dataclass
@@ -106,7 +139,7 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
     og_description = edition.pieces[0].hook if edition.pieces else "AI research, translated."
     og_title = f"Signal #{edition.issue_number} — {edition.week}"
     og_url = f"{config.site_url}/editions/{edition.week}.html"
-    og_image = f"{config.site_url}/og-image.svg"
+    og_image = f"{config.site_url}/og-image.png"
     og = _og_tags(og_title, og_description, og_url, image_url=og_image, og_type="article")
 
     return f"""<!DOCTYPE html>
@@ -196,7 +229,7 @@ def generate_landing_page(
         config.site_title,
         "A weekly newsletter that translates AI research papers into clear, rigorous prose. No hype. Every claim grounded in the source.",
         config.site_url,
-        image_url=f"{config.site_url}/og-image.svg",
+        image_url=f"{config.site_url}/og-image.png",
     )
 
     return f"""<!DOCTYPE html>
@@ -297,7 +330,7 @@ def generate_subscribed_page(config: Optional[WebConfig] = None) -> str:
         f"Subscribed — {config.site_title}",
         "You're in. AI research, translated. Every Tuesday.",
         f"{config.site_url}/subscribed.html",
-        image_url=f"{config.site_url}/og-image.svg",
+        image_url=f"{config.site_url}/og-image.png",
     )
 
     return f"""<!DOCTYPE html>
@@ -371,7 +404,7 @@ def generate_archive_page(
         f"Archive — {config.site_title}",
         "Every edition of Signal. AI research papers, translated into clear prose.",
         f"{config.site_url}/archive.html",
-        image_url=f"{config.site_url}/og-image.svg",
+        image_url=f"{config.site_url}/og-image.png",
     )
 
     return f"""<!DOCTYPE html>
@@ -432,7 +465,7 @@ def generate_about_page(config: Optional[WebConfig] = None) -> str:
         "How It Works — Signal",
         "How Signal finds, writes about, and verifies AI research papers — autonomously, with every claim grounded in the source.",
         f"{config.site_url}/about.html",
-        image_url=f"{config.site_url}/og-image.svg",
+        image_url=f"{config.site_url}/og-image.png",
     )
 
     return f"""<!DOCTYPE html>
@@ -566,7 +599,7 @@ async def generate_web_archive(
         (editions_dir / f"{edition.week}.html").write_text(page_html)
 
     # Generate OG image
-    (output / "og-image.svg").write_text(OG_IMAGE_SVG)
+    _generate_og_image(output / "og-image.png")
 
     # Generate feeds
     rss = generate_rss_feed(editions, config)
