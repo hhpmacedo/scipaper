@@ -41,6 +41,18 @@ def make_scored_paper(
     )
 
 
+class TestSelectionConfigDefaults:
+    def test_default_target_count_is_8(self):
+        """DEC-004: Default selection targets 8 papers for verification buffer."""
+        config = SelectionConfig()
+        assert config.target_count == 8
+
+    def test_default_max_count_is_10(self):
+        """DEC-004: Max count is 10 for buffer."""
+        config = SelectionConfig()
+        assert config.max_count == 10
+
+
 class TestSelectEditionPapers:
     def test_selects_target_count(self):
         # Use varied categories to avoid hitting topic diversity limits

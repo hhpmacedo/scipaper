@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SelectionConfig:
     """Configuration for paper selection."""
-    target_count: int = 5  # Number of papers to select
+    target_count: int = 8  # DEC-004: Curate 8-10 papers for verification buffer
     min_count: int = 3     # Minimum acceptable
-    max_count: int = 8     # Maximum (for buffer)
+    max_count: int = 10    # Maximum (for buffer)
     
     # Diversity constraints
     max_same_institution: int = 2
