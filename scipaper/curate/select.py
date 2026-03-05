@@ -3,6 +3,7 @@ Paper selection for weekly edition.
 """
 
 import logging
+from collections import Counter
 from typing import List, Set
 from dataclasses import dataclass
 
@@ -59,37 +60,45 @@ def select_edition_papers(
     
     # Greedy selection with diversity constraints
     selected: List[ScoredPaper] = []
-    institutions_used: Set[str] = set()
-    topics_used: Set[str] = set()
-    
+    institution_counts: Counter = Counter()
+    topic_counts: Counter = Counter()
+
     for paper in eligible:
         if len(selected) >= config.target_count:
             break
-            
+
         # Check diversity constraints
         paper_institutions = _get_institutions(paper.paper)
         paper_topics = _get_topics(paper.paper)
-        
-        # Count overlap
-        inst_overlap = len(institutions_used & paper_institutions)
-        topic_overlap = len(topics_used & paper_topics)
-        
-        if inst_overlap >= config.max_same_institution:
+
+        # Check if adding this paper would exceed institution limit
+        inst_blocked = any(
+            institution_counts[inst] >= config.max_same_institution
+            for inst in paper_institutions
+        ) if paper_institutions else False
+
+        if inst_blocked:
             logger.debug(f"Skipping {paper.paper.arxiv_id}: institution diversity")
             continue
-            
-        if topic_overlap >= config.max_same_topic:
+
+        # Check if adding this paper would exceed topic limit
+        topic_blocked = any(
+            topic_counts[topic] >= config.max_same_topic
+            for topic in paper_topics
+        ) if paper_topics else False
+
+        if topic_blocked:
             logger.debug(f"Skipping {paper.paper.arxiv_id}: topic diversity")
             continue
-        
+
         # Select this paper
         paper.selected_for_edition = True
         paper.selection_reason = f"Score: {paper.composite_score:.1f}"
         selected.append(paper)
-        
+
         # Update tracking
-        institutions_used.update(paper_institutions)
-        topics_used.update(paper_topics)
+        institution_counts.update(paper_institutions)
+        topic_counts.update(paper_topics)
     
     logger.info(f"Selected {len(selected)} papers for edition")
     

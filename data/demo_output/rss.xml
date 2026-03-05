@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+<title>Signal — AI Research for the Curious</title>
+<link>https://signal.example.com</link>
+<description>Weekly AI research newsletter</description>
+<language>en-us</language>
+<item><title>Signal #42 — 2025-W10</title><link>https://signal.example.com/editions/2025-W10.html</link><description>A 7-billion parameter model with a learned reasoning strategy matches a 70-billion parameter model using standard prompting — by treating thinking as a skill to practice, not a pattern to copy.</description><pubDate>Thu, 05 Mar 2026 08:51:02 +0000</pubDate><guid>https://signal.example.com/editions/2025-W10.html</guid></item>
+</channel>
+</rss>
