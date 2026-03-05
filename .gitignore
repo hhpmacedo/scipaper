@@ -30,6 +30,7 @@ wheels/
 # Data (don't commit papers)
 data/papers/
 data/editions/
+data/cache.db
 *.pdf
 
 # IDE
