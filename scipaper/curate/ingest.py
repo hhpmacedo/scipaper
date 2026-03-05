@@ -39,7 +39,7 @@ class ArxivSource:
     API Docs: https://info.arxiv.org/help/api/basics.html
     """
 
-    BASE_URL = "http://export.arxiv.org/api/query"
+    BASE_URL = "https://export.arxiv.org/api/query"
     PAGE_SIZE = 100
 
     def __init__(self, config: IngestConfig):

@@ -7,12 +7,13 @@ Autonomous weekly newsletter pipeline that curates AI research papers and transl
 - **Status**: Ready for First Edition
 - **Live URL**: https://signal.hugohmacedo.com
 - **Last session**: 2026-03-05
-- **Current focus**: Full pipeline implemented, site live, 205 tests passing. Ready to run first real edition.
+- **Current focus**: Pipeline ready, first run attempted. ArXiv fetch works. Needs API keys in `.env` to complete full run.
 - **Next steps**:
-  1. Set environment variables (`ANTHROPIC_API_KEY`, `BUTTONDOWN_API_KEY`)
-  2. Update anchor document for current week (`data/anchors/`)
-  3. Run first edition: `python -m scipaper --run`
-- **Blockers**: None (API keys needed)
+  1. Configure `.env` with `ANTHROPIC_API_KEY` and `BUTTONDOWN_API_KEY`
+  2. Run first edition: `python -m scipaper --run`
+  3. Debug any issues in scoring/generation/verification stages
+  4. Commit ArXiv HTTPS fix + dotenv changes
+- **Blockers**: None (API keys needed in `.env`)
 
 ## Team
 

@@ -119,3 +119,29 @@ Append-only session log. Each entry captures what happened and where to pick up.
 1. Implement pipeline stubs for first real edition (ingest → score → parse → write → verify → publish)
 2. Create sample anchor document (`data/anchors/`)
 3. Set up `.env` with API keys (Anthropic, Semantic Scholar, Buttondown)
+
+---
+
+### 2026-03-05 18:23 — Pipeline Verification & First Run Attempt
+
+**What was done:**
+
+- Explored full codebase: discovered all pipeline modules are fully implemented (zero `NotImplementedError` stubs)
+- Updated CLAUDE.md — corrected outdated "Stub" labels, fixed package name (`signal/` → `scipaper/`), updated commands, env vars, decisions
+- Cleaned up stale branches: deleted local `review/signal-pipeline` + remote `claude/signal-curation-pipeline-kax8x`
+- Added dotenv support (`load_dotenv()` in `__main__.py` + `.env.example`)
+- Fixed ArXiv API URL: `http://` → `https://` (was returning 301 Moved Permanently)
+- First pipeline run attempted — ArXiv fetch now works
+
+**Key decisions:**
+
+- Dotenv for local API key management (`.env` in `.gitignore`, `.env.example` committed)
+- Semantic Scholar key confirmed optional (graceful fallback, not required)
+
+**State:** Pipeline runs through ArXiv fetch. Needs `ANTHROPIC_API_KEY` and `BUTTONDOWN_API_KEY` in `.env` to complete full run. 205 tests passing. ArXiv HTTPS fix uncommitted.
+
+**Next steps:**
+
+1. Configure `.env` with API keys and re-run `python -m scipaper --run`
+2. Debug any issues in scoring/generation/verification stages
+3. Commit and push ArXiv HTTPS fix
