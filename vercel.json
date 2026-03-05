@@ -1,0 +1,24 @@
+{
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/archive", "destination": "/archive.html" },
+    { "source": "/rss", "destination": "/rss.xml" }
+  ],
+  "headers": [
+    {
+      "source": "/rss.xml",
+      "headers": [
+        { "key": "Content-Type", "value": "application/rss+xml; charset=utf-8" }
+      ]
+    },
+    {
+      "source": "/feed.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/feed+json; charset=utf-8"
+        }
+      ]
+    }
+  ]
+}
