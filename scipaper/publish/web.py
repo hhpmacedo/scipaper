@@ -64,37 +64,51 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Signal #{edition.issue_number} — {edition.week}</title>
+<title>Signal #{edition.issue_number} &mdash; {edition.week}</title>
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <link rel="alternate" type="application/json" title="Signal JSON Feed" href="{config.site_url}/feed.json">
 <style>
-body {{ font-family: Georgia, 'Times New Roman', serif; max-width: 700px; margin: 0 auto; padding: 20px; color: #1a1a1a; line-height: 1.7; }}
-header {{ text-align: center; padding: 30px 0; border-bottom: 2px solid #333; }}
-header h1 {{ margin: 0; font-size: 32px; }}
-header p {{ color: #666; margin: 4px 0 0; }}
-.piece {{ margin-top: 40px; padding-bottom: 30px; border-bottom: 1px solid #eee; }}
-.piece h2 {{ font-size: 22px; margin-bottom: 4px; }}
-.hook {{ color: #555; font-style: italic; margin-top: 0; }}
-.quick-takes {{ margin-top: 40px; }}
-.quick-takes ul {{ padding-left: 20px; }}
-.quick-takes li {{ margin-bottom: 12px; }}
-.quick-takes a {{ color: #1a1a1a; font-weight: 600; }}
-footer {{ margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #999; font-size: 13px; }}
-nav a {{ color: #333; margin: 0 8px; }}
+* {{ margin: 0; padding: 0; box-sizing: border-box; }}
+body {{ font-family: Georgia, 'Times New Roman', serif; max-width: 720px; margin: 0 auto; padding: 40px 20px; color: #000; line-height: 1.7; }}
+.top-rule {{ border: none; border-top: 8px solid #000; margin-bottom: 60px; }}
+header {{ padding: 0 0 20px; font-family: "Helvetica Neue", Arial, sans-serif; }}
+header h1 {{ font-size: 48px; font-weight: 900; letter-spacing: -2px; text-transform: uppercase; line-height: 0.9; }}
+header h1 a {{ text-decoration: none; color: inherit; }}
+header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; font-family: "Helvetica Neue", Arial, sans-serif; }}
+.divider {{ border: none; border-top: 4px solid #000; margin: 0 0 40px; }}
+.piece {{ margin-bottom: 40px; padding-bottom: 30px; border-bottom: 2px solid #000; }}
+.piece h2 {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 24px; font-weight: 900; margin-bottom: 4px; }}
+.hook {{ color: #333; font-style: italic; margin-top: 0; margin-bottom: 16px; }}
+.content {{ font-size: 17px; }}
+.content p {{ margin-bottom: 14px; }}
+.quick-takes {{ margin-top: 40px; padding-top: 30px; border-top: 4px solid #000; }}
+.quick-takes h2 {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }}
+.quick-takes ul {{ list-style: none; padding: 0; }}
+.quick-takes li {{ margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #ddd; }}
+.quick-takes a {{ color: #000; font-weight: 700; text-decoration: none; border-bottom: 2px solid #000; }}
+.quick-takes a:hover {{ color: #e63b19; border-bottom-color: #e63b19; }}
+.quick-takes p {{ margin-top: 4px; color: #333; font-size: 15px; }}
+footer {{ margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
+footer .meta {{ margin-bottom: 12px; color: #666; }}
+footer a {{ color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }}
+footer a:hover {{ color: #e63b19; }}
 </style>
 </head>
 <body>
+<hr class="top-rule">
 <header>
-<h1><a href="{config.site_url}" style="text-decoration: none; color: inherit;">Signal</a></h1>
-<p>AI Research for the Curious &mdash; Issue #{edition.issue_number} &middot; {edition.week}</p>
+<h1><a href="{config.site_url}">Signal</a></h1>
+<p>Issue #{edition.issue_number} &middot; {edition.week}</p>
 </header>
+
+<hr class="divider">
 
 {"".join(pieces_html)}
 
 {quick_takes_html}
 
 <footer>
-<p>Signal #{edition.issue_number} &middot; {edition.total_words} words &middot; {len(edition.pieces)} pieces</p>
+<p class="meta">#{edition.issue_number} &middot; {edition.total_words} words &middot; {len(edition.pieces)} pieces</p>
 <nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
 </footer>
 </body>
@@ -277,9 +291,9 @@ def generate_archive_page(
         edition_items.append(
             f'<li>'
             f'<a href="{config.site_url}/editions/{ed.week}.html">'
-            f'#{ed.issue_number} — {ed.week}</a>'
+            f'#{ed.issue_number} &mdash; {ed.week}</a>'
             f'<span class="lead">{escape(lead_title)}</span>'
-            f' &middot; {len(ed.pieces)} pieces, {ed.total_words} words'
+            f'<span class="meta">{len(ed.pieces)} pieces &middot; {ed.total_words} words</span>'
             f'</li>'
         )
 
@@ -291,29 +305,40 @@ def generate_archive_page(
 <title>Archive &mdash; {escape(config.site_title)}</title>
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <style>
-body {{ font-family: Georgia, 'Times New Roman', serif; max-width: 700px; margin: 0 auto; padding: 20px; color: #1a1a1a; line-height: 1.7; }}
-header {{ text-align: center; padding: 30px 0; border-bottom: 2px solid #333; }}
-header h1 {{ margin: 0; font-size: 32px; }}
-header p {{ color: #666; margin: 8px 0 0; }}
+* {{ margin: 0; padding: 0; box-sizing: border-box; }}
+body {{ font-family: "Helvetica Neue", Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 40px 20px; color: #000; line-height: 1.5; }}
+.top-rule {{ border: none; border-top: 8px solid #000; margin-bottom: 60px; }}
+header {{ padding: 0 0 40px; }}
+header h1 {{ font-size: 48px; font-weight: 900; letter-spacing: -2px; text-transform: uppercase; line-height: 0.9; }}
+header h1 a {{ text-decoration: none; color: inherit; }}
+header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; }}
+.divider {{ border: none; border-top: 4px solid #000; margin: 0 0 40px; }}
 .editions {{ list-style: none; padding: 0; }}
-.editions li {{ padding: 16px 0; border-bottom: 1px solid #eee; }}
-.editions a {{ font-size: 18px; color: #1a1a1a; font-weight: 600; text-decoration: none; }}
-.editions .lead {{ display: block; color: #555; font-size: 14px; margin-top: 4px; }}
-footer {{ margin-top: 40px; text-align: center; color: #999; font-size: 13px; }}
+.editions li {{ padding: 20px 0; border-bottom: 2px solid #000; }}
+.editions a {{ font-size: 18px; color: #000; font-weight: 700; text-decoration: none; border-bottom: 2px solid #000; }}
+.editions a:hover {{ color: #e63b19; border-bottom-color: #e63b19; }}
+.editions .lead {{ display: block; color: #333; font-size: 15px; margin-top: 6px; }}
+.editions .meta {{ color: #666; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
+footer {{ margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
+footer a {{ color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }}
+footer a:hover {{ color: #e63b19; }}
 </style>
 </head>
 <body>
+<hr class="top-rule">
 <header>
-<h1>Signal</h1>
-<p>AI Research for the Curious &mdash; Archive</p>
+<h1><a href="{config.site_url}">Signal</a></h1>
+<p>Archive</p>
 </header>
+
+<hr class="divider">
 
 <ul class="editions">
 {"".join(edition_items)}
 </ul>
 
 <footer>
-<nav><a href="{config.site_url}">Home</a> &middot; <a href="{config.site_url}/rss.xml">RSS</a> &middot; <a href="{config.site_url}/feed.json">JSON Feed</a></nav>
+<nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/rss.xml">RSS</a> <a href="{config.site_url}/feed.json">JSON Feed</a></nav>
 </footer>
 </body>
 </html>"""
