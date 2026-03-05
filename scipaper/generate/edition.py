@@ -53,22 +53,7 @@ class AssemblyConfig:
     """Configuration for edition assembly."""
     max_pieces: int = 5
     max_quick_takes: int = 5
-    target_word_count: int = 5000  # Total edition
-    llm_provider: str = "anthropic"
-    llm_model: str = "claude-sonnet-4-20250514"
-    anthropic_api_key: Optional[str] = None
-    openai_api_key: Optional[str] = None
-
-
-QUICK_TAKE_PROMPT = """Write a 1-2 sentence summary of this paper for a "Quick Takes" section.
-
-Format: "[One surprising or interesting thing]. [What the paper actually does/shows]."
-
-Paper Title: {title}
-Abstract: {abstract}
-
-Keep it under 50 words. No hype. Concrete.
-"""
+    target_word_count: int = 5000
 
 
 async def assemble_edition(
@@ -128,52 +113,8 @@ async def generate_quick_take(
     paper: ScoredPaper,
     config: Optional[AssemblyConfig] = None
 ) -> QuickTake:
-    """
-    Generate a brief summary for a runner-up paper.
-    """
-    config = config or AssemblyConfig()
-
-    prompt = QUICK_TAKE_PROMPT.format(
-        title=paper.paper.title,
-        abstract=paper.paper.abstract,
-    )
-
-    try:
-        if config.llm_provider == "anthropic":
-            import anthropic
-            client = anthropic.AsyncAnthropic(api_key=config.anthropic_api_key)
-            response = await client.messages.create(
-                model=config.llm_model,
-                max_tokens=150,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            one_liner = response.content[0].text.strip()
-
-        elif config.llm_provider == "openai":
-            from openai import AsyncOpenAI
-            client = AsyncOpenAI(api_key=config.openai_api_key)
-            response = await client.chat.completions.create(
-                model=config.llm_model,
-                max_tokens=150,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            one_liner = response.choices[0].message.content.strip()
-        else:
-            raise ValueError(f"Unknown provider: {config.llm_provider}")
-
-    except Exception as e:
-        logger.warning(f"LLM quick take failed, using fallback: {e}")
-        return _fallback_quick_take(paper)
-
-    # Clean up the response
-    one_liner = one_liner.strip('"').strip()
-
-    return QuickTake(
-        paper_id=paper.paper.arxiv_id,
-        title=paper.paper.title,
-        one_liner=one_liner,
-        paper_url=paper.paper.pdf_url or f"https://arxiv.org/abs/{paper.paper.arxiv_id}",
-    )
+    """Generate a brief summary for a runner-up paper."""
+    return _fallback_quick_take(paper)
 
 
 def _fallback_quick_take(paper: ScoredPaper) -> QuickTake:
