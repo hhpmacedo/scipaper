@@ -22,7 +22,7 @@ class WebConfig:
     output_dir: Path = Path("public")
     site_url: str = "https://signal.hugohmacedo.com"
     site_title: str = "Signal — AI Research for the Curious"
-    buttondown_username: str = "signal"
+    buttondown_username: str = "signalhhmacedo"
 
 
 def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) -> str:

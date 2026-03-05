@@ -56,7 +56,7 @@ def make_edition(week="2025-W10", issue_number=1, **kwargs):
 class TestWebConfig:
     def test_default_buttondown_username(self):
         config = WebConfig()
-        assert config.buttondown_username == "signal"
+        assert config.buttondown_username == "signalhhmacedo"
 
     def test_custom_buttondown_username(self):
         config = WebConfig(buttondown_username="hugo")
