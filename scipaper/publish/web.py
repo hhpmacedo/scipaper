@@ -101,6 +101,91 @@ nav a {{ color: #333; margin: 0 8px; }}
 </html>"""
 
 
+def generate_landing_page(
+    editions: List[Edition], config: Optional[WebConfig] = None
+) -> str:
+    """
+    Generate landing page with subscribe form and latest edition link.
+    """
+    config = config or WebConfig()
+
+    # Latest edition section
+    latest_html = ""
+    if editions:
+        latest = editions[0]
+        lead_title = latest.pieces[0].title if latest.pieces else "Latest Edition"
+        latest_html = (
+            f'<section class="latest">'
+            f'<h2>Latest Edition</h2>'
+            f'<p><a href="{config.site_url}/editions/{latest.week}.html">'
+            f'#{latest.issue_number} — {latest.week}: {escape(lead_title)}</a></p>'
+            f'</section>'
+        )
+
+    subscribe_url = f"https://buttondown.com/api/emails/embed-subscribe/{config.buttondown_username}"
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{escape(config.site_title)}</title>
+<link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
+<link rel="alternate" type="application/json" title="Signal JSON Feed" href="{config.site_url}/feed.json">
+<style>
+body {{ font-family: Georgia, 'Times New Roman', serif; max-width: 700px; margin: 0 auto; padding: 20px; color: #1a1a1a; line-height: 1.7; }}
+header {{ text-align: center; padding: 60px 0 40px; }}
+header h1 {{ margin: 0; font-size: 48px; letter-spacing: -1px; }}
+header p {{ color: #555; margin: 8px 0 0; font-size: 18px; }}
+.value-prop {{ max-width: 540px; margin: 0 auto; padding: 20px 0; }}
+.value-prop ul {{ padding-left: 20px; }}
+.value-prop li {{ margin-bottom: 8px; }}
+.subscribe {{ text-align: center; padding: 40px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin: 30px 0; }}
+.subscribe h2 {{ font-size: 22px; margin-bottom: 16px; }}
+.subscribe form {{ display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }}
+.subscribe input[type="email"] {{ padding: 10px 16px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; width: 280px; font-family: inherit; }}
+.subscribe input[type="submit"] {{ padding: 10px 24px; font-size: 16px; background: #1a1a1a; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; }}
+.subscribe input[type="submit"]:hover {{ background: #333; }}
+.latest {{ text-align: center; padding: 20px 0; }}
+.latest h2 {{ font-size: 18px; color: #666; margin-bottom: 8px; }}
+.latest a {{ color: #1a1a1a; font-weight: 600; text-decoration: none; }}
+.latest a:hover {{ text-decoration: underline; }}
+footer {{ margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #999; font-size: 13px; }}
+footer a {{ color: #666; margin: 0 8px; }}
+</style>
+</head>
+<body>
+<header>
+<h1>Signal</h1>
+<p>AI Research for the Curious</p>
+</header>
+
+<div class="value-prop">
+<p>A weekly newsletter that translates the most important AI research papers into clear, rigorous prose. No hype. No jargon. Every claim grounded in the source.</p>
+<ul>
+<li>3-5 papers weekly, each ~800-1200 words</li>
+<li>Written for engineers, PMs, and founders who use AI but don't read papers</li>
+<li>Delivered every Tuesday</li>
+</ul>
+</div>
+
+<div class="subscribe">
+<h2>Subscribe — it's free</h2>
+<form action="{subscribe_url}" method="post">
+<input type="email" name="email" placeholder="you@example.com" required>
+<input type="submit" value="Subscribe">
+</form>
+</div>
+
+{latest_html}
+
+<footer>
+<nav><a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
+</footer>
+</body>
+</html>"""
+
+
 def generate_archive_page(
     editions: List[Edition], config: Optional[WebConfig] = None
 ) -> str:

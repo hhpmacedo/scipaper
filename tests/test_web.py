@@ -14,6 +14,7 @@ from scipaper.publish.web import (
     generate_edition_page,
     generate_index_page,
     generate_json_feed,
+    generate_landing_page,
     generate_rss_feed,
     generate_web_archive,
 )
@@ -120,6 +121,53 @@ class TestGenerateIndexPage:
         assert "2025-W11" in html
         assert "#1" in html
         assert "#2" in html
+
+
+class TestGenerateLandingPage:
+    def test_valid_html(self):
+        editions = [make_edition()]
+        html = generate_landing_page(editions)
+        assert "<!DOCTYPE html>" in html
+        assert "</html>" in html
+
+    def test_contains_branding(self):
+        html = generate_landing_page([make_edition()])
+        assert "Signal" in html
+        assert "AI Research for the Curious" in html
+
+    def test_contains_subscribe_form(self):
+        config = WebConfig(buttondown_username="testuser")
+        html = generate_landing_page([make_edition()], config)
+        assert '<form' in html
+        assert 'buttondown.com/api/emails/embed-subscribe/testuser' in html
+        assert 'type="email"' in html
+
+    def test_contains_value_prop(self):
+        html = generate_landing_page([make_edition()])
+        assert "weekly" in html.lower()
+
+    def test_contains_latest_edition_link(self):
+        editions = [make_edition(week="2025-W10", issue_number=1)]
+        config = WebConfig(site_url="https://signal.test")
+        html = generate_landing_page(editions, config)
+        assert "2025-W10" in html
+        assert "signal.test/editions/2025-W10.html" in html
+
+    def test_contains_archive_link(self):
+        config = WebConfig(site_url="https://signal.test")
+        html = generate_landing_page([make_edition()], config)
+        assert "signal.test/archive.html" in html
+
+    def test_contains_rss_link(self):
+        config = WebConfig(site_url="https://signal.test")
+        html = generate_landing_page([make_edition()], config)
+        assert "rss.xml" in html
+
+    def test_empty_editions(self):
+        """Landing page should work with no editions yet."""
+        html = generate_landing_page([])
+        assert "Signal" in html
+        assert '<form' in html
 
 
 class TestGenerateArchivePage:
