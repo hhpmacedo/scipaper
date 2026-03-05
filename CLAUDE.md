@@ -7,11 +7,11 @@ Autonomous weekly newsletter pipeline that curates AI research papers and transl
 - **Status**: Active Development
 - **Live URL**: N/A (not yet deployed)
 - **Last session**: 2026-03-05
-- **Current focus**: Phases 0-5 fully implemented. All 186 tests pass. All technical decisions (DEC-001 through DEC-005) resolved. Pipeline has CLI, retry logic, structured logging, GitHub Actions CI/CD, and Buttondown email integration.
+- **Current focus**: Phases 0-6 fully implemented. 205 tests pass, lint clean. Landing page with Buttondown subscribe form, welcome email drafted, production URLs configured at signal.hugohmacedo.com.
 - **Next steps**:
-  1. Phase 6: First real edition end-to-end with live API keys
-  2. Deploy to production (Railway/Fly.io or GitHub Actions cron)
-  3. Set up monitoring and alerting for weekly runs
+  1. Configure Buttondown account (create, set username, paste welcome email)
+  2. Set up DNS for signal.hugohmacedo.com
+  3. Deploy static site and run first real edition end-to-end
 - **Blockers**: None
 
 ## Team
