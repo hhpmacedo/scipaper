@@ -5,17 +5,47 @@ Usage:
     python -m scipaper --run              # Run the full pipeline
     python -m scipaper --run --week 2025-W10
     python -m scipaper --run --log-level DEBUG
+    python -m scipaper --run --json-logs
 """
 
 import argparse
 import asyncio
+import json
+import logging
 import os
 import sys
+from datetime import datetime, timezone
 
-from .curate.__main__ import load_anchor, setup_logging
+from .curate.__main__ import load_anchor
 from .pipeline import PipelineConfig, run_pipeline
 from .publish.email import ButtondownConfig
 from .publish.web import WebConfig
+
+
+class JSONFormatter(logging.Formatter):
+    """Formats log records as single-line JSON objects."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        return json.dumps({
+            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        })
+
+
+def setup_logging(log_level: str, json_logs: bool = False) -> None:
+    """Configure root logger with optional JSON formatting."""
+    handler = logging.StreamHandler()
+    if json_logs:
+        handler.setFormatter(JSONFormatter())
+    else:
+        handler.setFormatter(
+            logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+        )
+    logging.root.setLevel(getattr(logging, log_level, logging.INFO))
+    logging.root.handlers.clear()
+    logging.root.addHandler(handler)
 
 
 async def cmd_run_pipeline(args) -> None:
@@ -91,6 +121,12 @@ def main() -> None:
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         help="Logging level (default: INFO)",
     )
+    parser.add_argument(
+        "--json-logs",
+        action="store_true",
+        default=False,
+        help="Emit logs as JSON (one object per line)",
+    )
 
     args = parser.parse_args()
 
@@ -98,7 +134,7 @@ def main() -> None:
         parser.print_help()
         return
 
-    setup_logging(args.log_level)
+    setup_logging(args.log_level, json_logs=args.json_logs)
 
     # Use loop.run_until_complete to avoid asyncio.run()'s signal module
     # interference with our package name. See tests/conftest.py for context.

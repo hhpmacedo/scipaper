@@ -9,6 +9,7 @@ Wires together all stages:
 """
 
 import logging
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
@@ -88,6 +89,7 @@ async def run_pipeline(
 
     # ── Stage 1: Curate ──────────────────────────────────────────────
     logger.info("Stage 1: Curating papers")
+    stage_start = time.time()
 
     if papers is None:
         papers = await ingest_papers(config.ingest)
@@ -102,9 +104,11 @@ async def run_pipeline(
     runners_up = get_runners_up(scored, selected)
     result.papers_selected = len(selected)
     logger.info(f"Selected {len(selected)} papers, {len(runners_up)} runners-up")
+    logger.info(f"Stage 1 complete in {time.time() - stage_start:.1f}s")
 
     # ── Stage 2: Generate ────────────────────────────────────────────
     logger.info("Stage 2: Generating pieces")
+    stage_start = time.time()
 
     pieces = []
     for sp in selected:
@@ -135,8 +139,11 @@ async def run_pipeline(
             logger.error(msg)
             result.errors.append(msg)
 
+    logger.info(f"Stage 2 complete in {time.time() - stage_start:.1f}s")
+
     # ── Stage 3: Verify ──────────────────────────────────────────────
     logger.info("Stage 3: Verifying pieces")
+    stage_start = time.time()
 
     verified_pieces = []
     for piece, paper in pieces:
@@ -183,8 +190,11 @@ async def run_pipeline(
             logger.error(msg)
             result.errors.append(msg)
 
+    logger.info(f"Stage 3 complete in {time.time() - stage_start:.1f}s")
+
     # ── Stage 4: Publish ─────────────────────────────────────────────
     logger.info("Stage 4: Publishing edition")
+    stage_start = time.time()
 
     if not verified_pieces:
         logger.warning("No verified pieces — skipping publishing")
@@ -226,6 +236,7 @@ async def run_pipeline(
             logger.error(msg)
             result.errors.append(msg)
 
+    logger.info(f"Stage 4 complete in {time.time() - stage_start:.1f}s")
     logger.info(
         f"Pipeline complete: {result.papers_ingested} ingested → "
         f"{result.papers_selected} selected → "

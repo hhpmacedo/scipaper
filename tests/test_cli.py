@@ -280,4 +280,4 @@ def test_main_log_level_passed_to_setup_logging(
          patch("scipaper.__main__.setup_logging") as mock_setup:
         main()
 
-    mock_setup.assert_called_once_with("DEBUG")
+    mock_setup.assert_called_once_with("DEBUG", json_logs=False)
