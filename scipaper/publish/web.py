@@ -34,9 +34,15 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
     pieces_html = []
     for i, piece in enumerate(edition.pieces):
         content_html = _content_to_html(piece.content)
+        paper_url = piece.paper_url or f"https://arxiv.org/abs/{piece.paper_id}"
+        title_html = f'<a href="{escape(paper_url)}">{escape(piece.title)}</a>'
+        authors_html = ""
+        if piece.authors:
+            authors_html = f'<p class="authors">{escape(", ".join(piece.authors))}</p>'
         pieces_html.append(
             f'<article class="piece" id="{escape(piece.paper_id)}">'
-            f'<h2>{escape(piece.title)}</h2>'
+            f'<h2>{title_html}</h2>'
+            f'{authors_html}'
             f'<p class="hook">{escape(piece.hook)}</p>'
             f'<div class="content">{content_html}</div>'
             f'</article>'
@@ -78,6 +84,9 @@ header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; let
 .divider {{ border: none; border-top: 4px solid #000; margin: 0 0 40px; }}
 .piece {{ margin-bottom: 40px; padding-bottom: 30px; border-bottom: 2px solid #000; }}
 .piece h2 {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 24px; font-weight: 900; margin-bottom: 4px; }}
+.piece h2 a {{ text-decoration: none; color: inherit; border-bottom: 2px solid #000; }}
+.piece h2 a:hover {{ color: #e63b19; border-bottom-color: #e63b19; }}
+.piece .authors {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #666; margin-bottom: 12px; }}
 .hook {{ color: #333; font-style: italic; margin-top: 0; margin-bottom: 16px; }}
 .content {{ font-size: 17px; }}
 .content p {{ margin-bottom: 14px; }}
