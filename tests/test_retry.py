@@ -130,3 +130,81 @@ async def test_retries_on_httpx_timeout():
 
     assert await httpx_times_out() == "done"
     assert call_count == 3
+
+
+@pytest.mark.asyncio
+async def test_retries_on_http_429():
+    """HTTP 429 (rate limited) is retryable."""
+    import httpx
+
+    call_count = 0
+
+    @_fast_retry
+    async def rate_limited():
+        nonlocal call_count
+        call_count += 1
+        if call_count < 3:
+            response = httpx.Response(429, request=httpx.Request("GET", "https://example.com"))
+            raise httpx.HTTPStatusError("rate limited", request=response.request, response=response)
+        return "ok"
+
+    assert await rate_limited() == "ok"
+    assert call_count == 3
+
+
+@pytest.mark.asyncio
+async def test_retries_on_http_503():
+    """HTTP 503 (service unavailable) is retryable."""
+    import httpx
+
+    call_count = 0
+
+    @_fast_retry
+    async def unavailable():
+        nonlocal call_count
+        call_count += 1
+        if call_count < 3:
+            response = httpx.Response(503, request=httpx.Request("GET", "https://example.com"))
+            raise httpx.HTTPStatusError("unavailable", request=response.request, response=response)
+        return "ok"
+
+    assert await unavailable() == "ok"
+    assert call_count == 3
+
+
+@pytest.mark.asyncio
+async def test_does_not_retry_http_400():
+    """HTTP 400 (bad request) is NOT retryable."""
+    import httpx
+
+    call_count = 0
+
+    @_fast_retry
+    async def bad_request():
+        nonlocal call_count
+        call_count += 1
+        response = httpx.Response(400, request=httpx.Request("GET", "https://example.com"))
+        raise httpx.HTTPStatusError("bad request", request=response.request, response=response)
+
+    with pytest.raises(httpx.HTTPStatusError):
+        await bad_request()
+
+    assert call_count == 1
+
+
+@pytest.mark.asyncio
+async def test_retries_on_anthropic_rate_limit():
+    """anthropic.RateLimitError is retryable."""
+    call_count = 0
+
+    @_fast_retry
+    async def anthropic_limited():
+        nonlocal call_count
+        call_count += 1
+        if call_count < 3:
+            from scipaper.retry import RateLimitSentinel
+            raise RateLimitSentinel("rate limited")
+        return "ok"
+
+    assert await anthropic_limited() == "ok"
+    assert call_count == 3
