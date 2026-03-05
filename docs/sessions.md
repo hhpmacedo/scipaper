@@ -90,3 +90,32 @@ Append-only session log. Each entry captures what happened and where to pick up.
 1. Configure Buttondown account (create, set username, paste welcome email from `docs/welcome-email.md`)
 2. Run first real edition end-to-end with live API keys
 3. Later: add CI-driven deployment via GitHub Actions + Vercel CLI
+
+---
+
+### 2026-03-05 17:52 — Deployment, Buttondown, Brutalist Redesign
+
+**What was done:**
+
+- Set up Vercel deployment: `vercel.json`, placeholder `public/` pages, design doc
+- Verified site live at signal.hugohmacedo.com
+- Updated Buttondown username to `signalhhmacedo` (code, tests, generated pages)
+- Redesigned all pages with bold brutalist style (Helvetica Neue chrome, thick black rules, red-orange `#e63b19` accent)
+- Added `/subscribed.html` confirmation page with JS form submission (stays on-domain)
+- Redesigned archive and edition templates to match brutalist system
+- Guided Buttondown account setup (name, welcome email)
+
+**Key decisions:**
+
+- Vercel hosting (Hugo's domain already there), manual-first deploy workflow
+- Bold/typographic brutalist: Helvetica Neue for chrome, Georgia serif for edition body readability
+- JS form submit to Buttondown API with `mode: 'no-cors'`, redirect to own confirmation page
+- Edition pages use smaller 48px SIGNAL header; landing uses 80px
+
+**State:** Site live at signal.hugohmacedo.com. All pages (landing, subscribed, archive, edition) share brutalist design. Buttondown configured. Subscribe flow works end-to-end. 205 tests passing. Pipeline modules still stubbed.
+
+**Next steps:**
+
+1. Implement pipeline stubs for first real edition (ingest → score → parse → write → verify → publish)
+2. Create sample anchor document (`data/anchors/`)
+3. Set up `.env` with API keys (Anthropic, Semantic Scholar, Buttondown)

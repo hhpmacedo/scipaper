@@ -7,10 +7,11 @@ Autonomous weekly newsletter pipeline that curates AI research papers and transl
 - **Status**: Active Development
 - **Live URL**: https://signal.hugohmacedo.com
 - **Last session**: 2026-03-05
-- **Current focus**: Site deployed to Vercel. Landing page live with Buttondown subscribe form. 205 tests pass, lint clean.
+- **Current focus**: Site live with brutalist design, Buttondown configured, subscribe flow working. 205 tests pass, lint clean.
 - **Next steps**:
-  1. Configure Buttondown account (create, set username, paste welcome email from `docs/welcome-email.md`)
-  2. Run first real edition end-to-end with live API keys
+  1. Implement pipeline stubs (ingest, score, pdf_parser, writer, edition, checker, email) for first real edition
+  2. Create sample anchor document (`data/anchors/`)
+  3. Set up `.env` with API keys (Anthropic, Semantic Scholar, Buttondown)
 - **Blockers**: None
 
 ## Team
