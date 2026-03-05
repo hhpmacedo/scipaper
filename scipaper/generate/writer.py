@@ -11,6 +11,7 @@ from typing import Optional
 
 from ..curate.models import Paper
 from ..retry import api_retry
+from ..text_utils import prepare_text_for_llm
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ async def generate_piece(
 
     user_prompt = GENERATION_USER_PROMPT.format(
         title=paper.title,
-        full_text=paper.full_text[:15000],  # Limit to avoid token overflow
+        full_text=prepare_text_for_llm(paper.full_text),
     )
 
     try:

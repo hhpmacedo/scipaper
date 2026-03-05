@@ -13,6 +13,7 @@ from enum import Enum
 from ..generate.writer import Piece
 from ..curate.models import Paper
 from ..retry import api_retry
+from ..text_utils import prepare_text_for_llm
 
 logger = logging.getLogger(__name__)
 
@@ -174,7 +175,7 @@ async def verify_piece(
 
     prompt = VERIFICATION_USER_PROMPT.format(
         piece_content=piece.content,
-        paper_full_text=paper.full_text[:15000],
+        paper_full_text=prepare_text_for_llm(paper.full_text),
     )
 
     try:
