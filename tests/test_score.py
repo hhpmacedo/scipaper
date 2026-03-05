@@ -21,6 +21,7 @@ from scipaper.curate.score import (
     compute_composite_score,
     score_narrative_potential,
     score_papers,
+    score_papers_two_pass,
     score_relevance,
 )
 
@@ -251,3 +252,43 @@ class TestScorePapers:
         assert len(scored) == 2
         assert scored[0].composite_score >= scored[1].composite_score
         assert all(isinstance(sp, ScoredPaper) for sp in scored)
+
+
+class TestTwoPassScoring:
+    def test_only_top_n_get_narrative_scored(self):
+        """Only top N by relevance should have LLM narrative scoring called."""
+        papers = [
+            make_paper(arxiv_id=str(i), title=f"Paper {i}", abstract=f"Abstract {i}")
+            for i in range(10)
+        ]
+        anchor = make_anchor()
+
+        llm_call_count = 0
+
+        async def mock_score_anthropic(prompt, config):
+            nonlocal llm_call_count
+            llm_call_count += 1
+            return 5.0
+
+        async def run_test():
+            with patch("scipaper.curate.score._score_with_anthropic", side_effect=mock_score_anthropic):
+                config = ScoringConfig(relevance_cutoff_count=3)
+                return await score_papers_two_pass(papers, anchor, config)
+
+        scored = run_async(run_test())
+        assert llm_call_count == 3  # Only top 3 got LLM scoring
+        assert len(scored) == 10  # All papers returned
+
+    def test_two_pass_sorts_by_composite(self):
+        papers = [
+            make_paper(arxiv_id="1", title="Irrelevant Paper", abstract="Fluid dynamics"),
+            make_paper(arxiv_id="2", title="Reasoning model scaling", abstract="Test-time compute for reasoning"),
+        ]
+        anchor = make_anchor()
+
+        async def run_test():
+            with patch("scipaper.curate.score._score_with_anthropic", side_effect=Exception("no api")):
+                return await score_papers_two_pass(papers, anchor)
+
+        scored = run_async(run_test())
+        assert scored[0].composite_score >= scored[1].composite_score

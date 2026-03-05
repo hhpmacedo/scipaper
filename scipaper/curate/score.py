@@ -2,6 +2,7 @@
 Paper scoring on two axes: Relevance and Narrative Potential.
 """
 
+import asyncio
 import json
 import logging
 import re
@@ -30,6 +31,7 @@ class ScoringConfig:
     llm_model: Optional[str] = None
     anthropic_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
+    relevance_cutoff_count: int = 20
 
 
 def _text_similarity(text: str, topics: List[str]) -> float:
@@ -401,4 +403,59 @@ async def score_papers(
     scored.sort(key=lambda x: x.composite_score, reverse=True)
 
     logger.info(f"Scored {len(scored)}/{len(papers)} papers")
+    return scored
+
+
+async def score_papers_two_pass(
+    papers: List[Paper],
+    anchor: AnchorDocument,
+    config: Optional[ScoringConfig] = None,
+) -> List[ScoredPaper]:
+    """
+    Two-pass scoring: relevance first (pure Python), then LLM narrative
+    only for the top N candidates.
+    """
+    config = config or ScoringConfig()
+
+    # Pass 1: score relevance for all papers (no LLM, instant)
+    relevance_scores = {}
+    for paper in papers:
+        relevance_scores[paper.arxiv_id] = await score_relevance(paper, anchor, config)
+
+    # Rank by relevance, take top N for LLM scoring
+    sorted_by_relevance = sorted(papers, key=lambda p: relevance_scores[p.arxiv_id], reverse=True)
+    top_candidates = sorted_by_relevance[:config.relevance_cutoff_count]
+    rest = sorted_by_relevance[config.relevance_cutoff_count:]
+
+    # Pass 2: LLM narrative scoring for top candidates only (concurrent)
+    sem = asyncio.Semaphore(5)
+
+    async def _score_one(paper):
+        async with sem:
+            narrative = await score_narrative_potential(paper, config)
+        relevance = relevance_scores[paper.arxiv_id]
+        composite = compute_composite_score(relevance, narrative)
+        return ScoredPaper(
+            paper=paper,
+            relevance_score=relevance,
+            narrative_potential_score=narrative,
+            composite_score=composite,
+        )
+
+    scored = list(await asyncio.gather(*[_score_one(p) for p in top_candidates]))
+
+    # Rest get heuristic narrative score (no LLM)
+    for paper in rest:
+        relevance = relevance_scores[paper.arxiv_id]
+        narrative = _heuristic_narrative_score(paper)
+        composite = compute_composite_score(relevance, narrative)
+        scored.append(ScoredPaper(
+            paper=paper,
+            relevance_score=relevance,
+            narrative_potential_score=narrative,
+            composite_score=composite,
+        ))
+
+    scored.sort(key=lambda x: x.composite_score, reverse=True)
+    logger.info(f"Two-pass scored {len(scored)} papers ({len(top_candidates)} with LLM)")
     return scored
