@@ -14,16 +14,16 @@ import pytest
 
 from .conftest import run_async
 
-from signal.curate.models import AnchorDocument, Author, Paper
-from signal.generate.writer import Piece
-from signal.pipeline import PipelineConfig, run_pipeline
-from signal.curate.score import ScoringConfig
-from signal.curate.select import SelectionConfig
-from signal.generate.writer import GenerationConfig
-from signal.generate.edition import AssemblyConfig
-from signal.verify.checker import VerificationConfig
-from signal.verify.style import StyleConfig
-from signal.publish.web import WebConfig
+from scipaper.curate.models import AnchorDocument, Author, Paper
+from scipaper.generate.writer import Piece
+from scipaper.pipeline import PipelineConfig, run_pipeline
+from scipaper.curate.score import ScoringConfig
+from scipaper.curate.select import SelectionConfig
+from scipaper.generate.writer import GenerationConfig
+from scipaper.generate.edition import AssemblyConfig
+from scipaper.verify.checker import VerificationConfig
+from scipaper.verify.style import StyleConfig
+from scipaper.publish.web import WebConfig
 
 
 # ── Fixtures ─────────────────────────────────────────────────────────
@@ -203,10 +203,10 @@ class TestEndToEndPipeline:
         config = self._make_config(tmp_path)
 
         with (
-            patch("signal.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock_narrative,
-            patch("signal.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen,
-            patch("signal.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
-            patch("signal.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt,
+            patch("scipaper.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock_narrative,
+            patch("scipaper.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen,
+            patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
+            patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt,
         ):
             # Narrative scoring: _score_with_anthropic returns a float
             mock_narrative.return_value = 7.0
@@ -215,7 +215,7 @@ class TestEndToEndPipeline:
             # Verification
             mock_verify.return_value = MOCK_VERIFICATION_RESPONSE
             # Quick takes
-            from signal.generate.edition import QuickTake
+            from scipaper.generate.edition import QuickTake
             mock_qt.return_value = QuickTake(
                 paper_id="runner",
                 title="Runner-Up Paper",
@@ -266,7 +266,7 @@ class TestEndToEndPipeline:
         anchor = make_anchor()
         config = PipelineConfig(week="2025-W10", skip_pdf_download=True)
 
-        with patch("signal.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock:
+        with patch("scipaper.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock:
             mock.return_value = 5.0
             result = run_async(run_pipeline(anchor, config, papers=[]))
 
@@ -291,14 +291,14 @@ class TestEndToEndPipeline:
             return MOCK_GENERATION_RESPONSE
 
         with (
-            patch("signal.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock_narrative,
-            patch("signal.generate.writer._generate_with_anthropic", new=flaky_generate),
-            patch("signal.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
-            patch("signal.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt,
+            patch("scipaper.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock_narrative,
+            patch("scipaper.generate.writer._generate_with_anthropic", new=flaky_generate),
+            patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
+            patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt,
         ):
             mock_narrative.return_value = 7.0
             mock_verify.return_value = MOCK_VERIFICATION_RESPONSE
-            from signal.generate.edition import QuickTake
+            from scipaper.generate.edition import QuickTake
             mock_qt.return_value = QuickTake(
                 paper_id="r", title="R", one_liner="Summary.", paper_url="https://arxiv.org"
             )
@@ -332,9 +332,9 @@ class TestEndToEndPipeline:
         }"""
 
         with (
-            patch("signal.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock_narrative,
-            patch("signal.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen,
-            patch("signal.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
+            patch("scipaper.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock_narrative,
+            patch("scipaper.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen,
+            patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
         ):
             mock_narrative.return_value = 7.0
             mock_gen.return_value = MOCK_GENERATION_RESPONSE
@@ -353,15 +353,15 @@ class TestEndToEndPipeline:
         config = self._make_config(tmp_path)
 
         with (
-            patch("signal.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock_narrative,
-            patch("signal.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen,
-            patch("signal.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
-            patch("signal.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt,
+            patch("scipaper.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock_narrative,
+            patch("scipaper.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen,
+            patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
+            patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt,
         ):
             mock_narrative.return_value = 7.0
             mock_gen.return_value = MOCK_GENERATION_RESPONSE
             mock_verify.return_value = MOCK_VERIFICATION_RESPONSE
-            from signal.generate.edition import QuickTake
+            from scipaper.generate.edition import QuickTake
             mock_qt.return_value = QuickTake(
                 paper_id="r", title="R", one_liner="S.", paper_url="https://arxiv.org"
             )

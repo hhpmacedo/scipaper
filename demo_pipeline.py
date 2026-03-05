@@ -15,15 +15,15 @@ from unittest.mock import AsyncMock, patch
 # Avoid stdlib signal collision
 loop = asyncio.new_event_loop()
 
-from signal.curate.models import AnchorDocument, Author, Paper
-from signal.curate.score import ScoringConfig, score_relevance, score_narrative_potential
-from signal.curate.select import SelectionConfig, select_edition_papers, get_runners_up
-from signal.generate.writer import GenerationConfig, generate_piece, extract_citations
-from signal.verify.checker import VerificationConfig, verify_piece
-from signal.verify.style import StyleConfig, check_style_compliance
-from signal.generate.edition import AssemblyConfig, assemble_edition, generate_edition_subject
-from signal.publish.email import render_edition_html, render_edition_text
-from signal.publish.web import WebConfig, generate_edition_page, generate_rss_feed
+from scipaper.curate.models import AnchorDocument, Author, Paper
+from scipaper.curate.score import ScoringConfig, score_relevance, score_narrative_potential
+from scipaper.curate.select import SelectionConfig, select_edition_papers, get_runners_up
+from scipaper.generate.writer import GenerationConfig, generate_piece, extract_citations
+from scipaper.verify.checker import VerificationConfig, verify_piece
+from scipaper.verify.style import StyleConfig, check_style_compliance
+from scipaper.generate.edition import AssemblyConfig, assemble_edition, generate_edition_subject
+from scipaper.publish.email import render_edition_html, render_edition_text
+from scipaper.publish.web import WebConfig, generate_edition_page, generate_rss_feed
 
 
 # ── Sample data ──────────────────────────────────────────────────────
@@ -240,12 +240,12 @@ async def demo():
     print(f"  Boost keywords: {', '.join(ANCHOR.boost_keywords)}")
 
     # Score relevance (no LLM needed)
-    from signal.curate.models import ScoredPaper
+    from scipaper.curate.models import ScoredPaper
     scored_papers = []
     for paper in all_papers:
         rel = await score_relevance(paper, ANCHOR)
         # Use heuristic for narrative (no LLM in demo)
-        from signal.curate.score import _heuristic_narrative_score
+        from scipaper.curate.score import _heuristic_narrative_score
         nar = _heuristic_narrative_score(paper)
         composite = (rel + nar) / 2
         sp = ScoredPaper(
@@ -284,7 +284,7 @@ async def demo():
     hr("STAGE 3: CONTENT GENERATION")
     print(f"\n  Generating piece for: {SAMPLE_PAPER.title}")
 
-    with patch("signal.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen:
+    with patch("scipaper.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen:
         mock_gen.return_value = MOCK_GENERATED_PIECE
         piece = await generate_piece(SAMPLE_PAPER, GenerationConfig(llm_provider="anthropic"))
 
@@ -309,7 +309,7 @@ async def demo():
     # ━━ STAGE 4: VERIFICATION ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     hr("STAGE 4: VERIFICATION")
 
-    with patch("signal.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify:
+    with patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify:
         mock_verify.return_value = MOCK_VERIFICATION_RESPONSE
         report = await verify_piece(piece, SAMPLE_PAPER, VerificationConfig(llm_provider="anthropic"))
 
@@ -346,8 +346,8 @@ async def demo():
 
     piece.verified = True
 
-    from signal.generate.edition import QuickTake
-    with patch("signal.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt:
+    from scipaper.generate.edition import QuickTake
+    with patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt:
         mock_qt.side_effect = [
             QuickTake(
                 paper_id=sp.paper.arxiv_id,

@@ -9,7 +9,7 @@ import pytest
 
 from .conftest import run_async
 
-from signal.generate.pdf_parser import (
+from scipaper.generate.pdf_parser import (
     ParsedPaper,
     ParserConfig,
     PyMuPDFParser,
@@ -85,7 +85,7 @@ class TestParseChain:
 
         with patch.object(PyMuPDFParser, "parse", return_value=None):
             with patch(
-                "signal.generate.pdf_parser.LLMParser.parse",
+                "scipaper.generate.pdf_parser.LLMParser.parse",
                 return_value=mock_parsed,
             ):
                 result = run_async(
@@ -110,7 +110,7 @@ class TestDownloadPaperPdf:
         mock_response.content = b"%PDF-1.4 fake content"
         mock_response.raise_for_status = MagicMock()
 
-        with patch("signal.generate.pdf_parser.httpx.AsyncClient") as MockClient:
+        with patch("scipaper.generate.pdf_parser.httpx.AsyncClient") as MockClient:
             mock_client = AsyncMock()
             mock_client.get = AsyncMock(return_value=mock_response)
             mock_client.__aenter__ = AsyncMock(return_value=mock_client)

@@ -23,7 +23,7 @@ from .models import AnchorDocument, Paper
 from .score import ScoringConfig, score_papers
 from .select import SelectionConfig, select_edition_papers, get_runners_up
 
-logger = logging.getLogger("signal.curate")
+logger = logging.getLogger("scipaper.curate")
 
 DATA_DIR = Path("data")
 PAPERS_FILE = DATA_DIR / "papers" / "latest.json"

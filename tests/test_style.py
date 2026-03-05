@@ -6,7 +6,7 @@ import pytest
 
 from .conftest import run_async
 
-from signal.verify.style import (
+from scipaper.verify.style import (
     StyleConfig,
     check_banned_words,
     check_citations,
@@ -14,7 +14,7 @@ from signal.verify.style import (
     check_style_compliance,
     check_word_count,
 )
-from signal.generate.writer import Piece
+from scipaper.generate.writer import Piece
 
 
 def make_piece(content=None, **kwargs):

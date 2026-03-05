@@ -9,7 +9,7 @@ import pytest
 
 from .conftest import run_async
 
-from signal.generate.edition import (
+from scipaper.generate.edition import (
     AssemblyConfig,
     Edition,
     QuickTake,
@@ -18,8 +18,8 @@ from signal.generate.edition import (
     generate_edition_subject,
     generate_quick_take,
 )
-from signal.generate.writer import Piece
-from signal.curate.models import Author, Paper, ScoredPaper
+from scipaper.generate.writer import Piece
+from scipaper.curate.models import Author, Paper, ScoredPaper
 
 
 def make_piece(paper_id="2403.12345", title="Test Piece", hook="A surprising finding."):
@@ -98,7 +98,7 @@ class TestAssembleEdition:
         runners = [make_scored_paper(arxiv_id=str(i + 10)) for i in range(2)]
 
         # Mock generate_quick_take to avoid LLM calls
-        with patch("signal.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt:
+        with patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt:
             mock_qt.side_effect = [
                 QuickTake(paper_id=str(i + 10), title=f"Paper {i}", one_liner="Summary.", paper_url="https://arxiv.org")
                 for i in range(2)
@@ -122,7 +122,7 @@ class TestAssembleEdition:
         pieces = [make_piece()]
         runners = [make_scored_paper(arxiv_id="r1")]
 
-        with patch("signal.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt:
+        with patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt:
             mock_qt.side_effect = Exception("API error")
             edition = run_async(assemble_edition(pieces, runners, "2025-W10", 1))
 

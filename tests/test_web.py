@@ -8,7 +8,7 @@ import pytest
 
 from .conftest import run_async
 
-from signal.publish.web import (
+from scipaper.publish.web import (
     WebConfig,
     generate_edition_page,
     generate_index_page,
@@ -16,8 +16,8 @@ from signal.publish.web import (
     generate_rss_feed,
     generate_web_archive,
 )
-from signal.generate.edition import Edition, QuickTake
-from signal.generate.writer import Piece
+from scipaper.generate.edition import Edition, QuickTake
+from scipaper.generate.writer import Piece
 
 
 def make_piece(paper_id="2403.12345", title="Test Piece", hook="A test hook."):

@@ -8,7 +8,7 @@ import pytest
 
 from .conftest import run_async
 
-from signal.publish.email import (
+from scipaper.publish.email import (
     DeliveryReport,
     EmailConfig,
     _content_to_html,
@@ -16,8 +16,8 @@ from signal.publish.email import (
     render_edition_text,
     send_edition_email,
 )
-from signal.generate.edition import Edition, QuickTake
-from signal.generate.writer import Piece
+from scipaper.generate.edition import Edition, QuickTake
+from scipaper.generate.writer import Piece
 
 
 def make_piece(paper_id="2403.12345", title="Test Piece", hook="A test hook."):
@@ -131,7 +131,7 @@ class TestSendEditionEmail:
         edition = make_edition()
         config = EmailConfig(provider="resend", api_key="test-key")
 
-        with patch("signal.publish.email._send_via_resend", new_callable=AsyncMock) as mock_send:
+        with patch("scipaper.publish.email._send_via_resend", new_callable=AsyncMock) as mock_send:
             mock_send.return_value = (2, 0, [])
             report = run_async(
                 send_edition_email(edition, ["a@example.com", "b@example.com"], config)

@@ -8,7 +8,7 @@ import pytest
 
 from .conftest import run_async
 
-from signal.verify.checker import (
+from scipaper.verify.checker import (
     IssueSeverity,
     IssueType,
     VerificationConfig,
@@ -20,8 +20,8 @@ from signal.verify.checker import (
     attempt_auto_fix,
     verify_piece,
 )
-from signal.generate.writer import Piece
-from signal.curate.models import Author, Paper
+from scipaper.generate.writer import Piece
+from scipaper.curate.models import Author, Paper
 
 
 def make_piece(**kwargs):
@@ -199,7 +199,7 @@ class TestVerifyPiece:
         paper = make_paper()
         json_resp = '{"claims_checked": 2, "claims_verified": 2, "claims_failed": 0, "issues": []}'
 
-        with patch("signal.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock:
+        with patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock:
             mock.return_value = json_resp
             report = run_async(verify_piece(piece, paper))
 
@@ -212,7 +212,7 @@ class TestVerifyPiece:
         )
         paper = make_paper()
 
-        with patch("signal.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock:
+        with patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock:
             mock.side_effect = Exception("API error")
             report = run_async(verify_piece(piece, paper))
 
@@ -252,7 +252,7 @@ class TestAttemptAutoFix:
         )]
 
         # Force LLM to fail so fallback text replacement is used
-        with patch("signal.verify.checker.anthropic", create=True) as mock_anthropic:
+        with patch("scipaper.verify.checker.anthropic", create=True) as mock_anthropic:
             mock_anthropic.AsyncAnthropic.side_effect = Exception("no API")
             result = run_async(attempt_auto_fix(piece, issues))
 

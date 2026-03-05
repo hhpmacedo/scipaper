@@ -9,8 +9,8 @@ import pytest
 
 from .conftest import run_async
 
-from signal.curate.models import AnchorDocument, Author, Paper, ScoredPaper
-from signal.curate.score import (
+from scipaper.curate.models import AnchorDocument, Author, Paper, ScoredPaper
+from scipaper.curate.score import (
     ScoringConfig,
     _citation_velocity,
     _heuristic_narrative_score,
@@ -229,7 +229,7 @@ class TestScoreNarrativePotential:
             anthropic_api_key="invalid-key",
         )
 
-        with patch("signal.curate.score._score_with_anthropic", side_effect=Exception("API error")):
+        with patch("scipaper.curate.score._score_with_anthropic", side_effect=Exception("API error")):
             score = run_async(score_narrative_potential(paper, config))
 
         assert 1.0 <= score <= 10.0
@@ -244,7 +244,7 @@ class TestScorePapers:
         anchor = make_anchor()
 
         async def run_test():
-            with patch("signal.curate.score._score_with_anthropic", side_effect=Exception("no api")):
+            with patch("scipaper.curate.score._score_with_anthropic", side_effect=Exception("no api")):
                 return await score_papers(papers, anchor)
 
         scored = run_async(run_test())

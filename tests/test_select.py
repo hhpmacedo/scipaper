@@ -6,8 +6,8 @@ from datetime import datetime
 
 import pytest
 
-from signal.curate.models import Author, Paper, ScoredPaper
-from signal.curate.select import (
+from scipaper.curate.models import Author, Paper, ScoredPaper
+from scipaper.curate.select import (
     SelectionConfig,
     _get_institutions,
     _get_topics,

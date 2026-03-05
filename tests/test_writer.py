@@ -8,7 +8,7 @@ import pytest
 
 from .conftest import run_async
 
-from signal.generate.writer import (
+from scipaper.generate.writer import (
     GenerationConfig,
     Piece,
     extract_citations,
@@ -16,7 +16,7 @@ from signal.generate.writer import (
     validate_citations,
     _parse_generation_response,
 )
-from signal.curate.models import Author, Paper
+from scipaper.curate.models import Author, Paper
 
 
 def make_paper(**kwargs):
@@ -127,7 +127,7 @@ class TestGeneratePiece:
     def test_generate_with_anthropic(self):
         paper = make_paper()
 
-        with patch("signal.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen:
+        with patch("scipaper.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen:
             mock_gen.return_value = '{"title": "Test Piece", "hook": "A hook.", "content": "Body [§1] text [Abstract]."}'
             piece = run_async(generate_piece(paper, GenerationConfig(llm_provider="anthropic")))
 
@@ -138,7 +138,7 @@ class TestGeneratePiece:
     def test_generate_with_openai(self):
         paper = make_paper()
 
-        with patch("signal.generate.writer._generate_with_openai", new_callable=AsyncMock) as mock_gen:
+        with patch("scipaper.generate.writer._generate_with_openai", new_callable=AsyncMock) as mock_gen:
             mock_gen.return_value = '{"title": "OAI Piece", "hook": "Hook.", "content": "Text [§2.1]."}'
             piece = run_async(generate_piece(paper, GenerationConfig(llm_provider="openai")))
 

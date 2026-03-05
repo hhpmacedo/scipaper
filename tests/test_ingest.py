@@ -10,14 +10,14 @@ import pytest
 
 from .conftest import run_async
 
-from signal.curate.ingest import (
+from scipaper.curate.ingest import (
     ArxivSource,
     IngestConfig,
     SemanticScholarSource,
     SocialSignalSource,
     _deduplicate,
 )
-from signal.curate.models import Author, Paper
+from scipaper.curate.models import Author, Paper
 
 
 def make_paper(arxiv_id="2403.12345", title="Test Paper", **kwargs):
@@ -104,7 +104,7 @@ class TestArxivSource:
         config = IngestConfig(max_papers=10)
         source = ArxivSource(config)
 
-        with patch("signal.curate.ingest.httpx.AsyncClient") as MockClient:
+        with patch("scipaper.curate.ingest.httpx.AsyncClient") as MockClient:
             mock_client = AsyncMock()
             mock_client.get = AsyncMock(return_value=mock_response)
             mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -130,7 +130,7 @@ class TestSemanticScholarSource:
         }
         mock_response.raise_for_status = MagicMock()
 
-        with patch("signal.curate.ingest.httpx.AsyncClient") as MockClient:
+        with patch("scipaper.curate.ingest.httpx.AsyncClient") as MockClient:
             mock_client = AsyncMock()
             mock_client.get = AsyncMock(return_value=mock_response)
             mock_client.__aenter__ = AsyncMock(return_value=mock_client)
@@ -148,7 +148,7 @@ class TestSemanticScholarSource:
         mock_response = MagicMock()
         mock_response.status_code = 404
 
-        with patch("signal.curate.ingest.httpx.AsyncClient") as MockClient:
+        with patch("scipaper.curate.ingest.httpx.AsyncClient") as MockClient:
             mock_client = AsyncMock()
             mock_client.get = AsyncMock(return_value=mock_response)
             mock_client.__aenter__ = AsyncMock(return_value=mock_client)
