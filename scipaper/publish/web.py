@@ -16,6 +16,44 @@ from .email import _content_to_html
 logger = logging.getLogger(__name__)
 
 
+def _og_tags(
+    title: str,
+    description: str,
+    url: str,
+    site_name: str = "Signal",
+    og_type: str = "website",
+    image_url: str = "",
+) -> str:
+    """Generate Open Graph and Twitter Card meta tags."""
+    tags = [
+        f'<meta property="og:title" content="{escape(title)}">',
+        f'<meta property="og:description" content="{escape(description)}">',
+        f'<meta property="og:url" content="{escape(url)}">',
+        f'<meta property="og:site_name" content="{escape(site_name)}">',
+        f'<meta property="og:type" content="{og_type}">',
+        f'<meta name="twitter:card" content="summary_large_image">',
+        f'<meta name="twitter:title" content="{escape(title)}">',
+        f'<meta name="twitter:description" content="{escape(description)}">',
+        f'<meta name="description" content="{escape(description)}">',
+    ]
+    if image_url:
+        tags.append(f'<meta property="og:image" content="{escape(image_url)}">')
+        tags.append(f'<meta name="twitter:image" content="{escape(image_url)}">')
+    return "\n".join(tags)
+
+
+OG_IMAGE_SVG = """<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#fff"/>
+  <rect y="0" width="1200" height="16" fill="#000"/>
+  <text x="80" y="280" font-family="Helvetica Neue, Arial, sans-serif" font-size="120" font-weight="900" letter-spacing="-4" text-transform="uppercase" fill="#000">SIGNAL</text>
+  <text x="80" y="360" font-family="Helvetica Neue, Arial, sans-serif" font-size="28" font-weight="400" letter-spacing="2" fill="#000">AI RESEARCH FOR THE CURIOUS</text>
+  <rect x="80" y="400" width="1040" height="4" fill="#000"/>
+  <text x="80" y="460" font-family="Georgia, Times New Roman, serif" font-size="24" fill="#333">Weekly. Grounded in the source. No hype.</text>
+  <rect x="80" y="520" width="160" height="48" rx="0" fill="#e63b19"/>
+  <text x="96" y="552" font-family="Helvetica Neue, Arial, sans-serif" font-size="16" font-weight="700" letter-spacing="1" fill="#fff">SUBSCRIBE</text>
+</svg>"""
+
+
 @dataclass
 class WebConfig:
     """Web archive configuration."""
@@ -65,12 +103,19 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
             f'</section>'
         )
 
+    og_description = edition.pieces[0].hook if edition.pieces else "AI research, translated."
+    og_title = f"Signal #{edition.issue_number} — {edition.week}"
+    og_url = f"{config.site_url}/editions/{edition.week}.html"
+    og_image = f"{config.site_url}/og-image.svg"
+    og = _og_tags(og_title, og_description, og_url, image_url=og_image, og_type="article")
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Signal #{edition.issue_number} &mdash; {edition.week}</title>
+{og}
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <link rel="alternate" type="application/json" title="Signal JSON Feed" href="{config.site_url}/feed.json">
 <style>
@@ -147,12 +192,20 @@ def generate_landing_page(
 
     subscribe_url = f"https://buttondown.com/api/emails/embed-subscribe/{config.buttondown_username}"
 
+    og = _og_tags(
+        config.site_title,
+        "A weekly newsletter that translates AI research papers into clear, rigorous prose. No hype. Every claim grounded in the source.",
+        config.site_url,
+        image_url=f"{config.site_url}/og-image.svg",
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{escape(config.site_title)}</title>
+{og}
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <link rel="alternate" type="application/json" title="Signal JSON Feed" href="{config.site_url}/feed.json">
 <style>
@@ -240,12 +293,20 @@ def generate_subscribed_page(config: Optional[WebConfig] = None) -> str:
     """
     config = config or WebConfig()
 
+    og = _og_tags(
+        f"Subscribed — {config.site_title}",
+        "You're in. AI research, translated. Every Tuesday.",
+        f"{config.site_url}/subscribed.html",
+        image_url=f"{config.site_url}/og-image.svg",
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Subscribed &mdash; {escape(config.site_title)}</title>
+{og}
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 body {{ font-family: "Helvetica Neue", Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 40px 20px; color: #000; line-height: 1.5; }}
@@ -306,12 +367,20 @@ def generate_archive_page(
             f'</li>'
         )
 
+    og = _og_tags(
+        f"Archive — {config.site_title}",
+        "Every edition of Signal. AI research papers, translated into clear prose.",
+        f"{config.site_url}/archive.html",
+        image_url=f"{config.site_url}/og-image.svg",
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Archive &mdash; {escape(config.site_title)}</title>
+{og}
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -359,12 +428,20 @@ def generate_about_page(config: Optional[WebConfig] = None) -> str:
     """
     config = config or WebConfig()
 
+    og = _og_tags(
+        "How It Works — Signal",
+        "How Signal finds, writes about, and verifies AI research papers — autonomously, with every claim grounded in the source.",
+        f"{config.site_url}/about.html",
+        image_url=f"{config.site_url}/og-image.svg",
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>How It Works &mdash; Signal</title>
+{og}
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -487,6 +564,9 @@ async def generate_web_archive(
     for edition in editions:
         page_html = generate_edition_page(edition, config)
         (editions_dir / f"{edition.week}.html").write_text(page_html)
+
+    # Generate OG image
+    (output / "og-image.svg").write_text(OG_IMAGE_SVG)
 
     # Generate feeds
     rss = generate_rss_feed(editions, config)
