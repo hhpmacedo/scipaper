@@ -27,7 +27,7 @@ class ScoringConfig:
 
     # LLM settings for narrative potential
     llm_provider: str = "anthropic"
-    llm_model: str = "claude-sonnet-4-20250514"
+    llm_model: Optional[str] = None
     anthropic_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
 
@@ -273,9 +273,10 @@ async def _score_with_anthropic(prompt: str, config: ScoringConfig) -> float:
     """Score using Anthropic API."""
     import anthropic
 
+    model = config.llm_model or "claude-sonnet-4-20250514"
     client = anthropic.AsyncAnthropic(api_key=config.anthropic_api_key)
     response = await client.messages.create(
-        model=config.llm_model,
+        model=model,
         max_tokens=300,
         messages=[{"role": "user", "content": prompt}],
     )
@@ -288,9 +289,10 @@ async def _score_with_openai(prompt: str, config: ScoringConfig) -> float:
     """Score using OpenAI API."""
     from openai import AsyncOpenAI
 
+    model = config.llm_model or "claude-sonnet-4-20250514"
     client = AsyncOpenAI(api_key=config.openai_api_key)
     response = await client.chat.completions.create(
-        model=config.llm_model,
+        model=model,
         max_tokens=300,
         messages=[{"role": "user", "content": prompt}],
     )

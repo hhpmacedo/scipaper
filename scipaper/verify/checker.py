@@ -143,7 +143,7 @@ Return the corrected piece content only. Keep all valid citations intact. Remove
 class VerificationConfig:
     """Configuration for verification."""
     llm_provider: str = "anthropic"
-    llm_model: str = "claude-sonnet-4-20250514"
+    llm_model: Optional[str] = None
     anthropic_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
     max_retries: int = 2  # Retry with fixes before failing
@@ -186,7 +186,7 @@ async def verify_piece(
         else:
             raise ValueError(f"Unknown LLM provider: {config.llm_provider}")
 
-        report = _parse_verification_response(response_text, paper.arxiv_id, config.llm_model)
+        report = _parse_verification_response(response_text, paper.arxiv_id, config.llm_model or "claude-sonnet-4-20250514")
 
     except Exception as e:
         logger.warning(f"LLM verification failed, using heuristic: {e}")
@@ -205,9 +205,10 @@ async def _verify_with_anthropic(prompt: str, config: VerificationConfig) -> str
     """Verify using Anthropic API."""
     import anthropic
 
+    model = config.llm_model or "claude-sonnet-4-20250514"
     client = anthropic.AsyncAnthropic(api_key=config.anthropic_api_key)
     response = await client.messages.create(
-        model=config.llm_model,
+        model=model,
         max_tokens=3000,
         system=VERIFICATION_SYSTEM_PROMPT,
         messages=[{"role": "user", "content": prompt}],
@@ -221,9 +222,10 @@ async def _verify_with_openai(prompt: str, config: VerificationConfig) -> str:
     """Verify using OpenAI API."""
     from openai import AsyncOpenAI
 
+    model = config.llm_model or "claude-sonnet-4-20250514"
     client = AsyncOpenAI(api_key=config.openai_api_key)
     response = await client.chat.completions.create(
-        model=config.llm_model,
+        model=model,
         max_tokens=3000,
         messages=[
             {"role": "system", "content": VERIFICATION_SYSTEM_PROMPT},
@@ -384,6 +386,7 @@ async def attempt_auto_fix(
 
     # Try LLM-based fix
     try:
+        model = config.llm_model or "claude-sonnet-4-20250514"
         issues_json = json.dumps([
             {
                 "claim": i.claim_text,
@@ -402,7 +405,7 @@ async def attempt_auto_fix(
             import anthropic
             client = anthropic.AsyncAnthropic(api_key=config.anthropic_api_key)
             response = await client.messages.create(
-                model=config.llm_model,
+                model=model,
                 max_tokens=4000,
                 messages=[{"role": "user", "content": prompt}],
             )
@@ -411,7 +414,7 @@ async def attempt_auto_fix(
             from openai import AsyncOpenAI
             client = AsyncOpenAI(api_key=config.openai_api_key)
             response = await client.chat.completions.create(
-                model=config.llm_model,
+                model=model,
                 max_tokens=4000,
                 messages=[{"role": "user", "content": prompt}],
             )

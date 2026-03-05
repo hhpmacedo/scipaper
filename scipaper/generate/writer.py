@@ -30,9 +30,17 @@ class Piece:
     generated_at: str
     model_used: str
 
+    # Paper metadata for display
+    paper_url: str = ""
+    authors: list = None  # List of author name strings
+
     # Verification status
     verified: bool = False
     verification_report: Optional[dict] = None
+
+    def __post_init__(self):
+        if self.authors is None:
+            self.authors = []
 
 
 GENERATION_SYSTEM_PROMPT = """You are a writer for Signal, a newsletter that explains AI research to technically literate non-researchers.
@@ -94,7 +102,7 @@ Remember:
 class GenerationConfig:
     """Configuration for content generation."""
     llm_provider: str = "anthropic"
-    llm_model: str = "claude-sonnet-4-20250514"
+    llm_model: Optional[str] = None
     anthropic_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
     max_tokens: int = 4000
@@ -159,7 +167,9 @@ async def generate_piece(
         word_count=len(content.split()),
         citations=citations,
         generated_at=datetime.now(timezone.utc).isoformat(),
-        model_used=config.llm_model,
+        model_used=config.llm_model or "claude-sonnet-4-20250514",
+        paper_url=paper.pdf_url or f"https://arxiv.org/abs/{paper.arxiv_id}",
+        authors=[a.name for a in paper.authors],
     )
 
     logger.info(
@@ -175,9 +185,10 @@ async def _generate_with_anthropic(prompt: str, config: GenerationConfig) -> str
     """Generate content using Anthropic API."""
     import anthropic
 
+    model = config.llm_model or "claude-sonnet-4-20250514"
     client = anthropic.AsyncAnthropic(api_key=config.anthropic_api_key)
     response = await client.messages.create(
-        model=config.llm_model,
+        model=model,
         max_tokens=config.max_tokens,
         temperature=config.temperature,
         system=GENERATION_SYSTEM_PROMPT,
@@ -192,9 +203,10 @@ async def _generate_with_openai(prompt: str, config: GenerationConfig) -> str:
     """Generate content using OpenAI API."""
     from openai import AsyncOpenAI
 
+    model = config.llm_model or "claude-sonnet-4-20250514"
     client = AsyncOpenAI(api_key=config.openai_api_key)
     response = await client.chat.completions.create(
-        model=config.llm_model,
+        model=model,
         max_tokens=config.max_tokens,
         temperature=config.temperature,
         messages=[

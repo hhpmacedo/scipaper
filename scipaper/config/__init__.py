@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from typing import Optional, List
 from pathlib import Path
 
+DEFAULT_LLM_MODEL = "claude-sonnet-4-20250514"
+
 
 @dataclass
 class SignalConfig:
@@ -26,7 +28,7 @@ class SignalConfig:
     
     # LLM Settings
     llm_provider: str = "anthropic"  # anthropic, openai
-    llm_model: str = "claude-3-5-sonnet-20241022"
+    llm_model: str = "claude-sonnet-4-20250514"
     anthropic_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
     
@@ -57,7 +59,7 @@ class SignalConfig:
             env=os.getenv("SIGNAL_ENV", "development"),
             
             llm_provider=os.getenv("LLM_PROVIDER", "anthropic"),
-            llm_model=os.getenv("LLM_MODEL", "claude-3-5-sonnet-20241022"),
+            llm_model=os.getenv("LLM_MODEL", DEFAULT_LLM_MODEL),
             anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
             openai_api_key=os.getenv("OPENAI_API_KEY"),
             
