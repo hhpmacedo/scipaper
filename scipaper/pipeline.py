@@ -8,6 +8,7 @@ Wires together all stages:
   4. Publish: Assemble edition → Email + Web
 """
 
+import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
@@ -16,7 +17,7 @@ from typing import List, Optional
 
 from .curate.ingest import IngestConfig, ingest_papers
 from .curate.models import AnchorDocument, Paper
-from .curate.score import ScoringConfig, score_papers
+from .curate.score import ScoringConfig, score_papers, score_papers_two_pass
 from .curate.select import SelectionConfig, get_runners_up, select_edition_papers
 from .generate.edition import AssemblyConfig, Edition, assemble_edition
 from .generate.pdf_parser import ParserConfig, download_paper_pdf, parse_paper_pdf
@@ -51,6 +52,8 @@ class PipelineConfig:
     pdf_cache_dir: Path = Path("data/pdfs")
     max_verification_retries: int = 1
     skip_pdf_download: bool = False  # For testing without network
+    use_cache: bool = True
+    cache_db_path: Path = Path("data/cache.db")
 
 
 @dataclass
@@ -96,7 +99,7 @@ async def run_pipeline(
     result.papers_ingested = len(papers)
     logger.info(f"Ingested {len(papers)} papers")
 
-    scored = await score_papers(papers, anchor, config.scoring)
+    scored = await score_papers_two_pass(papers, anchor, config.scoring)
     result.papers_scored = len(scored)
     logger.info(f"Scored {len(scored)} papers")
 
@@ -110,34 +113,48 @@ async def run_pipeline(
     logger.info("Stage 2: Generating pieces")
     stage_start = time.time()
 
-    pieces = []
-    for sp in selected:
+    # Concurrent PDF download + generation
+    sem_pdf = asyncio.Semaphore(3)
+
+    async def _download_and_generate(sp):
         try:
             paper = sp.paper
 
             # Download and parse PDF if needed
-            if not paper.full_text and not config.skip_pdf_download:
-                pdf_path = await download_paper_pdf(
-                    paper.arxiv_id, config.pdf_cache_dir
-                )
-                parsed = await parse_paper_pdf(
-                    pdf_path, paper.arxiv_id, config.parser
-                )
-                paper.full_text = parsed.full_text
+            async with sem_pdf:
+                if not paper.full_text and not config.skip_pdf_download:
+                    pdf_path = await download_paper_pdf(
+                        paper.arxiv_id, config.pdf_cache_dir
+                    )
+                    parsed = await parse_paper_pdf(
+                        pdf_path, paper.arxiv_id, config.parser
+                    )
+                    paper.full_text = parsed.full_text
 
             if not paper.full_text:
                 logger.warning(f"No full text for {paper.arxiv_id}, skipping")
-                continue
+                return None
 
             piece = await generate_piece(paper, config.generation)
-            pieces.append((piece, paper))
-            result.pieces_generated += 1
             logger.info(f"Generated piece for {paper.arxiv_id}")
+            return (piece, paper)
 
         except Exception as e:
             msg = f"Generation failed for {sp.paper.arxiv_id}: {e}"
             logger.error(msg)
             result.errors.append(msg)
+            return None
+
+    gen_results = await asyncio.gather(
+        *[_download_and_generate(sp) for sp in selected],
+        return_exceptions=False,
+    )
+
+    pieces = []
+    for r in gen_results:
+        if r is not None:
+            pieces.append(r)
+            result.pieces_generated += 1
 
     logger.info(f"Stage 2 complete in {time.time() - stage_start:.1f}s")
 

@@ -60,6 +60,7 @@ async def cmd_run_pipeline(args) -> None:
         email=ButtondownConfig(api_key=os.environ.get("BUTTONDOWN_API_KEY")),
         web=WebConfig(),
         web_base_url=os.environ.get("SIGNAL_WEB_URL", "https://signal.hugohmacedo.com"),
+        use_cache=not getattr(args, "no_cache", False),
     )
 
     if getattr(args, "week", None):
@@ -130,6 +131,12 @@ def main() -> None:
         action="store_true",
         default=False,
         help="Emit logs as JSON (one object per line)",
+    )
+    parser.add_argument(
+        "--no-cache",
+        action="store_true",
+        default=False,
+        help="Bypass cache and force fresh LLM calls",
     )
 
     args = parser.parse_args()
