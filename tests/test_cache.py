@@ -1,6 +1,5 @@
 """Tests for the SQLite cache layer."""
 
-import json
 import tempfile
 from pathlib import Path
 
