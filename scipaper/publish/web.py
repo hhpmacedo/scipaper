@@ -20,8 +20,9 @@ logger = logging.getLogger(__name__)
 class WebConfig:
     """Web archive configuration."""
     output_dir: Path = Path("public")
-    site_url: str = "https://signal.example.com"
+    site_url: str = "https://signal.hugohmacedo.com"
     site_title: str = "Signal — AI Research for the Curious"
+    buttondown_username: str = "signal"
 
 
 def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) -> str:

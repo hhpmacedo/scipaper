@@ -52,6 +52,20 @@ def make_edition(week="2025-W10", issue_number=1, **kwargs):
     return Edition(**defaults)
 
 
+class TestWebConfig:
+    def test_default_buttondown_username(self):
+        config = WebConfig()
+        assert config.buttondown_username == "signal"
+
+    def test_custom_buttondown_username(self):
+        config = WebConfig(buttondown_username="hugo")
+        assert config.buttondown_username == "hugo"
+
+    def test_default_site_url(self):
+        config = WebConfig()
+        assert config.site_url == "https://signal.hugohmacedo.com"
+
+
 class TestGenerateEditionPage:
     def test_valid_html(self):
         edition = make_edition()
