@@ -2,7 +2,7 @@
 Tests for the paper scoring module.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -36,7 +36,7 @@ def make_paper(**kwargs):
             Author(name="Bob Jones", affiliation="Stanford University"),
         ],
         categories=["cs.AI", "cs.LG"],
-        published_date=datetime.utcnow() - timedelta(days=3),
+        published_date=datetime.now(timezone.utc) - timedelta(days=3),
         citation_count=5,
         hn_points=50,
     )
@@ -48,7 +48,7 @@ def make_anchor(**kwargs):
     defaults = dict(
         week="2025-W10",
         updated_by="test",
-        updated_at=datetime.utcnow(),
+        updated_at=datetime.now(timezone.utc),
         hot_topics=[
             "reasoning models and test-time compute",
             "multimodal understanding beyond CLIP",
@@ -131,7 +131,7 @@ class TestInstitutionScore:
 class TestCitationVelocity:
     def test_high_velocity(self):
         paper = make_paper(
-            published_date=datetime.utcnow() - timedelta(days=2),
+            published_date=datetime.now(timezone.utc) - timedelta(days=2),
             citation_count=5,
         )
         score = _citation_velocity(paper)

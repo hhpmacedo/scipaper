@@ -7,7 +7,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from .writer import Piece
 from ..curate.models import ScoredPaper
@@ -47,7 +47,7 @@ class Edition:
 
     def __post_init__(self):
         if self.created_at is None:
-            self.created_at = datetime.utcnow()
+            self.created_at = datetime.now(timezone.utc)
 
 
 @dataclass

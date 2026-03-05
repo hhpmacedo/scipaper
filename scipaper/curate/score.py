@@ -106,8 +106,8 @@ def _citation_velocity(paper: Paper) -> float:
     if not paper.published_date or paper.citation_count == 0:
         return 0.0
 
-    from datetime import datetime
-    days_since = (datetime.utcnow() - paper.published_date.replace(tzinfo=None)).days
+    from datetime import datetime, timezone
+    days_since = (datetime.now(timezone.utc).replace(tzinfo=None) - paper.published_date.replace(tzinfo=None)).days
     if days_since <= 0:
         days_since = 1
 

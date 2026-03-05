@@ -3,7 +3,7 @@ Tests for the paper ingestion module.
 """
 
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -27,7 +27,7 @@ def make_paper(arxiv_id="2403.12345", title="Test Paper", **kwargs):
         abstract="This paper presents a method for testing.",
         authors=[Author(name="Test Author", affiliation="Test University")],
         categories=["cs.AI"],
-        published_date=datetime.utcnow() - timedelta(days=2),
+        published_date=datetime.now(timezone.utc) - timedelta(days=2),
         pdf_url=f"https://arxiv.org/pdf/{arxiv_id}.pdf",
     )
     defaults.update(kwargs)
@@ -74,7 +74,7 @@ class TestArxivSource:
         assert " OR " in query
 
     def test_parse_entry(self):
-        published = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        published = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         xml_text = SAMPLE_ARXIV_RESPONSE.format(published=published)
         root = ET.fromstring(xml_text)
         ns = "http://www.w3.org/2005/Atom"
@@ -93,7 +93,7 @@ class TestArxivSource:
         assert paper.pdf_url is not None
 
     def test_fetch_parses_response(self):
-        published = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        published = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         xml_text = SAMPLE_ARXIV_RESPONSE.format(published=published)
 
         mock_response = MagicMock()

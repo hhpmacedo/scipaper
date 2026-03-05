@@ -6,7 +6,7 @@ all internal pipeline stages to verify the complete flow:
   Ingest → Score → Select → Generate → Verify → Style → Publish
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
@@ -74,7 +74,7 @@ def make_sample_papers():
                 Author(name="Bob Jones", affiliation="DeepMind"),
             ],
             categories=["cs.AI", "cs.CL"],
-            published_date=datetime.utcnow(),
+            published_date=datetime.now(timezone.utc),
             pdf_url="https://arxiv.org/pdf/2403.10001",
             citation_count=15,
             hn_points=50,
@@ -88,7 +88,7 @@ def make_sample_papers():
                 Author(name="Carol Lee", affiliation="Google Research"),
             ],
             categories=["cs.LG", "cs.CV"],
-            published_date=datetime.utcnow(),
+            published_date=datetime.now(timezone.utc),
             pdf_url="https://arxiv.org/pdf/2403.10002",
             citation_count=8,
             full_text=SAMPLE_FULL_TEXT.replace("chain-of-thought", "adapter").replace("GSM8K", "ImageNet"),
@@ -101,7 +101,7 @@ def make_sample_papers():
                 Author(name="Dave Park", affiliation="Anthropic Research"),
             ],
             categories=["cs.AI", "stat.ML"],
-            published_date=datetime.utcnow(),
+            published_date=datetime.now(timezone.utc),
             citation_count=25,
             hn_points=120,
             full_text=SAMPLE_FULL_TEXT.replace("chain-of-thought", "mixture-of-experts").replace("GSM8K", "MMLU"),
@@ -114,7 +114,7 @@ def make_sample_papers():
                 Author(name="Eve Wang", affiliation="MIT CSAIL"),
             ],
             categories=["cs.CR", "cs.AI"],
-            published_date=datetime.utcnow(),
+            published_date=datetime.now(timezone.utc),
             citation_count=3,
             full_text=SAMPLE_FULL_TEXT.replace("chain-of-thought", "watermarking").replace("GSM8K", "detection"),
         ),
@@ -126,7 +126,7 @@ def make_sample_papers():
                 Author(name="Frank Chen", affiliation="Meta AI"),
             ],
             categories=["cs.LG"],
-            published_date=datetime.utcnow(),
+            published_date=datetime.now(timezone.utc),
             citation_count=5,
             full_text=SAMPLE_FULL_TEXT.replace("chain-of-thought", "low-rank").replace("GSM8K", "WikiText"),
         ),
@@ -137,7 +137,7 @@ def make_anchor():
     return AnchorDocument(
         week="2025-W10",
         updated_by="test",
-        updated_at=datetime.utcnow(),
+        updated_at=datetime.now(timezone.utc),
         hot_topics=[
             "chain-of-thought reasoning",
             "scaling laws",

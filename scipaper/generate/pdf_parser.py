@@ -62,7 +62,7 @@ class PyMuPDFParser:
         r'^(\d+(?:\.\d+)*)\s+([A-Z][^\n]{2,80})$', re.MULTILINE
     )
 
-    def parse(self, pdf_path: Path, arxiv_id: str = "") -> Optional[ParsedPaper]:
+    async def parse(self, pdf_path: Path, arxiv_id: str = "") -> Optional[ParsedPaper]:
         """
         Extract text from PDF using PyMuPDF.
         """
@@ -198,21 +198,20 @@ class GROBIDParser:
     def __init__(self, grobid_url: str = "http://localhost:8070"):
         self.grobid_url = grobid_url
 
-    def parse(self, pdf_path: Path, arxiv_id: str = "") -> Optional[ParsedPaper]:
+    async def parse(self, pdf_path: Path, arxiv_id: str = "") -> Optional[ParsedPaper]:
         """
         Extract structured content using GROBID.
         """
-        import requests
-        from xml.etree import ElementTree as ET
-
         logger.info(f"Parsing {pdf_path} with GROBID")
 
         try:
             with open(pdf_path, "rb") as f:
-                response = requests.post(
+                pdf_bytes = f.read()
+
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(
                     f"{self.grobid_url}/api/processFulltextDocument",
-                    files={"input": f},
-                    timeout=60,
+                    files={"input": pdf_bytes},
                 )
 
             if response.status_code != 200:
@@ -222,7 +221,7 @@ class GROBIDParser:
             tei_xml = response.text
             return self._parse_tei(tei_xml, arxiv_id)
 
-        except requests.ConnectionError:
+        except httpx.ConnectError:
             logger.warning("GROBID server not available")
             return None
         except Exception as e:
@@ -298,7 +297,7 @@ class LLMParser:
     def __init__(self, model: str = "claude-sonnet-4-20250514"):
         self.model = model
 
-    def parse(self, pdf_path: Path, arxiv_id: str = "") -> Optional[ParsedPaper]:
+    async def parse(self, pdf_path: Path, arxiv_id: str = "") -> Optional[ParsedPaper]:
         """
         Extract structure using LLM (last resort).
 
@@ -363,7 +362,7 @@ async def parse_paper_pdf(
                 logger.warning(f"Unknown parser: {parser_name}")
                 continue
 
-            result = parser.parse(pdf_path, arxiv_id=arxiv_id)
+            result = await parser.parse(pdf_path, arxiv_id=arxiv_id)
             if result:
                 logger.info(f"Successfully parsed {arxiv_id} with {parser_name}")
                 return result

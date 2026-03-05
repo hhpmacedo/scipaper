@@ -61,14 +61,12 @@ class StyleConfig:
 def check_banned_words(content: str) -> List[StyleIssue]:
     """Check for banned words from Style Constitution."""
     issues = []
-    content_lower = content.lower()
-    
+
     for word in BANNED_WORDS:
-        if word in content_lower:
-            # Find approximate location
-            idx = content_lower.index(word)
-            context = content[max(0, idx-20):idx+len(word)+20]
-            
+        matches = list(re.finditer(r'\b' + re.escape(word) + r'\b', content, re.IGNORECASE))
+        for match in matches:
+            idx = match.start()
+            context = content[max(0, idx - 20):idx + len(word) + 20]
             issues.append(StyleIssue(
                 severity="error",
                 issue_type="banned_word",
@@ -76,12 +74,12 @@ def check_banned_words(content: str) -> List[StyleIssue]:
                 description=f"Banned word: '{word}'",
                 suggestion=f"Remove or replace '{word}' with more measured language"
             ))
-    
+
     for word in CAUTION_WORDS:
-        if word in content_lower:
-            idx = content_lower.index(word)
-            context = content[max(0, idx-20):idx+len(word)+20]
-            
+        matches = list(re.finditer(r'\b' + re.escape(word) + r'\b', content, re.IGNORECASE))
+        for match in matches:
+            idx = match.start()
+            context = content[max(0, idx - 20):idx + len(word) + 20]
             issues.append(StyleIssue(
                 severity="warning",
                 issue_type="caution_word",
@@ -89,7 +87,7 @@ def check_banned_words(content: str) -> List[StyleIssue]:
                 description=f"Consider removing: '{word}'",
                 suggestion=f"'{word}' often adds no value - consider removing"
             ))
-    
+
     return issues
 
 

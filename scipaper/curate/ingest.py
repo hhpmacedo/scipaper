@@ -4,7 +4,7 @@ Paper ingestion from multiple sources.
 
 import logging
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 from dataclasses import dataclass
 from urllib.parse import urlencode
@@ -148,7 +148,7 @@ class ArxivSource:
                 if not entries:
                     break
 
-                cutoff_date = datetime.utcnow() - timedelta(
+                cutoff_date = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(
                     days=self.config.days_back
                 )
 

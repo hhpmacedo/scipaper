@@ -2,10 +2,10 @@
 CLI for the curation pipeline.
 
 Usage:
-    python -m signal.curate --fetch              # Fetch papers from ArXiv
-    python -m signal.curate --score              # Score papers
-    python -m signal.curate --select             # Select papers for edition
-    python -m signal.curate --run                # Run full pipeline
+    python -m scipaper.curate --fetch              # Fetch papers from ArXiv
+    python -m scipaper.curate --score              # Score papers
+    python -m scipaper.curate --select             # Select papers for edition
+    python -m scipaper.curate --run                # Run full pipeline
 """
 
 import argparse
@@ -13,7 +13,7 @@ import asyncio
 import json
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
@@ -63,7 +63,7 @@ def load_anchor(week: str = None) -> AnchorDocument:
     return AnchorDocument(
         week=data.get("week", ""),
         updated_by=data.get("updated_by", ""),
-        updated_at=data.get("updated_at", datetime.utcnow()),
+        updated_at=data.get("updated_at", datetime.now(timezone.utc)),
         hot_topics=data.get("hot_topics", []),
         declining_topics=data.get("declining_topics", []),
         boost_keywords=data.get("boost_keywords", []),
@@ -241,7 +241,7 @@ async def cmd_run(args):
 def main():
     parser = argparse.ArgumentParser(
         description="Signal curation pipeline",
-        prog="python -m signal.curate",
+        prog="python -m scipaper.curate",
     )
 
     parser.add_argument(

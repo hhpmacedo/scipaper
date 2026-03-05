@@ -6,7 +6,7 @@ import json
 import logging
 import re
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from ..curate.models import Paper
@@ -156,7 +156,7 @@ async def generate_piece(
         content=content,
         word_count=len(content.split()),
         citations=citations,
-        generated_at=datetime.utcnow().isoformat(),
+        generated_at=datetime.now(timezone.utc).isoformat(),
         model_used=config.llm_model,
     )
 

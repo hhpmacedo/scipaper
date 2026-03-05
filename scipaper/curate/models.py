@@ -3,7 +3,7 @@ Data models for the curation pipeline.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 from enum import Enum
 
@@ -61,7 +61,7 @@ class Paper:
     
     def __post_init__(self):
         if self.ingested_at is None:
-            self.ingested_at = datetime.utcnow()
+            self.ingested_at = datetime.now(timezone.utc)
 
 
 @dataclass

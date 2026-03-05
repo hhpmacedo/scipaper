@@ -6,7 +6,7 @@ import json
 import logging
 import re
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Literal, Optional
 from enum import Enum
 
@@ -281,7 +281,7 @@ def _parse_verification_response(
         claims_failed=claims_failed,
         issues=issues,
         model_used=model,
-        verified_at=datetime.utcnow().isoformat(),
+        verified_at=datetime.now(timezone.utc).isoformat(),
     )
 
     # Determine status
@@ -312,7 +312,7 @@ def _fallback_report(paper_id: str, model: str) -> VerificationReport:
             suggested_fix="Re-run verification",
         )],
         model_used=model,
-        verified_at=datetime.utcnow().isoformat(),
+        verified_at=datetime.now(timezone.utc).isoformat(),
     )
 
 
@@ -355,7 +355,7 @@ def _heuristic_verification(piece: Piece, paper: Paper) -> VerificationReport:
         claims_failed=claims_failed,
         issues=issues,
         model_used="heuristic",
-        verified_at=datetime.utcnow().isoformat(),
+        verified_at=datetime.now(timezone.utc).isoformat(),
     )
 
 

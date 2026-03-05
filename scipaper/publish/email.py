@@ -5,7 +5,7 @@ Email delivery for Signal editions.
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 from html import escape
 
@@ -218,7 +218,7 @@ async def send_edition_email(
         sent=sent,
         failed=failed,
         errors=errors,
-        sent_at=datetime.utcnow().isoformat(),
+        sent_at=datetime.now(timezone.utc).isoformat(),
     )
 
     logger.info(

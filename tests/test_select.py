@@ -2,7 +2,7 @@
 Tests for the paper selection module.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -31,7 +31,7 @@ def make_scored_paper(
         abstract=kwargs.get("abstract", "Test abstract"),
         authors=[Author(name="Author", affiliation=affiliation)],
         categories=categories,
-        published_date=datetime.utcnow(),
+        published_date=datetime.now(timezone.utc),
     )
     return ScoredPaper(
         paper=paper,
