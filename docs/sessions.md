@@ -63,3 +63,30 @@ Append-only session log. Each entry captures what happened and where to pick up.
 2. Configure Buttondown account + paste welcome email from `docs/welcome-email.md`
 3. Set up DNS CNAME: `signal.hugohmacedo.com` → hosting provider
 4. Run first real edition end-to-end with live API keys
+
+---
+
+### 2026-03-05 17:08 — Vercel Deployment Live
+
+**What was done:**
+
+- Designed deployment approach: Vercel static site serving `public/` directory
+- Created `vercel.json` with output directory, clean URL rewrites (`/archive`, `/rss`), content-type headers for feeds
+- Generated placeholder `public/index.html` (landing page) and `public/archive.html` (empty archive) using existing `generate_landing_page()` / `generate_archive_page()`
+- Wrote design doc: `docs/plans/2026-03-05-vercel-deployment-design.md`
+- Committed, pushed, and verified site is live at `signal.hugohmacedo.com`
+
+**Key decisions:**
+
+- Vercel over GitHub Pages — Hugo's domain already on Vercel, keeps hosting in one place
+- Manual-first workflow: generate locally → commit `public/` → push → Vercel auto-deploys
+- `public/` committed to repo (not gitignored) since Vercel deploys from repo contents
+- Updated CLAUDE.md deployment target from "Railway/Fly.io" to "Vercel"
+
+**State:** Site live at signal.hugohmacedo.com. Landing page with subscribe form working. Archive empty (no editions yet). 205 tests passing.
+
+**Next steps:**
+
+1. Configure Buttondown account (create, set username, paste welcome email from `docs/welcome-email.md`)
+2. Run first real edition end-to-end with live API keys
+3. Later: add CI-driven deployment via GitHub Actions + Vercel CLI

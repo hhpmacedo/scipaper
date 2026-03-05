@@ -5,13 +5,12 @@ Autonomous weekly newsletter pipeline that curates AI research papers and transl
 ## Project Status
 
 - **Status**: Active Development
-- **Live URL**: N/A (not yet deployed)
+- **Live URL**: https://signal.hugohmacedo.com
 - **Last session**: 2026-03-05
-- **Current focus**: Phases 0-6 fully implemented. 205 tests pass, lint clean. Landing page with Buttondown subscribe form, welcome email drafted, production URLs configured at signal.hugohmacedo.com.
+- **Current focus**: Site deployed to Vercel. Landing page live with Buttondown subscribe form. 205 tests pass, lint clean.
 - **Next steps**:
-  1. Configure Buttondown account (create, set username, paste welcome email)
-  2. Set up DNS for signal.hugohmacedo.com
-  3. Deploy static site and run first real edition end-to-end
+  1. Configure Buttondown account (create, set username, paste welcome email from `docs/welcome-email.md`)
+  2. Run first real edition end-to-end with live API keys
 - **Blockers**: None
 
 ## Team
@@ -124,7 +123,7 @@ Required API keys (see `.env.example`):
 - **Language:** Python 3.10+ with async throughout (`async def` for all pipeline functions)
 - **Key libraries:** `httpx`/`aiohttp` (HTTP), `pymupdf`/`pdfplumber` (PDF), `anthropic`/`openai` (LLM), `sentence-transformers` (embeddings), `pydantic`/`sqlalchemy` (data), `jinja2` (templates), `tenacity` (retries)
 - **Data stores:** SQLite for paper DB, local filesystem for PDFs and editions
-- **Deployment target:** GitHub Actions (Phase 1), Railway/Fly.io (Phase 2)
+- **Deployment target:** Vercel (static site), GitHub Actions (pipeline automation)
 
 ## Conventions
 
