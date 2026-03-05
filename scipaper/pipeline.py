@@ -20,7 +20,7 @@ from .curate.select import SelectionConfig, get_runners_up, select_edition_paper
 from .generate.edition import AssemblyConfig, Edition, assemble_edition
 from .generate.pdf_parser import ParserConfig, download_paper_pdf, parse_paper_pdf
 from .generate.writer import GenerationConfig, Piece, generate_piece
-from .publish.email import DeliveryReport, EmailConfig, send_edition_email
+from .publish.email import ButtondownConfig, DeliveryReport, send_edition_email
 from .publish.web import WebConfig, generate_web_archive
 from .verify.checker import VerificationConfig, VerificationReport, attempt_auto_fix, verify_piece
 from .verify.style import StyleConfig, check_style_compliance
@@ -40,12 +40,13 @@ class PipelineConfig:
     verification: VerificationConfig = field(default_factory=VerificationConfig)
     style: StyleConfig = field(default_factory=StyleConfig)
     assembly: AssemblyConfig = field(default_factory=AssemblyConfig)
-    email: Optional[EmailConfig] = None
+    email: Optional[ButtondownConfig] = None
     web: Optional[WebConfig] = None
 
     # Pipeline settings
     week: str = ""
     issue_number: int = 1
+    web_base_url: str = "https://signal.example.com"
     pdf_cache_dir: Path = Path("data/pdfs")
     max_verification_retries: int = 1
     skip_pdf_download: bool = False  # For testing without network
@@ -70,7 +71,6 @@ async def run_pipeline(
     anchor: AnchorDocument,
     config: Optional[PipelineConfig] = None,
     papers: Optional[List[Paper]] = None,
-    subscribers: Optional[List[str]] = None,
 ) -> PipelineResult:
     """
     Run the full Signal pipeline end-to-end.
@@ -79,7 +79,6 @@ async def run_pipeline(
         anchor: Weekly relevance anchor document.
         config: Pipeline configuration.
         papers: Pre-fetched papers (skips ingestion if provided).
-        subscribers: Email recipients (skips email if None).
 
     Returns:
         PipelineResult with edition and stats.
@@ -206,11 +205,11 @@ async def run_pipeline(
     )
 
     # Email
-    if subscribers and config.email:
+    if config.email:
         try:
-            report = await send_edition_email(edition, subscribers, config.email)
+            report = await send_edition_email(edition, config.email, config.web_base_url)
             result.delivery_report = report
-            logger.info(f"Email sent: {report.sent}/{report.total_recipients}")
+            logger.info(f"Email sent to Buttondown: {report.sent}, id={report.buttondown_id}")
         except Exception as e:
             msg = f"Email delivery failed: {e}"
             logger.error(msg)

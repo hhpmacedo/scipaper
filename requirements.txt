@@ -27,7 +27,7 @@ lxml>=5.0.0
 sentence-transformers>=2.2.0
 
 # Email
-resend>=0.7.0
+# Buttondown API uses httpx (already listed above)
 
 # Web / Templates
 jinja2>=3.1.0

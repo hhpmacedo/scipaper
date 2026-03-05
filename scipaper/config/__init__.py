@@ -38,8 +38,8 @@ class SignalConfig:
         "cs.AI", "cs.LG", "cs.CL", "stat.ML"
     ])
     
-    # Email
-    email_provider: str = "resend"  # resend, postmark, buttondown
+    # Email (Buttondown — DEC-003)
+    email_provider: str = "buttondown"
     email_api_key: Optional[str] = None
     email_from: str = "signal@example.com"
     email_from_name: str = "Signal"
@@ -63,8 +63,8 @@ class SignalConfig:
             
             semantic_scholar_api_key=os.getenv("SEMANTIC_SCHOLAR_API_KEY"),
             
-            email_provider=os.getenv("EMAIL_PROVIDER", "resend"),
-            email_api_key=os.getenv("RESEND_API_KEY") or os.getenv("EMAIL_API_KEY"),
+            email_provider=os.getenv("EMAIL_PROVIDER", "buttondown"),
+            email_api_key=os.getenv("BUTTONDOWN_API_KEY") or os.getenv("EMAIL_API_KEY"),
             
             site_url=os.getenv("SITE_URL", "https://signal.example.com"),
             
