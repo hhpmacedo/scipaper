@@ -55,7 +55,7 @@ async def cmd_run_pipeline(args) -> None:
     config = PipelineConfig(
         email=ButtondownConfig(api_key=os.environ.get("BUTTONDOWN_API_KEY")),
         web=WebConfig(),
-        web_base_url=os.environ.get("SIGNAL_WEB_URL", "https://signal.example.com"),
+        web_base_url=os.environ.get("SIGNAL_WEB_URL", "https://signal.hugohmacedo.com"),
     )
 
     if getattr(args, "week", None):

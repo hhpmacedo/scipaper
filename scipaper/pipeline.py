@@ -47,7 +47,7 @@ class PipelineConfig:
     # Pipeline settings
     week: str = ""
     issue_number: int = 1
-    web_base_url: str = "https://signal.example.com"
+    web_base_url: str = "https://signal.hugohmacedo.com"
     pdf_cache_dir: Path = Path("data/pdfs")
     max_verification_retries: int = 1
     skip_pdf_download: bool = False  # For testing without network

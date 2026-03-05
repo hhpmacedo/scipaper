@@ -28,7 +28,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           BUTTONDOWN_API_KEY: ${{ secrets.BUTTONDOWN_API_KEY }}
-          SIGNAL_WEB_URL: ${{ secrets.SIGNAL_WEB_URL }}
+          SIGNAL_WEB_URL: "https://signal.hugohmacedo.com"
           WEEK_OVERRIDE: ${{ github.event.inputs.week }}
         run: |
           WEEK_FLAG=""

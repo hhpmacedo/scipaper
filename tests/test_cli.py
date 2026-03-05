@@ -206,7 +206,7 @@ def test_cmd_run_pipeline_default_web_base_url(
         run_async(cmd_run_pipeline(mock_args))
 
     config = mock_run.call_args[0][1]
-    assert config.web_base_url == "https://signal.example.com"
+    assert config.web_base_url == "https://signal.hugohmacedo.com"
 
 
 # ── main() argument parsing tests ─────────────────────────────────────
@@ -279,3 +279,10 @@ def test_main_log_level_passed_to_setup_logging(
         main()
 
     mock_setup.assert_called_once_with("DEBUG", json_logs=False)
+
+
+def test_default_web_url_is_production():
+    """Default web URL should be the production URL."""
+    from scipaper.pipeline import PipelineConfig
+    config = PipelineConfig()
+    assert config.web_base_url == "https://signal.hugohmacedo.com"
