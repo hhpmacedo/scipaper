@@ -2,6 +2,7 @@
 Paper ingestion from multiple sources.
 """
 
+import asyncio
 import logging
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -195,10 +196,8 @@ class SemanticScholarSource:
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key
 
-    async def enrich(self, paper: Paper) -> Paper:
-        """
-        Add citation counts and other metadata from Semantic Scholar.
-        """
+    async def enrich(self, paper: Paper, client: Optional[httpx.AsyncClient] = None) -> Paper:
+        """Add citation counts and other metadata from Semantic Scholar."""
         logger.debug(f"Enriching paper {paper.arxiv_id} with Semantic Scholar data")
 
         headers = {}
@@ -211,24 +210,25 @@ class SemanticScholarSource:
         )
 
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.get(url, headers=headers)
+            if client:
+                response = await client.get(url, headers=headers, timeout=10.0)
+            else:
+                async with httpx.AsyncClient(timeout=10.0) as c:
+                    response = await c.get(url, headers=headers)
 
-                if response.status_code == 404:
-                    logger.debug(
-                        f"Paper {paper.arxiv_id} not found in Semantic Scholar"
-                    )
-                    return paper
+            if response.status_code == 404:
+                logger.debug(f"Paper {paper.arxiv_id} not found in Semantic Scholar")
+                return paper
 
-                response.raise_for_status()
-                data = response.json()
+            response.raise_for_status()
+            data = response.json()
 
-                paper.citation_count = data.get("citationCount", 0) or 0
-                paper.reference_count = data.get("referenceCount", 0) or 0
+            paper.citation_count = data.get("citationCount", 0) or 0
+            paper.reference_count = data.get("referenceCount", 0) or 0
 
-                ext_ids = data.get("externalIds", {})
-                if ext_ids:
-                    paper.semantic_scholar_id = ext_ids.get("CorpusId")
+            ext_ids = data.get("externalIds", {})
+            if ext_ids:
+                paper.semantic_scholar_id = ext_ids.get("CorpusId")
 
         except httpx.HTTPError as e:
             logger.warning(f"Semantic Scholar lookup failed for {paper.arxiv_id}: {e}")
@@ -247,20 +247,23 @@ class SocialSignalSource:
         # Twitter API requires paid access; return 0 as default
         return 0
 
-    async def get_hn_points(self, paper: Paper) -> int:
+    async def get_hn_points(self, paper: Paper, client: Optional[httpx.AsyncClient] = None) -> int:
         """Check if paper was posted on HN and get points."""
         try:
             url = (
                 "https://hn.algolia.com/api/v1/search"
                 f"?query={paper.arxiv_id}&tags=story"
             )
-            async with httpx.AsyncClient(timeout=5.0) as client:
-                response = await client.get(url)
-                if response.status_code == 200:
-                    data = response.json()
-                    hits = data.get("hits", [])
-                    if hits:
-                        return max(h.get("points", 0) or 0 for h in hits)
+            if client:
+                response = await client.get(url, timeout=5.0)
+            else:
+                async with httpx.AsyncClient(timeout=5.0) as c:
+                    response = await c.get(url)
+            if response.status_code == 200:
+                data = response.json()
+                hits = data.get("hits", [])
+                if hits:
+                    return max(h.get("points", 0) or 0 for h in hits)
         except Exception as e:
             logger.debug(f"HN lookup failed for {paper.arxiv_id}: {e}")
         return 0
@@ -282,17 +285,15 @@ def _deduplicate(papers: List[Paper]) -> List[Paper]:
     return unique
 
 
-async def ingest_papers(config: IngestConfig = None) -> List[Paper]:
+async def ingest_papers(config: IngestConfig = None, client: Optional[httpx.AsyncClient] = None) -> List[Paper]:
     """
     Main ingestion pipeline.
 
     1. Fetch papers from ArXiv
     2. Deduplicate
-    3. Enrich with Semantic Scholar data
-    4. Add social signals
+    3. Enrich with Semantic Scholar data (concurrent)
+    4. Add social signals (concurrent)
     5. Return processed papers
-
-    Returns list of ingested papers.
     """
     config = config or IngestConfig()
     logger.info(f"Starting paper ingestion for {config.days_back} days back")
@@ -302,23 +303,28 @@ async def ingest_papers(config: IngestConfig = None) -> List[Paper]:
     papers = await arxiv.fetch()
     logger.info(f"Fetched {len(papers)} papers from ArXiv")
 
-    # Enrich with Semantic Scholar (best-effort)
+    # Enrich concurrently with rate limiting
     semantic = SemanticScholarSource()
-    enriched = []
-    for paper in papers:
-        try:
-            paper = await semantic.enrich(paper)
-        except Exception as e:
-            logger.warning(f"Failed to enrich {paper.arxiv_id}: {e}")
-        enriched.append(paper)
-
-    # Add social signals (optional, don't fail if unavailable)
     social = SocialSignalSource()
-    for paper in enriched:
-        try:
-            paper.hn_points = await social.get_hn_points(paper)
-        except Exception as e:
-            logger.debug(f"Social signals unavailable for {paper.arxiv_id}: {e}")
 
+    sem_scholar = asyncio.Semaphore(10)
+    sem_hn = asyncio.Semaphore(5)
+
+    async def _enrich_one(paper):
+        async with sem_scholar:
+            try:
+                paper = await semantic.enrich(paper, client)
+            except Exception as e:
+                logger.warning(f"Failed to enrich {paper.arxiv_id}: {e}")
+        async with sem_hn:
+            try:
+                paper.hn_points = await social.get_hn_points(paper, client)
+            except Exception:
+                pass
+        return paper
+
+    enriched = await asyncio.gather(*[_enrich_one(p) for p in papers])
+
+    enriched = list(enriched)
     logger.info(f"Ingestion complete: {len(enriched)} papers processed")
     return enriched
