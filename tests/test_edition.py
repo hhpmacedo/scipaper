@@ -3,9 +3,8 @@ Tests for the edition assembly module.
 """
 
 from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
-import pytest
 
 from .conftest import run_async
 
@@ -16,7 +15,6 @@ from scipaper.generate.edition import (
     _fallback_quick_take,
     assemble_edition,
     generate_edition_subject,
-    generate_quick_take,
 )
 from scipaper.generate.writer import Piece
 from scipaper.curate.models import Author, Paper, ScoredPaper

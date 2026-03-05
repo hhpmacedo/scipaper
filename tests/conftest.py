@@ -6,7 +6,6 @@ which fails due to the `signal` module name collision.
 """
 import asyncio
 
-import pytest
 
 
 def run_async(coro):

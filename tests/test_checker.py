@@ -2,7 +2,7 @@
 Tests for the verification checker module.
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -11,7 +11,6 @@ from .conftest import run_async
 from scipaper.verify.checker import (
     IssueSeverity,
     IssueType,
-    VerificationConfig,
     VerificationIssue,
     VerificationReport,
     _fallback_report,

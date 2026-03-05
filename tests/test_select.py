@@ -4,7 +4,6 @@ Tests for the paper selection module.
 
 from datetime import datetime, timezone
 
-import pytest
 
 from scipaper.curate.models import Author, Paper, ScoredPaper
 from scipaper.curate.select import (

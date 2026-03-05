@@ -6,7 +6,6 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 
 from .conftest import run_async
 

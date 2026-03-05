@@ -4,7 +4,6 @@ Tests for the web archive generation module.
 
 import json
 
-import pytest
 
 from .conftest import run_async
 

@@ -7,15 +7,12 @@ all internal pipeline stages to verify the complete flow:
 """
 
 from datetime import datetime, timezone
-from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
-import pytest
 
 from .conftest import run_async
 
 from scipaper.curate.models import AnchorDocument, Author, Paper
-from scipaper.generate.writer import Piece
 from scipaper.pipeline import PipelineConfig, run_pipeline
 from scipaper.curate.score import ScoringConfig
 from scipaper.curate.select import SelectionConfig

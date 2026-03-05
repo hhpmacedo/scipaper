@@ -2,7 +2,6 @@
 Tests for the style compliance checker.
 """
 
-import pytest
 
 from .conftest import run_async
 

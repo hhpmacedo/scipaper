@@ -2,7 +2,7 @@
 Tests for the content generation module.
 """
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -10,7 +10,6 @@ from .conftest import run_async
 
 from scipaper.generate.writer import (
     GenerationConfig,
-    Piece,
     extract_citations,
     generate_piece,
     validate_citations,
