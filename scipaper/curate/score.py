@@ -11,6 +11,7 @@ from dataclasses import dataclass
 import httpx
 
 from .models import Paper, AnchorDocument, ScoredPaper
+from ..retry import api_retry
 
 logger = logging.getLogger(__name__)
 
@@ -268,6 +269,7 @@ async def score_narrative_potential(
         return _heuristic_narrative_score(paper)
 
 
+@api_retry
 async def _score_with_anthropic(prompt: str, config: ScoringConfig) -> float:
     """Score using Anthropic API."""
     import anthropic
@@ -282,6 +284,7 @@ async def _score_with_anthropic(prompt: str, config: ScoringConfig) -> float:
     return _parse_score_response(response.content[0].text)
 
 
+@api_retry
 async def _score_with_openai(prompt: str, config: ScoringConfig) -> float:
     """Score using OpenAI API."""
     from openai import AsyncOpenAI

@@ -12,6 +12,7 @@ from enum import Enum
 
 from ..generate.writer import Piece
 from ..curate.models import Paper
+from ..retry import api_retry
 
 logger = logging.getLogger(__name__)
 
@@ -198,6 +199,7 @@ async def verify_piece(
     return report
 
 
+@api_retry
 async def _verify_with_anthropic(prompt: str, config: VerificationConfig) -> str:
     """Verify using Anthropic API."""
     import anthropic
@@ -213,6 +215,7 @@ async def _verify_with_anthropic(prompt: str, config: VerificationConfig) -> str
     return response.content[0].text
 
 
+@api_retry
 async def _verify_with_openai(prompt: str, config: VerificationConfig) -> str:
     """Verify using OpenAI API."""
     from openai import AsyncOpenAI

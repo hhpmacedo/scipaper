@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from ..curate.models import Paper
+from ..retry import api_retry
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +169,7 @@ async def generate_piece(
     return piece
 
 
+@api_retry
 async def _generate_with_anthropic(prompt: str, config: GenerationConfig) -> str:
     """Generate content using Anthropic API."""
     import anthropic
@@ -184,6 +186,7 @@ async def _generate_with_anthropic(prompt: str, config: GenerationConfig) -> str
     return response.content[0].text
 
 
+@api_retry
 async def _generate_with_openai(prompt: str, config: GenerationConfig) -> str:
     """Generate content using OpenAI API."""
     from openai import AsyncOpenAI

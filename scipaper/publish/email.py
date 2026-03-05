@@ -15,6 +15,7 @@ import httpx
 
 from ..generate.edition import Edition, QuickTake, generate_edition_subject
 from ..generate.writer import Piece
+from ..retry import api_retry
 
 logger = logging.getLogger(__name__)
 
@@ -244,6 +245,34 @@ def render_edition_text(edition: Edition, web_base_url: str) -> str:
 # ── Buttondown API ────────────────────────────────────────────────────
 
 
+@api_retry
+async def _post_to_buttondown(
+    api_url: str,
+    api_key: str,
+    subject: str,
+    body: str,
+) -> dict:
+    """
+    POST a draft email to Buttondown. Decorated with api_retry so transient
+    network errors (connection refused, timeouts) are retried automatically.
+    """
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{api_url}/v1/emails",
+            headers={
+                "Authorization": f"Token {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "subject": subject,
+                "body": body,
+                "status": "draft",
+            },
+        )
+        response.raise_for_status()
+        return response.json()
+
+
 async def send_edition_email(
     edition: Edition,
     config: ButtondownConfig,
@@ -268,26 +297,17 @@ async def send_edition_email(
     sent = False
 
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{config.api_url}/v1/emails",
-                headers={
-                    "Authorization": f"Token {config.api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "subject": subject,
-                    "body": html,
-                    "status": "draft",
-                },
-            )
-            response.raise_for_status()
-            data = response.json()
-            buttondown_id = data.get("id")
-            sent = True
-            logger.info(
-                f"Buttondown email created for {edition.week}: id={buttondown_id}"
-            )
+        data = await _post_to_buttondown(
+            api_url=config.api_url,
+            api_key=config.api_key,
+            subject=subject,
+            body=html,
+        )
+        buttondown_id = data.get("id")
+        sent = True
+        logger.info(
+            f"Buttondown email created for {edition.week}: id={buttondown_id}"
+        )
     except Exception as e:
         errors.append(str(e))
         logger.error(f"Buttondown email failed for {edition.week}: {e}")
