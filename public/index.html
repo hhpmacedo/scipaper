@@ -56,11 +56,25 @@ footer a:hover { color: #e63b19; }
 
 <div class="subscribe">
 <h2>Subscribe &mdash; free</h2>
-<form action="https://buttondown.com/api/emails/embed-subscribe/signalhhmacedo" method="post">
-<input type="email" name="email" placeholder="you@example.com" required>
+<form id="subscribe-form">
+<input type="email" name="email" id="subscribe-email" placeholder="you@example.com" required>
 <input type="submit" value="Subscribe">
 </form>
 </div>
+<script>
+document.getElementById('subscribe-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var email = document.getElementById('subscribe-email').value;
+  fetch('https://buttondown.com/api/emails/embed-subscribe/signalhhmacedo', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: 'email=' + encodeURIComponent(email),
+    mode: 'no-cors'
+  }).then(function() {
+    window.location.href = 'https://signal.hugohmacedo.com/subscribed.html';
+  });
+});
+</script>
 
 
 
