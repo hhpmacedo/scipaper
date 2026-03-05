@@ -1,0 +1,52 @@
+name: Weekly Edition
+
+on:
+  schedule:
+    - cron: "0 18 * * 0" # Sundays 18:00 UTC
+  workflow_dispatch:
+    inputs:
+      week:
+        description: "Anchor week override (e.g., 2025-W10)"
+        required: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BUTTONDOWN_API_KEY: ${{ secrets.BUTTONDOWN_API_KEY }}
+          SIGNAL_WEB_URL: ${{ secrets.SIGNAL_WEB_URL }}
+          WEEK_OVERRIDE: ${{ github.event.inputs.week }}
+        run: |
+          WEEK_FLAG=""
+          if [ -n "$WEEK_OVERRIDE" ]; then
+            WEEK_FLAG="--week $WEEK_OVERRIDE"
+          fi
+          python -m scipaper --run $WEEK_FLAG --json-logs
+
+      - name: Upload web archive
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-archive
+          path: public/
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          echo "::error::Weekly pipeline failed. Check $RUN_URL"
