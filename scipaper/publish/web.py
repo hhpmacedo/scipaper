@@ -95,7 +95,7 @@ nav a {{ color: #333; margin: 0 8px; }}
 
 <footer>
 <p>Signal #{edition.issue_number} &middot; {edition.total_words} words &middot; {len(edition.pieces)} pieces</p>
-<nav><a href="{config.site_url}">Archive</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
+<nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
 </footer>
 </body>
 </html>"""

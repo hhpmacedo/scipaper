@@ -99,6 +99,18 @@ class TestGenerateEditionPage:
         html = generate_edition_page(edition, config)
         assert "rss.xml" in html
 
+    def test_has_archive_link(self):
+        config = WebConfig(site_url="https://signal.test")
+        edition = make_edition()
+        html = generate_edition_page(edition, config)
+        assert 'signal.test/archive.html' in html
+
+    def test_has_home_link(self):
+        config = WebConfig(site_url="https://signal.test")
+        edition = make_edition()
+        html = generate_edition_page(edition, config)
+        assert 'href="https://signal.test"' in html
+
     def test_edition_page_has_piece_anchors(self):
         edition = make_edition()
         html = generate_edition_page(edition)
