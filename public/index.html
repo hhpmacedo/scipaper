@@ -7,44 +7,55 @@
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="https://signal.hugohmacedo.com/rss.xml">
 <link rel="alternate" type="application/json" title="Signal JSON Feed" href="https://signal.hugohmacedo.com/feed.json">
 <style>
-body { font-family: Georgia, 'Times New Roman', serif; max-width: 700px; margin: 0 auto; padding: 20px; color: #1a1a1a; line-height: 1.7; }
-header { text-align: center; padding: 60px 0 40px; }
-header h1 { margin: 0; font-size: 48px; letter-spacing: -1px; }
-header p { color: #555; margin: 8px 0 0; font-size: 18px; }
-.value-prop { max-width: 540px; margin: 0 auto; padding: 20px 0; }
-.value-prop ul { padding-left: 20px; }
-.value-prop li { margin-bottom: 8px; }
-.subscribe { text-align: center; padding: 40px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin: 30px 0; }
-.subscribe h2 { font-size: 22px; margin-bottom: 16px; }
-.subscribe form { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-.subscribe input[type="email"] { padding: 10px 16px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; width: 280px; font-family: inherit; }
-.subscribe input[type="submit"] { padding: 10px 24px; font-size: 16px; background: #1a1a1a; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; }
-.subscribe input[type="submit"]:hover { background: #333; }
-.latest { text-align: center; padding: 20px 0; }
-.latest h2 { font-size: 18px; color: #666; margin-bottom: 8px; }
-.latest a { color: #1a1a1a; font-weight: 600; text-decoration: none; }
-.latest a:hover { text-decoration: underline; }
-footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #999; font-size: 13px; }
-footer a { color: #666; margin: 0 8px; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "Helvetica Neue", Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 40px 20px; color: #000; line-height: 1.5; }
+.top-rule { border: none; border-top: 8px solid #000; margin-bottom: 60px; }
+header { padding: 0 0 40px; }
+header h1 { font-size: 80px; font-weight: 900; letter-spacing: -3px; text-transform: uppercase; line-height: 0.9; }
+header p { font-size: 18px; font-weight: 400; color: #000; margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; }
+.divider { border: none; border-top: 4px solid #000; margin: 0 0 40px; }
+.value-prop { padding: 0 0 40px; }
+.value-prop p { font-size: 20px; font-weight: 400; margin-bottom: 24px; }
+.value-prop .details { font-size: 15px; color: #333; }
+.value-prop .details strong { color: #000; }
+.subscribe { padding: 40px 0; border-top: 4px solid #000; border-bottom: 4px solid #000; margin: 0 0 40px; }
+.subscribe h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; }
+.subscribe form { display: flex; gap: 0; }
+.subscribe input[type="email"] { flex: 1; padding: 14px 16px; font-size: 16px; border: 3px solid #000; border-right: none; font-family: inherit; background: #fff; outline: none; }
+.subscribe input[type="email"]::placeholder { color: #999; }
+.subscribe input[type="submit"] { padding: 14px 32px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; background: #e63b19; color: #fff; border: 3px solid #e63b19; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+.subscribe input[type="submit"]:hover { background: #c42f12; border-color: #c42f12; }
+.latest { padding: 0 0 20px; }
+.latest h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 8px; }
+.latest a { color: #000; font-weight: 700; font-size: 18px; text-decoration: none; border-bottom: 2px solid #000; }
+.latest a:hover { border-bottom-color: #e63b19; color: #e63b19; }
+footer { margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+footer a { color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }
+footer a:hover { color: #e63b19; }
+@media (max-width: 480px) {
+  header h1 { font-size: 52px; letter-spacing: -2px; }
+  .subscribe form { flex-direction: column; }
+  .subscribe input[type="email"] { border-right: 3px solid #000; border-bottom: none; }
+  .subscribe input[type="submit"] { width: 100%; }
+}
 </style>
 </head>
 <body>
+<hr class="top-rule">
 <header>
 <h1>Signal</h1>
 <p>AI Research for the Curious</p>
 </header>
 
+<hr class="divider">
+
 <div class="value-prop">
 <p>A weekly newsletter that translates the most important AI research papers into clear, rigorous prose. No hype. No jargon. Every claim grounded in the source.</p>
-<ul>
-<li>3-5 papers weekly, each ~800-1200 words</li>
-<li>Written for engineers, PMs, and founders who use AI but don't read papers</li>
-<li>Delivered every Tuesday</li>
-</ul>
+<p class="details"><strong>3-5 papers</strong> weekly, each 800-1200 words. Written for <strong>engineers, PMs, and founders</strong> who use AI but don't read papers. Delivered <strong>every Tuesday</strong>.</p>
 </div>
 
 <div class="subscribe">
-<h2>Subscribe — it's free</h2>
+<h2>Subscribe &mdash; free</h2>
 <form action="https://buttondown.com/api/emails/embed-subscribe/signalhhmacedo" method="post">
 <input type="email" name="email" placeholder="you@example.com" required>
 <input type="submit" value="Subscribe">
