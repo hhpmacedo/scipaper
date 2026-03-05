@@ -253,7 +253,8 @@ async def generate_web_archive(
     Generate complete static web archive.
 
     Creates:
-    - index.html (edition list)
+    - index.html (landing page with subscribe form)
+    - archive.html (edition list)
     - /editions/2025-W10.html (individual editions)
     - /rss.xml (RSS feed)
     - /feed.json (JSON feed)
@@ -267,9 +268,13 @@ async def generate_web_archive(
     editions_dir = output / "editions"
     editions_dir.mkdir(exist_ok=True)
 
-    # Generate index
-    index_html = generate_index_page(editions, config)
-    (output / "index.html").write_text(index_html)
+    # Generate landing page
+    landing_html = generate_landing_page(editions, config)
+    (output / "index.html").write_text(landing_html)
+
+    # Generate archive
+    archive_html = generate_archive_page(editions, config)
+    (output / "archive.html").write_text(archive_html)
 
     # Generate edition pages
     for edition in editions:

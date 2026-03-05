@@ -241,9 +241,30 @@ class TestGenerateWebArchive:
         output = run_async(generate_web_archive(editions, config))
 
         assert (output / "index.html").exists()
+        assert (output / "archive.html").exists()
         assert (output / "editions" / "2025-W10.html").exists()
         assert (output / "rss.xml").exists()
         assert (output / "feed.json").exists()
+
+    def test_index_is_landing_page(self, tmp_path):
+        """index.html should be the landing page with subscribe form."""
+        config = WebConfig(output_dir=tmp_path / "public", buttondown_username="testuser")
+        editions = [make_edition()]
+
+        output = run_async(generate_web_archive(editions, config))
+
+        index_html = (output / "index.html").read_text()
+        assert "buttondown.com/api/emails/embed-subscribe/testuser" in index_html
+
+    def test_archive_lists_editions(self, tmp_path):
+        """archive.html should list all editions."""
+        config = WebConfig(output_dir=tmp_path / "public")
+        editions = [make_edition(week="2025-W10", issue_number=1)]
+
+        output = run_async(generate_web_archive(editions, config))
+
+        archive_html = (output / "archive.html").read_text()
+        assert "2025-W10" in archive_html
 
     def test_multiple_editions(self, tmp_path):
         config = WebConfig(output_dir=tmp_path / "public")
@@ -257,6 +278,6 @@ class TestGenerateWebArchive:
         assert (output / "editions" / "2025-W10.html").exists()
         assert (output / "editions" / "2025-W11.html").exists()
 
-        index = (output / "index.html").read_text()
-        assert "2025-W10" in index
-        assert "2025-W11" in index
+        archive = (output / "archive.html").read_text()
+        assert "2025-W10" in archive
+        assert "2025-W11" in archive
