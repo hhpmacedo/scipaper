@@ -8,6 +8,7 @@ from typing import Optional, List
 from pathlib import Path
 
 DEFAULT_LLM_MODEL = "claude-sonnet-4-20250514"
+DEFAULT_GENERATION_MODEL = "claude-opus-4-6"  # Higher quality for final article
 
 
 @dataclass

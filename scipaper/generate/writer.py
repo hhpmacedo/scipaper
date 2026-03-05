@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional
 
+from ..config import DEFAULT_GENERATION_MODEL
 from ..curate.models import Paper
 from ..retry import api_retry
 from ..text_utils import prepare_text_for_llm
@@ -167,7 +168,7 @@ async def generate_piece(
         word_count=len(content.split()),
         citations=citations,
         generated_at=datetime.now(timezone.utc).isoformat(),
-        model_used=config.llm_model or "claude-sonnet-4-20250514",
+        model_used=config.llm_model or DEFAULT_GENERATION_MODEL,
         paper_url=paper.pdf_url or f"https://arxiv.org/abs/{paper.arxiv_id}",
         authors=[a.name for a in paper.authors],
     )
@@ -185,7 +186,7 @@ async def _generate_with_anthropic(prompt: str, config: GenerationConfig) -> str
     """Generate content using Anthropic API."""
     import anthropic
 
-    model = config.llm_model or "claude-sonnet-4-20250514"
+    model = config.llm_model or DEFAULT_GENERATION_MODEL
     client = anthropic.AsyncAnthropic(api_key=config.anthropic_api_key)
     response = await client.messages.create(
         model=model,
@@ -203,7 +204,7 @@ async def _generate_with_openai(prompt: str, config: GenerationConfig) -> str:
     """Generate content using OpenAI API."""
     from openai import AsyncOpenAI
 
-    model = config.llm_model or "claude-sonnet-4-20250514"
+    model = config.llm_model or DEFAULT_GENERATION_MODEL
     client = AsyncOpenAI(api_key=config.openai_api_key)
     response = await client.chat.completions.create(
         model=model,
