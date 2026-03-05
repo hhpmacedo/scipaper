@@ -10,6 +10,7 @@ from .conftest import run_async
 
 from scipaper.publish.web import (
     WebConfig,
+    generate_archive_page,
     generate_edition_page,
     generate_index_page,
     generate_json_feed,
@@ -119,6 +120,29 @@ class TestGenerateIndexPage:
         assert "2025-W11" in html
         assert "#1" in html
         assert "#2" in html
+
+
+class TestGenerateArchivePage:
+    def test_valid_html(self):
+        editions = [make_edition()]
+        html = generate_archive_page(editions)
+        assert "<!DOCTYPE html>" in html
+
+    def test_lists_editions(self):
+        editions = [
+            make_edition(week="2025-W10", issue_number=1),
+            make_edition(week="2025-W11", issue_number=2),
+        ]
+        html = generate_archive_page(editions)
+        assert "2025-W10" in html
+        assert "2025-W11" in html
+
+    def test_has_home_link(self):
+        """Archive page should link back to the landing page."""
+        config = WebConfig(site_url="https://signal.test")
+        editions = [make_edition()]
+        html = generate_archive_page(editions, config)
+        assert 'href="https://signal.test"' in html or 'href="https://signal.test/"' in html
 
 
 class TestGenerateRssFeed:

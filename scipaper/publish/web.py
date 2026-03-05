@@ -101,11 +101,11 @@ nav a {{ color: #333; margin: 0 8px; }}
 </html>"""
 
 
-def generate_index_page(
+def generate_archive_page(
     editions: List[Edition], config: Optional[WebConfig] = None
 ) -> str:
     """
-    Generate index page listing all editions.
+    Generate archive page listing all editions.
     """
     config = config or WebConfig()
 
@@ -126,7 +126,7 @@ def generate_index_page(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{escape(config.site_title)}</title>
+<title>Archive &mdash; {escape(config.site_title)}</title>
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <style>
 body {{ font-family: Georgia, 'Times New Roman', serif; max-width: 700px; margin: 0 auto; padding: 20px; color: #1a1a1a; line-height: 1.7; }}
@@ -143,7 +143,7 @@ footer {{ margin-top: 40px; text-align: center; color: #999; font-size: 13px; }}
 <body>
 <header>
 <h1>Signal</h1>
-<p>AI Research for the Curious</p>
+<p>AI Research for the Curious &mdash; Archive</p>
 </header>
 
 <ul class="editions">
@@ -151,10 +151,14 @@ footer {{ margin-top: 40px; text-align: center; color: #999; font-size: 13px; }}
 </ul>
 
 <footer>
-<nav><a href="{config.site_url}/rss.xml">RSS</a> &middot; <a href="{config.site_url}/feed.json">JSON Feed</a></nav>
+<nav><a href="{config.site_url}">Home</a> &middot; <a href="{config.site_url}/rss.xml">RSS</a> &middot; <a href="{config.site_url}/feed.json">JSON Feed</a></nav>
 </footer>
 </body>
 </html>"""
+
+
+# Backward compatibility alias
+generate_index_page = generate_archive_page
 
 
 async def generate_web_archive(
