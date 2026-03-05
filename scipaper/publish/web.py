@@ -36,7 +36,7 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
     for i, piece in enumerate(edition.pieces):
         content_html = _content_to_html(piece.content)
         pieces_html.append(
-            f'<article class="piece">'
+            f'<article class="piece" id="{escape(piece.paper_id)}">'
             f'<h2>{escape(piece.title)}</h2>'
             f'<p class="hook">{escape(piece.hook)}</p>'
             f'<div class="content">{content_html}</div>'

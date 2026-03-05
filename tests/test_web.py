@@ -83,6 +83,11 @@ class TestGenerateEditionPage:
         html = generate_edition_page(edition, config)
         assert "rss.xml" in html
 
+    def test_edition_page_has_piece_anchors(self):
+        edition = make_edition()
+        html = generate_edition_page(edition)
+        assert 'id="2403.12345"' in html
+
 
 class TestGenerateIndexPage:
     def test_valid_html(self):
