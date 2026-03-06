@@ -110,11 +110,23 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
         authors_html = ""
         if piece.authors:
             authors_html = f'<p class="authors">{escape(", ".join(piece.authors))}</p>'
+        hero_figure_html = ""
+        if i == 0 and piece.hero_figure_url:
+            caption_html = ""
+            if piece.hero_figure_caption:
+                caption_html = f'<figcaption>{escape(piece.hero_figure_caption)}</figcaption>'
+            hero_figure_html = (
+                f'<figure class="hero-figure">'
+                f'<img src="{escape(piece.hero_figure_url)}" alt="{escape(piece.hero_figure_caption or "Key figure from the paper")}" loading="lazy">'
+                f'{caption_html}'
+                f'</figure>'
+            )
         pieces_html.append(
             f'<article class="piece" id="{escape(piece.paper_id)}">'
             f'<h2>{title_html}</h2>'
             f'{authors_html}'
             f'<p class="hook">{escape(piece.hook)}</p>'
+            f'{hero_figure_html}'
             f'<div class="content">{content_html}</div>'
             f'</article>'
         )
@@ -166,6 +178,9 @@ header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; let
 .piece h2 a:hover {{ color: #e63b19; border-bottom-color: #e63b19; }}
 .piece .authors {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #666; margin-bottom: 12px; }}
 .hook {{ color: #333; font-style: italic; margin-top: 0; margin-bottom: 16px; }}
+.hero-figure {{ margin: 24px 0; }}
+.hero-figure img {{ max-width: 100%; height: auto; border: 2px solid #000; display: block; }}
+.hero-figure figcaption {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; color: #666; margin-top: 8px; }}
 .content {{ font-size: 17px; }}
 .content p {{ margin-bottom: 14px; }}
 .quick-takes {{ margin-top: 40px; padding-top: 30px; border-top: 4px solid #000; }}
@@ -576,6 +591,9 @@ async def generate_web_archive(
 
     editions_dir = output / "editions"
     editions_dir.mkdir(exist_ok=True)
+
+    figures_dir = output / "figures"
+    figures_dir.mkdir(exist_ok=True)
 
     # Generate landing page
     landing_html = generate_landing_page(editions, config)

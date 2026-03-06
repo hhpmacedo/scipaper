@@ -20,7 +20,7 @@ from .curate.models import AnchorDocument, Paper
 from .curate.score import ScoringConfig, score_papers_two_pass
 from .curate.select import SelectionConfig, get_runners_up, select_edition_papers
 from .generate.edition import AssemblyConfig, Edition, assemble_edition
-from .generate.pdf_parser import ParserConfig, download_paper_pdf, parse_paper_pdf
+from .generate.pdf_parser import ParserConfig, download_paper_pdf, parse_paper_pdf, save_hero_figure
 from .generate.writer import GenerationConfig, generate_piece
 from .publish.email import ButtondownConfig, DeliveryReport, send_edition_email
 from .publish.web import WebConfig, generate_web_archive
@@ -116,9 +116,10 @@ async def run_pipeline(
     # Concurrent PDF download + generation
     sem_pdf = asyncio.Semaphore(3)
 
-    async def _download_and_generate(sp):
+    async def _download_and_generate(sp, is_lead=False):
         try:
             paper = sp.paper
+            parsed_paper = None
 
             # Download and parse PDF if needed
             async with sem_pdf:
@@ -126,16 +127,20 @@ async def run_pipeline(
                     pdf_path = await download_paper_pdf(
                         paper.arxiv_id, config.pdf_cache_dir
                     )
-                    parsed = await parse_paper_pdf(
+                    parsed_paper = await parse_paper_pdf(
                         pdf_path, paper.arxiv_id, config.parser
                     )
-                    paper.full_text = parsed.full_text
+                    paper.full_text = parsed_paper.full_text
 
             if not paper.full_text:
                 logger.warning(f"No full text for {paper.arxiv_id}, skipping")
                 return None
 
-            piece = await generate_piece(paper, config.generation)
+            # Only pass parsed_paper for lead piece (hero figure selection)
+            piece = await generate_piece(
+                paper, config.generation,
+                parsed_paper=parsed_paper if is_lead else None,
+            )
             logger.info(f"Generated piece for {paper.arxiv_id}")
             return (piece, paper)
 
@@ -146,7 +151,7 @@ async def run_pipeline(
             return None
 
     gen_results = await asyncio.gather(
-        *[_download_and_generate(sp) for sp in selected],
+        *[_download_and_generate(sp, is_lead=(i == 0)) for i, sp in enumerate(selected)],
         return_exceptions=False,
     )
 
@@ -155,6 +160,19 @@ async def run_pipeline(
         if r is not None:
             pieces.append(r)
             result.pieces_generated += 1
+
+    # Save hero figure for lead piece (index 0)
+    if pieces:
+        lead_piece = pieces[0][0]
+        hero_fig = getattr(lead_piece, "_hero_figure", None)
+        if hero_fig is not None:
+            figures_dir = Path("public/figures")
+            save_hero_figure(hero_fig, lead_piece.paper_id, figures_dir)
+            safe_id = lead_piece.paper_id.replace("/", "_")
+            lead_piece.hero_figure_url = (
+                f"{config.web_base_url}/figures/{safe_id}_fig{hero_fig.index}.png"
+            )
+            logger.info(f"Hero figure saved for lead piece: {lead_piece.hero_figure_url}")
 
     logger.info(f"Stage 2 complete in {time.time() - stage_start:.1f}s")
 

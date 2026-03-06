@@ -13,6 +13,7 @@ from ..config import DEFAULT_GENERATION_MODEL
 from ..curate.models import Paper
 from ..retry import api_retry
 from ..text_utils import prepare_text_for_llm
+from .pdf_parser import ParsedPaper
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,10 @@ class Piece:
     # Paper metadata for display
     paper_url: str = ""
     authors: list = None  # List of author name strings
+
+    # Hero figure (lead piece only)
+    hero_figure_url: Optional[str] = None
+    hero_figure_caption: Optional[str] = None
 
     # Verification status
     verified: bool = False
@@ -78,8 +83,11 @@ Return your response as JSON:
   "title": "piece title",
   "hook": "one sentence hook",
   "content": "the full piece with citations",
-  "sections": ["The Problem", "What They Did", "The Results", "Why It Matters"]
+  "sections": ["The Problem", "What They Did", "The Results", "Why It Matters"],
+  "hero_figure": null or <integer figure number>
 }
+
+For hero_figure: Pick the single most impactful figure number (e.g. 1, 3) from the paper that best illustrates the key result. Return null if no figure is compelling enough or if the paper has no figures worth highlighting.
 """
 
 
@@ -112,7 +120,8 @@ class GenerationConfig:
 
 async def generate_piece(
     paper: Paper,
-    config: Optional[GenerationConfig] = None
+    config: Optional[GenerationConfig] = None,
+    parsed_paper: Optional[ParsedPaper] = None,
 ) -> Piece:
     """
     Generate a citation-grounded piece from a paper.
@@ -160,6 +169,17 @@ async def generate_piece(
             f"{len(invalid)} invalid citations in piece for {paper.arxiv_id}"
         )
 
+    # Match hero figure selection to extracted figures
+    hero_figure_caption = None
+    selected_figure = None
+    hero_fig_num = parsed.get("hero_figure")
+    if hero_fig_num is not None and parsed_paper and parsed_paper.figures:
+        for fig in parsed_paper.figures:
+            if fig.index == hero_fig_num:
+                selected_figure = fig
+                hero_figure_caption = fig.caption or f"Figure {fig.index}"
+                break
+
     piece = Piece(
         paper_id=paper.arxiv_id,
         title=parsed.get("title", paper.title),
@@ -171,7 +191,10 @@ async def generate_piece(
         model_used=config.llm_model or DEFAULT_GENERATION_MODEL,
         paper_url=paper.pdf_url or f"https://arxiv.org/abs/{paper.arxiv_id}",
         authors=[a.name for a in paper.authors],
+        hero_figure_caption=hero_figure_caption,
     )
+    # Attach the selected figure object for the pipeline to save later
+    piece._hero_figure = selected_figure
 
     logger.info(
         f"Generated piece for {paper.arxiv_id}: "
