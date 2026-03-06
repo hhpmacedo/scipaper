@@ -16,7 +16,8 @@ from .email import _content_to_html
 logger = logging.getLogger(__name__)
 
 
-def _og_tags(title: str, description: str, url: str, site_name: str = "Signal") -> str:
+def _og_tags(title: str, description: str, url: str, site_name: str = "Signal",
+             image_url: str = "https://signal.hugohmacedo.com/og-image.png") -> str:
     """Generate Open Graph and Twitter Card meta tags."""
     return (
         f'<meta property="og:title" content="{escape(title)}">\n'
@@ -24,9 +25,13 @@ def _og_tags(title: str, description: str, url: str, site_name: str = "Signal") 
         f'<meta property="og:url" content="{escape(url)}">\n'
         f'<meta property="og:site_name" content="{escape(site_name)}">\n'
         f'<meta property="og:type" content="website">\n'
-        f'<meta name="twitter:card" content="summary">\n'
+        f'<meta property="og:image" content="{escape(image_url)}">\n'
+        f'<meta property="og:image:width" content="1200">\n'
+        f'<meta property="og:image:height" content="630">\n'
+        f'<meta name="twitter:card" content="summary_large_image">\n'
         f'<meta name="twitter:title" content="{escape(title)}">\n'
         f'<meta name="twitter:description" content="{escape(description)}">\n'
+        f'<meta name="twitter:image" content="{escape(image_url)}">\n'
         f'<meta name="description" content="{escape(description)}">'
     )
 
