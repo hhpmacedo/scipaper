@@ -16,12 +16,28 @@ from .email import _content_to_html
 logger = logging.getLogger(__name__)
 
 
+def _og_tags(title: str, description: str, url: str, site_name: str = "Signal") -> str:
+    """Generate Open Graph and Twitter Card meta tags."""
+    return (
+        f'<meta property="og:title" content="{escape(title)}">\n'
+        f'<meta property="og:description" content="{escape(description)}">\n'
+        f'<meta property="og:url" content="{escape(url)}">\n'
+        f'<meta property="og:site_name" content="{escape(site_name)}">\n'
+        f'<meta property="og:type" content="website">\n'
+        f'<meta name="twitter:card" content="summary">\n'
+        f'<meta name="twitter:title" content="{escape(title)}">\n'
+        f'<meta name="twitter:description" content="{escape(description)}">\n'
+        f'<meta name="description" content="{escape(description)}">'
+    )
+
+
 @dataclass
 class WebConfig:
     """Web archive configuration."""
     output_dir: Path = Path("public")
     site_url: str = "https://signal.hugohmacedo.com"
     site_title: str = "Signal — AI Research for the Curious"
+    site_description: str = "Weekly AI research papers translated into accessible, citation-grounded prose for technically literate non-researchers."
     buttondown_username: str = "signalhhmacedo"
 
 
@@ -71,6 +87,11 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Signal #{edition.issue_number} &mdash; {edition.week}</title>
+{_og_tags(
+    title=f"Signal #{edition.issue_number} — {edition.week}",
+    description=edition.pieces[0].title if edition.pieces else config.site_description,
+    url=f"{config.site_url}/editions/{edition.week}.html",
+)}
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <link rel="alternate" type="application/json" title="Signal JSON Feed" href="{config.site_url}/feed.json">
 <style>
@@ -153,6 +174,11 @@ def generate_landing_page(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{escape(config.site_title)}</title>
+{_og_tags(
+    title=config.site_title,
+    description=config.site_description,
+    url=config.site_url,
+)}
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <link rel="alternate" type="application/json" title="Signal JSON Feed" href="{config.site_url}/feed.json">
 <style>
@@ -246,6 +272,11 @@ def generate_subscribed_page(config: Optional[WebConfig] = None) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Subscribed &mdash; {escape(config.site_title)}</title>
+{_og_tags(
+    title=f"Subscribed — {config.site_title}",
+    description=config.site_description,
+    url=f"{config.site_url}/subscribed",
+)}
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 body {{ font-family: "Helvetica Neue", Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 40px 20px; color: #000; line-height: 1.5; }}
@@ -312,6 +343,11 @@ def generate_archive_page(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Archive &mdash; {escape(config.site_title)}</title>
+{_og_tags(
+    title=f"Archive — {config.site_title}",
+    description="All editions of Signal, a weekly AI research newsletter.",
+    url=f"{config.site_url}/archive",
+)}
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -365,6 +401,11 @@ def generate_about_page(config: Optional[WebConfig] = None) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>How It Works &mdash; Signal</title>
+{_og_tags(
+    title="How It Works — Signal",
+    description="How Signal selects and summarizes AI research papers: the pipeline, the rules, and the verification process.",
+    url=f"{config.site_url}/about",
+)}
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
