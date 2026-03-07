@@ -194,6 +194,9 @@ footer {{ margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-
 footer .meta {{ margin-bottom: 12px; color: #666; }}
 footer a {{ color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }}
 footer a:hover {{ color: #e63b19; }}
+.copyright {{ margin-top: 12px; font-size: 12px; color: #666; }}
+.copyright a {{ color: #666; margin-right: 0; font-weight: 400; }}
+.copyright a:hover {{ color: #e63b19; }}
 </style>
 </head>
 <body>
@@ -212,6 +215,7 @@ footer a:hover {{ color: #e63b19; }}
 <footer>
 <p class="meta">#{edition.issue_number} &middot; {edition.total_words} words &middot; {len(edition.pieces)} pieces</p>
 <nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
+<p class="copyright">&copy; <a href="https://hugohmacedo.com">Hugo H. Macedo</a></p>
 </footer>
 </body>
 </html>"""
@@ -330,6 +334,7 @@ document.getElementById('subscribe-form').addEventListener('submit', function(e)
 
 <footer>
 <nav><a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
+<p class="copyright">&copy; <a href="https://hugohmacedo.com">Hugo H. Macedo</a></p>
 </footer>
 </body>
 </html>"""
@@ -371,6 +376,9 @@ header p {{ font-size: 18px; font-weight: 400; color: #000; margin-top: 8px; let
 footer {{ margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
 footer a {{ color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }}
 footer a:hover {{ color: #e63b19; }}
+.copyright {{ margin-top: 12px; font-size: 12px; color: #666; }}
+.copyright a {{ color: #666; margin-right: 0; font-weight: 400; }}
+.copyright a:hover {{ color: #e63b19; }}
 </style>
 </head>
 <body>
@@ -390,6 +398,7 @@ footer a:hover {{ color: #e63b19; }}
 
 <footer>
 <nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
+<p class="copyright">&copy; <a href="https://hugohmacedo.com">Hugo H. Macedo</a></p>
 </footer>
 </body>
 </html>"""
@@ -433,6 +442,9 @@ header p {{ font-size: 18px; font-weight: 400; color: #000; margin-top: 8px; let
 footer {{ margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
 footer a {{ color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }}
 footer a:hover {{ color: #e63b19; }}
+.copyright {{ margin-top: 12px; font-size: 12px; color: #666; }}
+.copyright a {{ color: #666; margin-right: 0; font-weight: 400; }}
+.copyright a:hover {{ color: #e63b19; }}
 </style>
 </head>
 <body>
@@ -452,6 +464,7 @@ footer a:hover {{ color: #e63b19; }}
 
 <footer>
 <nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
+<p class="copyright">&copy; <a href="https://hugohmacedo.com">Hugo H. Macedo</a></p>
 </footer>
 </body>
 </html>"""
@@ -510,6 +523,9 @@ header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; let
 footer {{ margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
 footer a {{ color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }}
 footer a:hover {{ color: #e63b19; }}
+.copyright {{ margin-top: 12px; font-size: 12px; color: #666; }}
+.copyright a {{ color: #666; margin-right: 0; font-weight: 400; }}
+.copyright a:hover {{ color: #e63b19; }}
 </style>
 </head>
 <body>
@@ -527,6 +543,7 @@ footer a:hover {{ color: #e63b19; }}
 
 <footer>
 <nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a> <a href="{config.site_url}/feed.json">JSON Feed</a></nav>
+<p class="copyright">&copy; <a href="https://hugohmacedo.com">Hugo H. Macedo</a></p>
 </footer>
 </body>
 </html>"""
@@ -572,6 +589,9 @@ header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; let
 footer {{ margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
 footer a {{ color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }}
 footer a:hover {{ color: #e63b19; }}
+.copyright {{ margin-top: 12px; font-size: 12px; color: #666; }}
+.copyright a {{ color: #666; margin-right: 0; font-weight: 400; }}
+.copyright a:hover {{ color: #e63b19; }}
 </style>
 </head>
 <body>
@@ -623,6 +643,7 @@ footer a:hover {{ color: #e63b19; }}
 
 <footer>
 <nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
+<p class="copyright">&copy; <a href="https://hugohmacedo.com">Hugo H. Macedo</a></p>
 </footer>
 </body>
 </html>"""

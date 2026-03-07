@@ -145,3 +145,67 @@ Append-only session log. Each entry captures what happened and where to pick up.
 1. Configure `.env` with API keys and re-run `python -m scipaper --run`
 2. Debug any issues in scoring/generation/verification stages
 3. Commit and push ArXiv HTTPS fix
+
+---
+
+### 2026-03-05 19:50 — API Optimization + First Edition Published
+
+**What was done:**
+
+- Full API optimization (10 tasks via subagent-driven development):
+  - Smart text truncation (`text_utils.py`) — strips references/appendix before LLM input
+  - Expanded retry logic (`retry.py`) — handles 429, 503, Anthropic rate limits
+  - Shared `ClientPool` (`clients.py`) — async context manager for httpx/anthropic/openai
+  - SQLite cache (`cache.py`) — keyed by `(arxiv_id, stage, model_version)`
+  - Fixed model version drift — single source of truth in `config/__init__.py`
+  - Dropped LLM quick takes — heuristic-only for runners-up
+  - Concurrent enrichment in ingest — `asyncio.gather` with semaphores
+  - Two-pass scoring — pure Python relevance filter, LLM narrative for top 20 only
+  - Wired optimizations into pipeline with `--no-cache` CLI flag
+- Changed default generation model to Opus 4.6 (Sonnet stays for scoring/verification)
+- Production readiness audit — all modules implemented, 228 tests, zero stubs
+- Added Vercel deploy step to `weekly-edition.yml` (via Vercel CLI `--prod`)
+- Published first edition (2025-W10): 3 pieces, 2845 words, pushed to live site
+
+**Key decisions:**
+
+- Two-pass scoring cuts LLM calls from ~230 to ~35 per run
+- Opus 4.6 for article generation (quality), Sonnet for scoring/verification (speed/cost)
+- Vercel CLI deploy from GitHub Actions (not git-commit-and-push pattern)
+- ClientPool and PipelineCache created+tested but not yet injected into module functions (deferred)
+
+**State:** Edition #1 live at signal.hugohmacedo.com. 228 tests passing. Automated weekly workflow ready (needs Vercel secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`).
+
+**Next steps:**
+
+1. Verify Vercel secrets are set and test a manual workflow dispatch
+2. Create anchor document for next week (automate weekly template)
+3. Wire `ClientPool` and `PipelineCache` into individual module functions
+4. Set up failure alerting (Slack/email on pipeline failure)
+
+---
+
+### 2026-03-05 19:51 — Paper metadata + About page
+
+**What was done:**
+
+- Added `paper_url` and `authors` fields to `Piece` dataclass in `writer.py`
+- Updated `generate_piece()` to populate paper URL and author names from `Paper` object
+- Updated edition HTML template in `web.py`: titles now link to papers, author bylines displayed
+- Created `generate_about_page()` in `web.py` — "How It Works" page with 4 sections explaining pipeline
+- Added About link to all footer navs (edition, landing, subscribed, archive, about pages)
+- Generated static `public/about.html`, updated `public/index.html` and `public/archive.html` footers
+- Committed and pushed all changes
+
+**Key decisions:**
+
+- About page focuses on service/methodology, not personal — builds trust by showing the pipeline
+- Paper titles link to `pdf_url` with fallback to `arxiv.org/abs/{id}`
+
+**State:** All changes committed and pushed. Site live with paper links, author names, and About page.
+
+**Next steps:**
+
+1. Verify Vercel deployment picked up the changes
+2. Create anchor document for next edition week
+3. Wire `ClientPool` and `PipelineCache` into module functions

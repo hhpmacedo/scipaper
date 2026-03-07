@@ -4,16 +4,15 @@ Autonomous weekly newsletter pipeline that curates AI research papers and transl
 
 ## Project Status
 
-- **Status**: Ready for First Edition
+- **Status**: Active (Ops)
 - **Live URL**: https://signal.hugohmacedo.com
 - **Last session**: 2026-03-05
-- **Current focus**: Pipeline ready, first run attempted. ArXiv fetch works. Needs API keys in `.env` to complete full run.
+- **Current focus**: Edition pages now show paper links + author names. About page ("How It Works") added. All footer navs updated.
 - **Next steps**:
-  1. Configure `.env` with `ANTHROPIC_API_KEY` and `BUTTONDOWN_API_KEY`
-  2. Run first edition: `python -m scipaper --run`
-  3. Debug any issues in scoring/generation/verification stages
-  4. Commit ArXiv HTTPS fix + dotenv changes
-- **Blockers**: None (API keys needed in `.env`)
+  1. Verify Vercel secrets are set and test a manual workflow dispatch
+  2. Create anchor document for next week (automate weekly template)
+  3. Wire `ClientPool` and `PipelineCache` into individual module functions (follow-up)
+  4. Set up failure alerting (Slack/email on pipeline failure)
 
 ## Team
 
@@ -39,6 +38,7 @@ pip install -r requirements.txt
 python -m scipaper --run                    # Uses latest anchor document
 python -m scipaper --run --week 2025-W10    # Override anchor week
 python -m scipaper --run --json-logs        # JSON log output (for CI)
+python -m scipaper --run --no-cache        # Bypass SQLite cache
 
 # Run curation stage only
 python -m scipaper.curate --fetch           # Fetch papers from ArXiv
@@ -104,12 +104,17 @@ All modules are fully implemented. Key entry points:
 | `publish/email.py`       | HTML/text rendering, Buttondown API (creates draft)                           |
 | `publish/web.py`         | Brutalist static site: landing, archive, editions, RSS, JSON feed             |
 | `pipeline.py`            | End-to-end orchestrator wiring all stages together                            |
+| `text_utils.py`          | Smart text truncation (strips references/appendix before LLM input)           |
+| `retry.py`               | Retry decorator: 429, 503, Anthropic rate limits, connection/timeout errors   |
+| `clients.py`             | Shared `ClientPool` async context manager (httpx + anthropic + openai)        |
+| `cache.py`               | SQLite cache keyed by `(arxiv_id, stage, model_version)`                      |
 
 ## Key Design Decisions
 
 - **Relevance Anchor Document** (`data/anchors/*.yaml`) is the only human input -- a weekly YAML of hot/declining topics, boost keywords, and institutions of interest
 - **Citation format:** `[section 3.2]`, `[Abstract]`, `[Table N]`, `[Figure N]` -- inline in generated prose, verified against paper full text
-- **Scoring:** Composite of relevance (semantic similarity to anchor + citations + social signals) and narrative potential (LLM-assessed), weighted 50/50
+- **Scoring:** Two-pass: pure Python relevance filter for all papers, then LLM narrative scoring for top 20 only. Composite weighted 50/50
+- **Model strategy:** Opus 4.6 for article generation (quality), Sonnet for scoring/verification (speed/cost). Configured in `config/__init__.py`
 - **Verification rejection:** Any critical issue or >=3 major issues -> paper dropped from edition
 - **Style Constitution** (`docs/STYLE_CONSTITUTION.md`) is version-controlled and locked -- all style changes require a logged decision in `docs/DECISIONS.md`
 
@@ -125,7 +130,7 @@ All modules are fully implemented. Key entry points:
 
 Required for running the pipeline:
 
-- `ANTHROPIC_API_KEY` -- LLM for scoring, generation, verification (Claude Sonnet)
+- `ANTHROPIC_API_KEY` -- LLM for scoring/verification (Sonnet) and generation (Opus 4.6)
 - `BUTTONDOWN_API_KEY` -- Email delivery (creates draft in Buttondown)
 - `SEMANTIC_SCHOLAR_KEY` -- Paper enrichment (optional, graceful fallback)
 - `SIGNAL_WEB_URL` -- Web archive base URL (default: `https://signal.hugohmacedo.com`)
