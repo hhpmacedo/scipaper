@@ -70,14 +70,25 @@ STRUCTURE (follow exactly):
 2. The Problem (2-3 paragraphs): What were they solving? Why is it hard?
 3. What They Did (3-4 paragraphs): The actual approach, with concrete examples
 4. The Results (2-3 paragraphs): What worked, what didn't, key numbers with context
-5. Why It Matters (1-2 paragraphs): Implications for practitioners, grounded not speculative
+5. Why It Matters (1-2 paragraphs): Forward-looking implications ONLY — see rules below
+
+AVOIDING REDUNDANCY (critical):
+- The "structured_abstract" (Signal box) appears ABOVE your content. Readers see it first.
+- Do NOT open the content by restating the hook or the key result. Start "The Problem" directly.
+- "Why It Matters" must be ADDITIVE — new implications, connections to the broader field, or practitioner actions. It must NOT restate the key result, the hook, or the structured abstract. If you find yourself writing the same takeaway again, cut it.
+- If a specific number appears in the title, it MUST match the body. Pick one number and use it consistently throughout title, hook, structured_abstract, and content.
 
 STYLE RULES:
 - Never use: revolutionary, groundbreaking, game-changing, breakthrough
 - Explain technical terms in parentheses or avoid them
 - Every abstract concept needs a concrete example within 2 sentences
-- Include limitations section
+- Weave limitations into the body naturally (e.g. in Results or Why It Matters) rather than always ending with a caveat paragraph. Vary your endings — some pieces can end with an implication, a comparison, or a forward-looking question. Not every piece needs to close with "but this is just a lab result."
 - Tone: curious and engaged, not breathless
+
+TECHNICAL DEPTH:
+- "What They Did" should focus on the approach at a level your reader can act on or explain to a colleague. Prioritize the "so what" over the mechanism.
+- Cut implementation details that only matter to someone reimplementing the paper (algorithm line numbers, mathematical derivations, specific optimizer choices). Keep details that change how a practitioner thinks about the problem.
+- If you need more than one sentence to explain a mechanism, that's a signal to simplify or cut it.
 
 Reader profile: Software engineer who uses AI tools daily but doesn't read papers. They understand ML basics but not architecture details. They want to understand what's happening, not just what to think.
 
@@ -88,9 +99,9 @@ Return your response as JSON:
   "structured_abstract": {
     "what_they_did": "1-2 sentences: what the researchers actually built or tested",
     "key_result": "1-2 sentences: the most important finding, with a concrete number if possible",
-    "why_it_matters": "1 sentence: what this means for practitioners, grounded not speculative"
+    "why_it_matters": "1 sentence: what this means for practitioners — must differ from Why It Matters section"
   },
-  "content": "the full piece with citations",
+  "content": "the full piece with citations — do NOT repeat the hook or structured_abstract content",
   "sections": ["The Problem", "What They Did", "The Results", "Why It Matters"],
   "hero_figure": null or <integer figure number>
 }

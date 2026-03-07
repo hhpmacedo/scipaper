@@ -118,19 +118,37 @@ async def generate_quick_take(
 
 
 def _fallback_quick_take(paper: ScoredPaper) -> QuickTake:
-    """Generate a quick take from abstract without LLM."""
+    """Generate a quick take from abstract without LLM.
+
+    Two-sentence structure: what happened + why it's interesting.
+    """
     abstract = paper.paper.abstract
-    # Take first sentence of abstract as one-liner
-    first_sentence = abstract.split(". ")[0] + "." if abstract else paper.paper.title
+    if not abstract:
+        return QuickTake(
+            paper_id=paper.paper.arxiv_id,
+            title=paper.paper.title,
+            one_liner=paper.paper.title,
+            paper_url=paper.paper.pdf_url or f"https://arxiv.org/abs/{paper.paper.arxiv_id}",
+        )
+
+    # Split into sentences and take first two for a "what + why" structure
+    sentences = abstract.split(". ")
+    if len(sentences) >= 2:
+        first = sentences[0].rstrip(".")
+        second = sentences[1].rstrip(".")
+        two_sentences = first + ". " + second + "."
+    else:
+        two_sentences = sentences[0] if sentences[0].endswith(".") else sentences[0] + "."
+
     # Truncate to ~50 words
-    words = first_sentence.split()
+    words = two_sentences.split()
     if len(words) > 50:
-        first_sentence = " ".join(words[:50]) + "..."
+        two_sentences = " ".join(words[:50]) + "..."
 
     return QuickTake(
         paper_id=paper.paper.arxiv_id,
         title=paper.paper.title,
-        one_liner=first_sentence,
+        one_liner=two_sentences,
         paper_url=paper.paper.pdf_url or f"https://arxiv.org/abs/{paper.paper.arxiv_id}",
     )
 

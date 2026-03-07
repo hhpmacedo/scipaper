@@ -141,11 +141,18 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
                 f'{caption_html}'
                 f'</figure>'
             )
+        # Hook is omitted — the structured abstract (Signal box) serves as the
+        # editorial overview.  Rendering the hook here would repeat the same
+        # takeaway before the reader reaches "The Problem."
+        hook_html = ""
+        if not piece.structured_abstract:
+            # Fallback: show hook only when there is no Signal box
+            hook_html = f'<p class="hook">{escape(piece.hook)}</p>'
         pieces_html.append(
             f'<article class="piece" id="{escape(piece.paper_id)}">'
             f'<h2>{title_html}</h2>'
             f'{authors_html}'
-            f'<p class="hook">{escape(piece.hook)}</p>'
+            f'{hook_html}'
             f'{abstract_html}'
             f'{hero_figure_html}'
             f'<div class="content">{content_html}</div>'

@@ -73,10 +73,15 @@ class TestQuickTake:
 
 
 class TestFallbackQuickTake:
-    def test_uses_first_sentence(self):
+    def test_uses_two_sentences(self):
         sp = make_scored_paper(abstract="First sentence here. Second sentence.")
         qt = _fallback_quick_take(sp)
-        assert qt.one_liner == "First sentence here."
+        assert qt.one_liner == "First sentence here. Second sentence."
+
+    def test_single_sentence_abstract(self):
+        sp = make_scored_paper(abstract="Only one sentence here")
+        qt = _fallback_quick_take(sp)
+        assert qt.one_liner == "Only one sentence here."
 
     def test_truncates_long_abstract(self):
         long_abstract = " ".join(["word"] * 100) + "."

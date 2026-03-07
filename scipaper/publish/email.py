@@ -103,13 +103,22 @@ def _render_piece_full_html(piece: Piece, is_lead: bool = False) -> str:
 
     abstract_html = _render_structured_abstract_html(piece)
 
+    # Show hook only when there is no structured abstract (Signal box),
+    # to avoid repeating the same takeaway before the reader reaches the
+    # body content.
+    hook_html = ""
+    if not piece.structured_abstract:
+        hook_html = (
+            f'<p style="color: #666; font-style: italic; margin-top: 0;">'
+            f'{escape(piece.hook)}</p>'
+        )
+
     return (
         f'<article id="{escape(piece.paper_id)}" style="margin-top: 32px; padding-bottom: 24px; '
         f'border-bottom: 1px solid #eee;">'
         f'<h2 style="font-size: {title_size}; margin-bottom: 4px;">'
         f'{escape(piece.title)}</h2>'
-        f'<p style="color: #666; font-style: italic; margin-top: 0;">'
-        f'{escape(piece.hook)}</p>'
+        f'{hook_html}'
         f'{abstract_html}'
         f'{hero_figure_html}'
         f'<div style="font-size: 16px;">{content_html}</div>'
@@ -124,13 +133,19 @@ def _render_piece_preview_html(piece: Piece, week: str, web_base_url: str) -> st
 
     abstract_html = _render_structured_abstract_html(piece)
 
+    hook_html = ""
+    if not piece.structured_abstract:
+        hook_html = (
+            f'<p style="color: #666; font-style: italic; margin-top: 0;">'
+            f'{escape(piece.hook)}</p>'
+        )
+
     return (
         f'<article id="{escape(piece.paper_id)}" style="margin-top: 32px; padding-bottom: 24px; '
         f'border-bottom: 1px solid #eee;">'
         f'<h2 style="font-size: 20px; margin-bottom: 4px;">'
         f'{escape(piece.title)}</h2>'
-        f'<p style="color: #666; font-style: italic; margin-top: 0;">'
-        f'{escape(piece.hook)}</p>'
+        f'{hook_html}'
         f'{abstract_html}'
         f'<div style="font-size: 16px;">'
         f'<p style="margin: 12px 0;">{escape(first_paragraph)}</p>'
@@ -256,8 +271,11 @@ def render_edition_text(edition: Edition, web_base_url: str) -> str:
 
         lines.append(piece.title.upper())
         lines.append("")
-        lines.append(piece.hook)
-        lines.append("")
+
+        # Show hook only when there is no structured abstract
+        if not piece.structured_abstract:
+            lines.append(piece.hook)
+            lines.append("")
 
         if piece.structured_abstract:
             sa = piece.structured_abstract
