@@ -1,298 +1,99 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Signal — AI Research for the Curious</title>
-    <meta property="og:title" content="Signal — AI Research for the Curious" />
-    <meta
-      property="og:description"
-      content="Weekly AI research papers translated into accessible, citation-grounded prose for technically literate non-researchers."
-    />
-    <meta property="og:url" content="https://signal.hugohmacedo.com" />
-    <meta property="og:site_name" content="Signal" />
-    <meta property="og:type" content="website" />
-    <meta
-      property="og:image"
-      content="https://signal.hugohmacedo.com/og-image.png"
-    />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:image"
-      content="https://signal.hugohmacedo.com/og-image.png"
-    />
-    <meta name="twitter:title" content="Signal — AI Research for the Curious" />
-    <meta
-      name="twitter:description"
-      content="Weekly AI research papers translated into accessible, citation-grounded prose for technically literate non-researchers."
-    />
-    <meta
-      name="description"
-      content="Weekly AI research papers translated into accessible, citation-grounded prose for technically literate non-researchers."
-    />
-    <link
-      rel="alternate"
-      type="application/rss+xml"
-      title="Signal RSS"
-      href="https://signal.hugohmacedo.com/rss.xml"
-    />
-    <link
-      rel="alternate"
-      type="application/json"
-      title="Signal JSON Feed"
-      href="https://signal.hugohmacedo.com/feed.json"
-    />
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      body {
-        font-family: "Helvetica Neue", Arial, sans-serif;
-        max-width: 720px;
-        margin: 0 auto;
-        padding: 40px 20px;
-        color: #000;
-        line-height: 1.5;
-      }
-      .top-rule {
-        border: none;
-        border-top: 8px solid #000;
-        margin-bottom: 60px;
-      }
-      header {
-        padding: 0 0 40px;
-      }
-      header h1 {
-        font-size: 80px;
-        font-weight: 900;
-        letter-spacing: -3px;
-        text-transform: uppercase;
-        line-height: 0.9;
-      }
-      header p {
-        font-size: 18px;
-        font-weight: 400;
-        color: #000;
-        margin-top: 8px;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-      }
-      .divider {
-        border: none;
-        border-top: 4px solid #000;
-        margin: 0 0 40px;
-      }
-      .value-prop {
-        padding: 0 0 40px;
-      }
-      .value-prop p {
-        font-size: 20px;
-        font-weight: 400;
-        margin-bottom: 24px;
-      }
-      .value-prop .details {
-        font-size: 15px;
-        color: #333;
-      }
-      .value-prop .details strong {
-        color: #000;
-      }
-      .subscribe {
-        padding: 40px 0;
-        border-top: 4px solid #000;
-        border-bottom: 4px solid #000;
-        margin: 0 0 40px;
-      }
-      .subscribe h2 {
-        font-size: 14px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 16px;
-      }
-      .subscribe form {
-        display: flex;
-        gap: 0;
-      }
-      .subscribe input[type="email"] {
-        flex: 1;
-        padding: 14px 16px;
-        font-size: 16px;
-        border: 3px solid #000;
-        border-right: none;
-        font-family: inherit;
-        background: #fff;
-        outline: none;
-      }
-      .subscribe input[type="email"]::placeholder {
-        color: #999;
-      }
-      .subscribe input[type="submit"] {
-        padding: 14px 32px;
-        font-size: 14px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        background: #e63b19;
-        color: #fff;
-        border: 3px solid #e63b19;
-        cursor: pointer;
-        font-family: inherit;
-        transition: background 0.15s;
-      }
-      .subscribe input[type="submit"]:hover {
-        background: #c42f12;
-        border-color: #c42f12;
-      }
-      .latest {
-        padding: 0 0 20px;
-      }
-      .latest h2 {
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        color: #666;
-        margin-bottom: 8px;
-      }
-      .latest a {
-        color: #000;
-        font-weight: 700;
-        font-size: 18px;
-        text-decoration: none;
-        border-bottom: 2px solid #000;
-      }
-      .latest a:hover {
-        border-bottom-color: #e63b19;
-        color: #e63b19;
-      }
-      footer {
-        margin-top: 60px;
-        padding-top: 20px;
-        border-top: 2px solid #000;
-        font-size: 13px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-      footer a {
-        color: #000;
-        text-decoration: none;
-        margin-right: 16px;
-        font-weight: 700;
-      }
-      footer a:hover {
-        color: #e63b19;
-      }
-      .copyright {
-        margin-top: 12px;
-        font-size: 12px;
-        color: #666;
-      }
-      .copyright a {
-        color: #666;
-        margin-right: 0;
-        font-weight: 400;
-      }
-      .copyright a:hover {
-        color: #e63b19;
-      }
-      @media (max-width: 480px) {
-        header h1 {
-          font-size: 52px;
-          letter-spacing: -2px;
-        }
-        .subscribe form {
-          flex-direction: column;
-        }
-        .subscribe input[type="email"] {
-          border-right: 3px solid #000;
-          border-bottom: none;
-        }
-        .subscribe input[type="submit"] {
-          width: 100%;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <hr class="top-rule" />
-    <header>
-      <h1>Signal</h1>
-      <p>AI Research for the Curious</p>
-    </header>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal — AI Research for the Curious</title>
+<meta property="og:title" content="Signal — AI Research for the Curious">
+<meta property="og:description" content="A weekly newsletter that translates AI research papers into clear, rigorous prose. No hype. Every claim grounded in the source.">
+<meta property="og:url" content="https://signal.hugohmacedo.com">
+<meta property="og:site_name" content="Signal">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Signal — AI Research for the Curious">
+<meta name="twitter:description" content="A weekly newsletter that translates AI research papers into clear, rigorous prose. No hype. Every claim grounded in the source.">
+<meta name="description" content="A weekly newsletter that translates AI research papers into clear, rigorous prose. No hype. Every claim grounded in the source.">
+<meta property="og:image" content="https://signal.hugohmacedo.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://signal.hugohmacedo.com/og-image.png">
+<link rel="alternate" type="application/rss+xml" title="Signal RSS" href="https://signal.hugohmacedo.com/rss.xml">
+<link rel="alternate" type="application/json" title="Signal JSON Feed" href="https://signal.hugohmacedo.com/feed.json">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: "Helvetica Neue", Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 40px 20px; color: #000; line-height: 1.5; }
+.top-rule { border: none; border-top: 8px solid #000; margin-bottom: 60px; }
+header { padding: 0 0 40px; }
+header h1 { font-size: 80px; font-weight: 900; letter-spacing: -3px; text-transform: uppercase; line-height: 0.9; }
+header p { font-size: 18px; font-weight: 400; color: #000; margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; }
+.divider { border: none; border-top: 4px solid #000; margin: 0 0 40px; }
+.value-prop { padding: 0 0 40px; }
+.value-prop p { font-size: 20px; font-weight: 400; margin-bottom: 24px; }
+.value-prop .details { font-size: 15px; color: #333; }
+.value-prop .details strong { color: #000; }
+.subscribe { padding: 40px 0; border-top: 4px solid #000; border-bottom: 4px solid #000; margin: 0 0 40px; }
+.subscribe h2 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; }
+.subscribe form { display: flex; gap: 0; }
+.subscribe input[type="email"] { flex: 1; padding: 14px 16px; font-size: 16px; border: 3px solid #000; border-right: none; font-family: inherit; background: #fff; outline: none; }
+.subscribe input[type="email"]::placeholder { color: #999; }
+.subscribe input[type="submit"] { padding: 14px 32px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; background: #e63b19; color: #fff; border: 3px solid #e63b19; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+.subscribe input[type="submit"]:hover { background: #c42f12; border-color: #c42f12; }
+.latest { padding: 0 0 20px; }
+.latest h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 8px; }
+.latest a { color: #000; font-weight: 700; font-size: 18px; text-decoration: none; border-bottom: 2px solid #000; }
+.latest a:hover { border-bottom-color: #e63b19; color: #e63b19; }
+footer { margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+footer a { color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }
+footer a:hover { color: #e63b19; }
+@media (max-width: 480px) {
+  header h1 { font-size: 52px; letter-spacing: -2px; }
+  .subscribe form { flex-direction: column; }
+  .subscribe input[type="email"] { border-right: 3px solid #000; border-bottom: none; }
+  .subscribe input[type="submit"] { width: 100%; }
+}
+</style>
+</head>
+<body>
+<hr class="top-rule">
+<header>
+<h1>Signal</h1>
+<p>AI Research for the Curious</p>
+</header>
 
-    <hr class="divider" />
+<hr class="divider">
 
-    <div class="value-prop">
-      <p>
-        A weekly newsletter that translates the most important AI research
-        papers into clear, rigorous prose. No hype. No jargon. Every claim
-        grounded in the source.
-      </p>
-      <p class="details">
-        <strong>3-5 papers</strong> weekly, each 800-1200 words. Written for
-        <strong>engineers, PMs, and founders</strong> who use AI but don't read
-        papers. Delivered <strong>every Tuesday</strong>.
-      </p>
-    </div>
+<div class="value-prop">
+<p>A weekly newsletter that translates the most important AI research papers into clear, rigorous prose. No hype. No jargon. Every claim grounded in the source.</p>
+<p class="details"><strong>3-5 papers</strong> weekly, each 800-1200 words. Written for <strong>engineers, PMs, and founders</strong> who use AI but don't read papers. Delivered <strong>every Tuesday</strong>.</p>
+</div>
 
-    <div class="subscribe">
-      <h2>Subscribe &mdash; free</h2>
-      <form id="subscribe-form">
-        <input
-          type="email"
-          name="email"
-          id="subscribe-email"
-          placeholder="you@example.com"
-          required
-        />
-        <input type="submit" value="Subscribe" />
-      </form>
-    </div>
-    <script>
-      document
-        .getElementById("subscribe-form")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-          var email = document.getElementById("subscribe-email").value;
-          fetch(
-            "https://buttondown.com/api/emails/embed-subscribe/signalhhmacedo",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: "email=" + encodeURIComponent(email),
-              mode: "no-cors",
-            },
-          ).then(function () {
-            window.location.href =
-              "https://signal.hugohmacedo.com/subscribed.html";
-          });
-        });
-    </script>
+<div class="subscribe">
+<h2>Subscribe &mdash; free</h2>
+<form id="subscribe-form">
+<input type="email" name="email" id="subscribe-email" placeholder="you@example.com" required>
+<input type="submit" value="Subscribe">
+</form>
+</div>
+<script>
+document.getElementById('subscribe-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var email = document.getElementById('subscribe-email').value;
+  fetch('https://buttondown.com/api/emails/embed-subscribe/signalhhmacedo', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: 'email=' + encodeURIComponent(email),
+    mode: 'no-cors'
+  }).then(function() {
+    window.location.href = 'https://signal.hugohmacedo.com/subscribed.html';
+  });
+});
+</script>
 
-    <section class="latest">
-      <h2>Latest Edition</h2>
-      <p>
-        <a href="https://signal.hugohmacedo.com/editions/2025-W10.html"
-          >#1 — 2025-W10: Can You Tell Which AI Wrote That Code? A New Method
-          Tries to Fingerprint LLM-Generated Programs</a
-        >
-      </p>
-    </section>
 
-    <footer>
-      <nav>
-        <a href="https://signal.hugohmacedo.com/archive.html">Archive</a>
-        <a href="https://signal.hugohmacedo.com/about.html">About</a>
-        <a href="https://signal.hugohmacedo.com/rss.xml">RSS</a>
-      </nav>
-      <p class="copyright">
-        &copy; <a href="https://hugohmacedo.com">Hugo H. Macedo</a>
-      </p>
-    </footer>
-  </body>
+
+<footer>
+<nav><a href="https://signal.hugohmacedo.com/archive.html">Archive</a> <a href="https://signal.hugohmacedo.com/about.html">About</a> <a href="https://signal.hugohmacedo.com/rss.xml">RSS</a></nav>
+<p class="copyright">&copy; <a href="https://hugohmacedo.com">Hugo H. Macedo</a></p>
+</footer>
+</body>
 </html>

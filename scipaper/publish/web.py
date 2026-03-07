@@ -16,24 +16,75 @@ from .email import _content_to_html
 logger = logging.getLogger(__name__)
 
 
-def _og_tags(title: str, description: str, url: str, site_name: str = "Signal",
-             image_url: str = "https://signal.hugohmacedo.com/og-image.png") -> str:
+def _og_tags(
+    title: str,
+    description: str,
+    url: str,
+    site_name: str = "Signal",
+    og_type: str = "website",
+    image_url: str = "",
+) -> str:
     """Generate Open Graph and Twitter Card meta tags."""
-    return (
-        f'<meta property="og:title" content="{escape(title)}">\n'
-        f'<meta property="og:description" content="{escape(description)}">\n'
-        f'<meta property="og:url" content="{escape(url)}">\n'
-        f'<meta property="og:site_name" content="{escape(site_name)}">\n'
-        f'<meta property="og:type" content="website">\n'
-        f'<meta property="og:image" content="{escape(image_url)}">\n'
-        f'<meta property="og:image:width" content="1200">\n'
-        f'<meta property="og:image:height" content="630">\n'
-        f'<meta name="twitter:card" content="summary_large_image">\n'
-        f'<meta name="twitter:title" content="{escape(title)}">\n'
-        f'<meta name="twitter:description" content="{escape(description)}">\n'
-        f'<meta name="twitter:image" content="{escape(image_url)}">\n'
-        f'<meta name="description" content="{escape(description)}">'
-    )
+    tags = [
+        f'<meta property="og:title" content="{escape(title)}">',
+        f'<meta property="og:description" content="{escape(description)}">',
+        f'<meta property="og:url" content="{escape(url)}">',
+        f'<meta property="og:site_name" content="{escape(site_name)}">',
+        f'<meta property="og:type" content="{og_type}">',
+        f'<meta name="twitter:card" content="summary_large_image">',
+        f'<meta name="twitter:title" content="{escape(title)}">',
+        f'<meta name="twitter:description" content="{escape(description)}">',
+        f'<meta name="description" content="{escape(description)}">',
+    ]
+    if image_url:
+        tags.append(f'<meta property="og:image" content="{escape(image_url)}">')
+        tags.append(f'<meta property="og:image:width" content="1200">')
+        tags.append(f'<meta property="og:image:height" content="630">')
+        tags.append(f'<meta name="twitter:image" content="{escape(image_url)}">')
+    return "\n".join(tags)
+
+
+def _generate_og_image(output_path: Path) -> None:
+    """Generate a 1200x630 PNG Open Graph image matching the brutalist site design."""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except ImportError:
+        logger.warning("Pillow not installed — skipping OG image generation")
+        return
+
+    W, H = 1200, 630
+    img = Image.new("RGB", (W, H), "#ffffff")
+    draw = ImageDraw.Draw(img)
+
+    # Top rule
+    draw.rectangle([0, 0, W, 16], fill="#000000")
+
+    # Load fonts with fallback
+    def _font(name: str, size: int) -> ImageFont.FreeTypeFont:
+        for path in [
+            f"/usr/share/fonts/truetype/dejavu/{name}",
+            f"/usr/share/fonts/{name}",
+        ]:
+            try:
+                return ImageFont.truetype(path, size)
+            except (OSError, IOError):
+                continue
+        return ImageFont.load_default()
+
+    font_title = _font("DejaVuSans-Bold.ttf", 100)
+    font_subtitle = _font("DejaVuSans.ttf", 26)
+    font_body = _font("DejaVuSerif.ttf", 22)
+    font_btn = _font("DejaVuSans-Bold.ttf", 15)
+
+    draw.text((80, 160), "SIGNAL", fill="#000000", font=font_title)
+    draw.text((80, 300), "AI RESEARCH FOR THE CURIOUS", fill="#000000", font=font_subtitle)
+    draw.rectangle([80, 370, 1120, 374], fill="#000000")
+    draw.text((80, 410), "Weekly. Grounded in the source. No hype.", fill="#333333", font=font_body)
+    draw.rectangle([80, 490, 260, 545], fill="#e63b19")
+    draw.text((100, 505), "SUBSCRIBE", fill="#ffffff", font=font_btn)
+
+    img.save(str(output_path), "PNG", optimize=True)
+    logger.info(f"Generated OG image: {output_path}")
 
 
 @dataclass
@@ -42,7 +93,6 @@ class WebConfig:
     output_dir: Path = Path("public")
     site_url: str = "https://signal.hugohmacedo.com"
     site_title: str = "Signal — AI Research for the Curious"
-    site_description: str = "Weekly AI research papers translated into accessible, citation-grounded prose for technically literate non-researchers."
     buttondown_username: str = "signalhhmacedo"
 
 
@@ -60,11 +110,23 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
         authors_html = ""
         if piece.authors:
             authors_html = f'<p class="authors">{escape(", ".join(piece.authors))}</p>'
+        hero_figure_html = ""
+        if i == 0 and piece.hero_figure_url:
+            caption_html = ""
+            if piece.hero_figure_caption:
+                caption_html = f'<figcaption>{escape(piece.hero_figure_caption)}</figcaption>'
+            hero_figure_html = (
+                f'<figure class="hero-figure">'
+                f'<img src="{escape(piece.hero_figure_url)}" alt="{escape(piece.hero_figure_caption or "Key figure from the paper")}" loading="lazy">'
+                f'{caption_html}'
+                f'</figure>'
+            )
         pieces_html.append(
             f'<article class="piece" id="{escape(piece.paper_id)}">'
             f'<h2>{title_html}</h2>'
             f'{authors_html}'
             f'<p class="hook">{escape(piece.hook)}</p>'
+            f'{hero_figure_html}'
             f'<div class="content">{content_html}</div>'
             f'</article>'
         )
@@ -86,17 +148,19 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
             f'</section>'
         )
 
+    og_description = edition.pieces[0].hook if edition.pieces else "AI research, translated."
+    og_title = f"Signal #{edition.issue_number} — {edition.week}"
+    og_url = f"{config.site_url}/editions/{edition.week}.html"
+    og_image = f"{config.site_url}/og-image.png"
+    og = _og_tags(og_title, og_description, og_url, image_url=og_image, og_type="article")
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Signal #{edition.issue_number} &mdash; {edition.week}</title>
-{_og_tags(
-    title=f"Signal #{edition.issue_number} — {edition.week}",
-    description=edition.pieces[0].title if edition.pieces else config.site_description,
-    url=f"{config.site_url}/editions/{edition.week}.html",
-)}
+{og}
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <link rel="alternate" type="application/json" title="Signal JSON Feed" href="{config.site_url}/feed.json">
 <style>
@@ -114,6 +178,9 @@ header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; let
 .piece h2 a:hover {{ color: #e63b19; border-bottom-color: #e63b19; }}
 .piece .authors {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #666; margin-bottom: 12px; }}
 .hook {{ color: #333; font-style: italic; margin-top: 0; margin-bottom: 16px; }}
+.hero-figure {{ margin: 24px 0; }}
+.hero-figure img {{ max-width: 100%; height: auto; border: 2px solid #000; display: block; }}
+.hero-figure figcaption {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; color: #666; margin-top: 8px; }}
 .content {{ font-size: 17px; }}
 .content p {{ margin-bottom: 14px; }}
 .quick-takes {{ margin-top: 40px; padding-top: 30px; border-top: 4px solid #000; }}
@@ -177,17 +244,20 @@ def generate_landing_page(
 
     subscribe_url = f"https://buttondown.com/api/emails/embed-subscribe/{config.buttondown_username}"
 
+    og = _og_tags(
+        config.site_title,
+        "A weekly newsletter that translates AI research papers into clear, rigorous prose. No hype. Every claim grounded in the source.",
+        config.site_url,
+        image_url=f"{config.site_url}/og-image.png",
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{escape(config.site_title)}</title>
-{_og_tags(
-    title=config.site_title,
-    description=config.site_description,
-    url=config.site_url,
-)}
+{og}
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <link rel="alternate" type="application/json" title="Signal JSON Feed" href="{config.site_url}/feed.json">
 <style>
@@ -216,9 +286,6 @@ header p {{ font-size: 18px; font-weight: 400; color: #000; margin-top: 8px; let
 footer {{ margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
 footer a {{ color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }}
 footer a:hover {{ color: #e63b19; }}
-.copyright {{ margin-top: 12px; font-size: 12px; color: #666; }}
-.copyright a {{ color: #666; margin-right: 0; font-weight: 400; }}
-.copyright a:hover {{ color: #e63b19; }}
 @media (max-width: 480px) {{
   header h1 {{ font-size: 52px; letter-spacing: -2px; }}
   .subscribe form {{ flex-direction: column; }}
@@ -279,17 +346,20 @@ def generate_subscribed_page(config: Optional[WebConfig] = None) -> str:
     """
     config = config or WebConfig()
 
+    og = _og_tags(
+        f"Subscribed — {config.site_title}",
+        "You're in. AI research, translated. Every Tuesday.",
+        f"{config.site_url}/subscribed.html",
+        image_url=f"{config.site_url}/og-image.png",
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Subscribed &mdash; {escape(config.site_title)}</title>
-{_og_tags(
-    title=f"Subscribed — {config.site_title}",
-    description=config.site_description,
-    url=f"{config.site_url}/subscribed",
-)}
+{og}
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 body {{ font-family: "Helvetica Neue", Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 40px 20px; color: #000; line-height: 1.5; }}
@@ -334,6 +404,72 @@ footer a:hover {{ color: #e63b19; }}
 </html>"""
 
 
+def generate_confirmed_page(config: Optional[WebConfig] = None) -> str:
+    """
+    Generate the page shown after a subscriber clicks the Buttondown
+    confirmation link in their email.
+    """
+    config = config or WebConfig()
+
+    og = _og_tags(
+        f"Confirmed — {config.site_title}",
+        "Subscription confirmed. AI research, translated. Every Tuesday.",
+        f"{config.site_url}/confirmed.html",
+        image_url=f"{config.site_url}/og-image.png",
+    )
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmed &mdash; {escape(config.site_title)}</title>
+{og}
+<style>
+* {{ margin: 0; padding: 0; box-sizing: border-box; }}
+body {{ font-family: "Helvetica Neue", Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 40px 20px; color: #000; line-height: 1.5; }}
+.top-rule {{ border: none; border-top: 8px solid #000; margin-bottom: 60px; }}
+header {{ padding: 0 0 40px; }}
+header h1 {{ font-size: 80px; font-weight: 900; letter-spacing: -3px; text-transform: uppercase; line-height: 0.9; }}
+header h1 a {{ text-decoration: none; color: inherit; }}
+header p {{ font-size: 18px; font-weight: 400; color: #000; margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; }}
+.divider {{ border: none; border-top: 4px solid #000; margin: 0 0 40px; }}
+.confirmation {{ padding: 40px 0; }}
+.confirmation h2 {{ font-size: 32px; font-weight: 900; margin-bottom: 16px; }}
+.confirmation p {{ font-size: 18px; margin-bottom: 12px; color: #333; }}
+.confirmation a {{ color: #000; font-weight: 700; border-bottom: 2px solid #000; text-decoration: none; }}
+.confirmation a:hover {{ color: #e63b19; border-bottom-color: #e63b19; }}
+footer {{ margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
+footer a {{ color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }}
+footer a:hover {{ color: #e63b19; }}
+.copyright {{ margin-top: 12px; font-size: 12px; color: #666; }}
+.copyright a {{ color: #666; margin-right: 0; font-weight: 400; }}
+.copyright a:hover {{ color: #e63b19; }}
+</style>
+</head>
+<body>
+<hr class="top-rule">
+<header>
+<h1><a href="{config.site_url}">Signal</a></h1>
+<p>AI Research for the Curious</p>
+</header>
+
+<hr class="divider">
+
+<div class="confirmation">
+<h2>Confirmed.</h2>
+<p>Your subscription is active. Your first edition arrives next Tuesday.</p>
+<p><a href="{config.site_url}/archive.html">Browse the archive</a> while you wait.</p>
+</div>
+
+<footer>
+<nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
+<p class="copyright">&copy; <a href="https://hugohmacedo.com">Hugo H. Macedo</a></p>
+</footer>
+</body>
+</html>"""
+
+
 def generate_archive_page(
     editions: List[Edition], config: Optional[WebConfig] = None
 ) -> str:
@@ -354,17 +490,20 @@ def generate_archive_page(
             f'</li>'
         )
 
+    og = _og_tags(
+        f"Archive — {config.site_title}",
+        "Every edition of Signal. AI research papers, translated into clear prose.",
+        f"{config.site_url}/archive.html",
+        image_url=f"{config.site_url}/og-image.png",
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Archive &mdash; {escape(config.site_title)}</title>
-{_og_tags(
-    title=f"Archive — {config.site_title}",
-    description="All editions of Signal, a weekly AI research newsletter.",
-    url=f"{config.site_url}/archive",
-)}
+{og}
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -416,17 +555,20 @@ def generate_about_page(config: Optional[WebConfig] = None) -> str:
     """
     config = config or WebConfig()
 
+    og = _og_tags(
+        "How It Works — Signal",
+        "How Signal finds, writes about, and verifies AI research papers — autonomously, with every claim grounded in the source.",
+        f"{config.site_url}/about.html",
+        image_url=f"{config.site_url}/og-image.png",
+    )
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>How It Works &mdash; Signal</title>
-{_og_tags(
-    title="How It Works — Signal",
-    description="How Signal selects and summarizes AI research papers: the pipeline, the rules, and the verification process.",
-    url=f"{config.site_url}/about",
-)}
+{og}
 <link rel="alternate" type="application/rss+xml" title="Signal RSS" href="{config.site_url}/rss.xml">
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -533,6 +675,9 @@ async def generate_web_archive(
     editions_dir = output / "editions"
     editions_dir.mkdir(exist_ok=True)
 
+    figures_dir = output / "figures"
+    figures_dir.mkdir(exist_ok=True)
+
     # Generate landing page
     landing_html = generate_landing_page(editions, config)
     (output / "index.html").write_text(landing_html)
@@ -553,6 +698,13 @@ async def generate_web_archive(
     for edition in editions:
         page_html = generate_edition_page(edition, config)
         (editions_dir / f"{edition.week}.html").write_text(page_html)
+
+    # Generate OG image
+    _generate_og_image(output / "og-image.png")
+
+    # Generate email-confirmed page
+    confirmed_html = generate_confirmed_page(config)
+    (output / "confirmed.html").write_text(confirmed_html)
 
     # Generate feeds
     rss = generate_rss_feed(editions, config)

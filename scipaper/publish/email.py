@@ -84,6 +84,23 @@ def _render_piece_full_html(piece: Piece, is_lead: bool = False) -> str:
     title_size = "24px" if is_lead else "20px"
     content_html = _content_to_html(piece.content)
 
+    hero_figure_html = ""
+    if is_lead and piece.hero_figure_url:
+        caption_html = ""
+        if piece.hero_figure_caption:
+            caption_html = (
+                f'<p style="font-size: 13px; color: #666; margin-top: 8px;">'
+                f'{escape(piece.hero_figure_caption)}</p>'
+            )
+        hero_figure_html = (
+            f'<div style="margin: 24px 0;">'
+            f'<img src="{escape(piece.hero_figure_url)}" '
+            f'alt="{escape(piece.hero_figure_caption or "Key figure from the paper")}" '
+            f'style="max-width: 100%; height: auto; border: 2px solid #000; display: block;">'
+            f'{caption_html}'
+            f'</div>'
+        )
+
     return (
         f'<article id="{escape(piece.paper_id)}" style="margin-top: 32px; padding-bottom: 24px; '
         f'border-bottom: 1px solid #eee;">'
@@ -91,6 +108,7 @@ def _render_piece_full_html(piece: Piece, is_lead: bool = False) -> str:
         f'{escape(piece.title)}</h2>'
         f'<p style="color: #666; font-style: italic; margin-top: 0;">'
         f'{escape(piece.hook)}</p>'
+        f'{hero_figure_html}'
         f'<div style="font-size: 16px;">{content_html}</div>'
         f'</article>'
     )

@@ -16,6 +16,15 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
+class Figure:
+    """A figure extracted from a paper PDF."""
+    index: int  # Figure number (e.g. 1 for "Figure 1")
+    image_bytes: bytes
+    caption: str
+    page_number: int
+
+
+@dataclass
 class ParsedPaper:
     """Structured content extracted from a paper PDF."""
     arxiv_id: str
@@ -31,6 +40,13 @@ class ParsedPaper:
     # Extraction metadata
     parser_used: str
     parse_quality: str  # "good", "partial", "fallback"
+
+    # Extracted figures
+    figures: List[Figure] = None
+
+    def __post_init__(self):
+        if self.figures is None:
+            self.figures = []
 
 
 @dataclass
@@ -80,12 +96,41 @@ class PyMuPDFParser:
             logger.warning(f"Failed to open PDF {pdf_path}: {e}")
             return None
 
-        # Extract text from all pages
+        # Extract text and figures from all pages
         pages_text = []
-        for page in doc:
+        figures = []
+        for page_num, page in enumerate(doc):
             text = page.get_text("text")
             if text:
                 pages_text.append(text)
+
+            # Extract images from this page
+            for img_info in page.get_images(full=True):
+                xref = img_info[0]
+                try:
+                    img_data = doc.extract_image(xref)
+                    if not img_data or not img_data.get("image"):
+                        continue
+                    image_bytes = img_data["image"]
+                    # Skip tiny images (logos, icons)
+                    if len(image_bytes) < 10_000:
+                        continue
+                    w = img_data.get("width", 0)
+                    h = img_data.get("height", 0)
+                    if w < 100 or h < 100:
+                        continue
+                    # Try to find caption near this image
+                    caption, fig_idx = self._find_figure_caption(
+                        text or "", len(figures) + 1
+                    )
+                    figures.append(Figure(
+                        index=fig_idx,
+                        image_bytes=image_bytes,
+                        caption=caption,
+                        page_number=page_num + 1,
+                    ))
+                except Exception:
+                    continue
 
         doc.close()
 
@@ -119,7 +164,17 @@ class PyMuPDFParser:
             full_text=full_text,
             parser_used="pymupdf",
             parse_quality=quality,
+            figures=figures,
         )
+
+    def _find_figure_caption(self, page_text: str, fallback_index: int) -> tuple:
+        """Find a 'Figure N: caption' line in page text. Returns (caption, index)."""
+        match = re.search(
+            r'(?i)fig(?:ure)?\.?\s*(\d+)[.:]\s*(.+?)(?:\n|$)', page_text
+        )
+        if match:
+            return match.group(2).strip(), int(match.group(1))
+        return "", fallback_index
 
     def _extract_title(self, first_page: str) -> str:
         """Extract title from first page text."""
@@ -372,6 +427,25 @@ async def parse_paper_pdf(
             continue
 
     raise ValueError(f"All parsers failed for {arxiv_id}")
+
+
+def save_hero_figure(
+    figure: "Figure",
+    arxiv_id: str,
+    output_dir: Path,
+) -> Path:
+    """
+    Save a figure's image bytes to disk.
+
+    Returns the path to the saved file.
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
+    safe_id = arxiv_id.replace("/", "_")
+    filename = f"{safe_id}_fig{figure.index}.png"
+    path = output_dir / filename
+    path.write_bytes(figure.image_bytes)
+    logger.info(f"Saved hero figure: {path}")
+    return path
 
 
 async def download_paper_pdf(arxiv_id: str, output_dir: Path) -> Path:
