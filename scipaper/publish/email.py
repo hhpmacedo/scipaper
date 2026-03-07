@@ -101,6 +101,8 @@ def _render_piece_full_html(piece: Piece, is_lead: bool = False) -> str:
             f'</div>'
         )
 
+    abstract_html = _render_structured_abstract_html(piece)
+
     return (
         f'<article id="{escape(piece.paper_id)}" style="margin-top: 32px; padding-bottom: 24px; '
         f'border-bottom: 1px solid #eee;">'
@@ -108,6 +110,7 @@ def _render_piece_full_html(piece: Piece, is_lead: bool = False) -> str:
         f'{escape(piece.title)}</h2>'
         f'<p style="color: #666; font-style: italic; margin-top: 0;">'
         f'{escape(piece.hook)}</p>'
+        f'{abstract_html}'
         f'{hero_figure_html}'
         f'<div style="font-size: 16px;">{content_html}</div>'
         f'</article>'
@@ -119,6 +122,8 @@ def _render_piece_preview_html(piece: Piece, week: str, web_base_url: str) -> st
     first_paragraph = _extract_first_paragraph(piece.content)
     read_more_url = f"{web_base_url}/editions/{week}.html#{piece.paper_id}"
 
+    abstract_html = _render_structured_abstract_html(piece)
+
     return (
         f'<article id="{escape(piece.paper_id)}" style="margin-top: 32px; padding-bottom: 24px; '
         f'border-bottom: 1px solid #eee;">'
@@ -126,6 +131,7 @@ def _render_piece_preview_html(piece: Piece, week: str, web_base_url: str) -> st
         f'{escape(piece.title)}</h2>'
         f'<p style="color: #666; font-style: italic; margin-top: 0;">'
         f'{escape(piece.hook)}</p>'
+        f'{abstract_html}'
         f'<div style="font-size: 16px;">'
         f'<p style="margin: 12px 0;">{escape(first_paragraph)}</p>'
         f'</div>'
@@ -133,6 +139,33 @@ def _render_piece_preview_html(piece: Piece, week: str, web_base_url: str) -> st
         f'<a href="{read_more_url}" style="color: #333; font-weight: 600;">Read more &rarr;</a>'
         f'</p>'
         f'</article>'
+    )
+
+
+def _render_structured_abstract_html(piece: Piece) -> str:
+    """Render the structured abstract as inline-styled HTML for email."""
+    if not piece.structured_abstract:
+        return ""
+    sa = piece.structured_abstract
+    items = []
+    label_style = "font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #000;"
+    for key, label in [
+        ("what_they_did", "What they did"),
+        ("key_result", "Key result"),
+        ("why_it_matters", "Why it matters"),
+    ]:
+        if sa.get(key):
+            items.append(
+                f'<li style="margin-bottom: 6px;">'
+                f'<span style="{label_style}">{label}</span> &mdash; '
+                f'{escape(sa[key])}'
+                f'</li>'
+            )
+    if not items:
+        return ""
+    return (
+        f'<ul style="list-style: none; padding: 0; margin: 0 0 16px; '
+        f'font-size: 15px; color: #333;">{"".join(items)}</ul>'
     )
 
 
@@ -225,6 +258,17 @@ def render_edition_text(edition: Edition, web_base_url: str) -> str:
         lines.append("")
         lines.append(piece.hook)
         lines.append("")
+
+        if piece.structured_abstract:
+            sa = piece.structured_abstract
+            for key, label in [
+                ("what_they_did", "What they did"),
+                ("key_result", "Key result"),
+                ("why_it_matters", "Why it matters"),
+            ]:
+                if sa.get(key):
+                    lines.append(f"  {label} — {sa[key]}")
+            lines.append("")
 
         if i == 0:
             # Lead: full content

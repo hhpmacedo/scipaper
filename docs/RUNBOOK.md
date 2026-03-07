@@ -9,14 +9,14 @@ The pipeline runs automatically every Sunday at 18:00 UTC via GitHub Actions.
 1. Go to Actions tab in GitHub
 2. Select "Weekly Edition" workflow
 3. Click "Run workflow"
-4. Optionally specify a week override (e.g., `2025-W10`)
+4. Optionally specify a week override (e.g., `2026-W10`)
 
 ### Local Run
 
 ```bash
 export ANTHROPIC_API_KEY=...
 export BUTTONDOWN_API_KEY=...
-python -m scipaper --run --week 2025-W10
+python -m scipaper --run --week 2026-W10
 ```
 
 Use `--json-logs` for structured JSON output (used in CI).

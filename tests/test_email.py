@@ -39,7 +39,7 @@ def make_piece(
 
 def make_edition(**kwargs):
     defaults = dict(
-        week="2025-W10",
+        week="2026-W10",
         issue_number=1,
         pieces=[make_piece()],
         quick_takes=[
@@ -85,7 +85,7 @@ class TestHybridRendering:
         # "Read more" link should appear for secondary
         assert "Read more" in html
         # Link should point to the web archive URL with paper anchor
-        assert f"{WEB_BASE_URL}/editions/2025-W10.html#sec-id" in html
+        assert f"{WEB_BASE_URL}/editions/2026-W10.html#sec-id" in html
 
     def test_single_piece_rendered_in_full(self):
         """Single piece edition: piece rendered fully, no 'Read more' link."""
@@ -118,7 +118,7 @@ class TestHybridRendering:
 
         assert "Signal" in html
         assert "#1" in html
-        assert "2025-W10" in html
+        assert "2026-W10" in html
 
     def test_valid_html_structure(self):
         """Output should be valid HTML with DOCTYPE and closing tag."""
@@ -139,7 +139,7 @@ class TestPlainTextRendering:
 
         assert "SIGNAL" in text
         assert "Issue #1" in text
-        assert "2025-W10" in text
+        assert "2026-W10" in text
 
     def test_lead_piece_full_content(self):
         """Lead piece content should appear in full in plain text."""
@@ -158,7 +158,7 @@ class TestPlainTextRendering:
         text = render_edition_text(edition, WEB_BASE_URL)
 
         assert "Read more:" in text
-        assert f"{WEB_BASE_URL}/editions/2025-W10.html#sec-id" in text
+        assert f"{WEB_BASE_URL}/editions/2026-W10.html#sec-id" in text
 
     def test_quick_takes_present(self):
         """Quick Takes section should appear in plain text."""
@@ -252,7 +252,7 @@ class TestSendEditionEmail:
             report = run_async(send_edition_email(edition, config, WEB_BASE_URL))
 
         assert report.sent is True
-        assert report.edition_week == "2025-W10"
+        assert report.edition_week == "2026-W10"
         assert report.buttondown_id == "email-abc-123"
         assert report.errors == []
         assert report.sent_at is not None

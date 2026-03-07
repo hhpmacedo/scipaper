@@ -46,7 +46,7 @@ def make_paper(**kwargs):
 
 def make_anchor(**kwargs):
     defaults = dict(
-        week="2025-W10",
+        week="2026-W10",
         updated_by="test",
         updated_at=datetime.now(timezone.utc),
         hot_topics=[

@@ -60,7 +60,7 @@ def make_piece(paper_id="2403.12345", title="Test Piece", hook="A test hook.",
 
 def make_edition(**kwargs):
     defaults = dict(
-        week="2025-W10", issue_number=1,
+        week="2026-W10", issue_number=1,
         pieces=[make_piece(), make_piece(paper_id="2403.99999", title="Secondary Piece", hook="Another hook.")],
         quick_takes=[QuickTake(paper_id="qt1", title="Quick Take Paper", one_liner="A brief summary.", paper_url="https://arxiv.org/abs/qt1")],
         total_words=100,
@@ -544,7 +544,7 @@ class TestMainCLI:
         mock_result.pieces_generated = 3
         mock_result.pieces_passed = 3
         mock_result.edition = MagicMock()
-        mock_result.edition.week = "2025-W10"
+        mock_result.edition.week = "2026-W10"
         mock_result.errors = []
 
         with patch("scipaper.__main__.run_pipeline", new_callable=AsyncMock, return_value=mock_result):
@@ -569,7 +569,7 @@ CLI for the full Signal pipeline.
 
 Usage:
     python -m scipaper --run              # Run full pipeline
-    python -m scipaper --run --week 2025-W10  # Run for specific week
+    python -m scipaper --run --week 2026-W10  # Run for specific week
 """
 
 import argparse
@@ -640,7 +640,7 @@ def main():
         prog="python -m scipaper",
     )
     parser.add_argument("--run", action="store_true", help="Run full pipeline")
-    parser.add_argument("--week", type=str, default=None, help="Anchor document week (e.g., 2025-W10)")
+    parser.add_argument("--week", type=str, default=None, help="Anchor document week (e.g., 2026-W10)")
     parser.add_argument("--log-level", type=str, default="INFO",
                         choices=["DEBUG", "INFO", "WARNING", "ERROR"])
 
@@ -970,7 +970,7 @@ on:
   workflow_dispatch:
     inputs:
       week:
-        description: "Anchor week override (e.g., 2025-W10)"
+        description: "Anchor week override (e.g., 2026-W10)"
         required: false
 
 jobs:
@@ -1053,13 +1053,13 @@ The pipeline runs automatically every Sunday at 18:00 UTC via GitHub Actions.
 1. Go to Actions tab in GitHub
 2. Select "Weekly Edition" workflow
 3. Click "Run workflow"
-4. Optionally specify a week override (e.g., `2025-W10`)
+4. Optionally specify a week override (e.g., `2026-W10`)
 
 ### Local Run
 
     export ANTHROPIC_API_KEY=...
     export BUTTONDOWN_API_KEY=...
-    python -m scipaper --run --week 2025-W10
+    python -m scipaper --run --week 2026-W10
 
 ## Failure Handling (DEC-004)
 

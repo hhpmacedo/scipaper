@@ -175,7 +175,7 @@ OTHER_PAPERS = [
 ]
 
 ANCHOR = AnchorDocument(
-    week="2025-W10",
+    week="2026-W10",
     updated_by="Paula",
     updated_at=datetime.utcnow(),
     hot_topics=[
@@ -358,7 +358,7 @@ async def demo():
             for sp in runners_up
         ]
         edition = await assemble_edition(
-            [piece], runners_up, "2025-W10", 42,
+            [piece], runners_up, "2026-W10", 42,
             AssemblyConfig(max_pieces=3, max_quick_takes=3),
         )
 

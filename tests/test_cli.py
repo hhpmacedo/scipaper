@@ -21,7 +21,7 @@ from scipaper.publish.web import WebConfig
 @pytest.fixture
 def sample_anchor():
     return AnchorDocument(
-        week="2025-W10",
+        week="2026-W10",
         updated_by="test",
         updated_at=datetime(2025, 3, 5, tzinfo=timezone.utc),
         hot_topics=["LLM reasoning"],
@@ -118,14 +118,14 @@ def test_cmd_run_pipeline_passes_week_to_load_anchor(
     from scipaper.__main__ import cmd_run_pipeline
 
     mock_args = MagicMock()
-    mock_args.week = "2025-W10"
+    mock_args.week = "2026-W10"
     mock_args.log_level = "INFO"
 
     with patch("scipaper.__main__.load_anchor", return_value=sample_anchor) as mock_load, \
          patch("scipaper.__main__.run_pipeline", new_callable=AsyncMock, return_value=successful_pipeline_result):
         run_async(cmd_run_pipeline(mock_args))
 
-    mock_load.assert_called_once_with("2025-W10")
+    mock_load.assert_called_once_with("2026-W10")
 
 
 def test_cmd_run_pipeline_sets_buttondown_config_from_env(
@@ -257,13 +257,13 @@ def test_main_run_with_week_flag(sample_anchor, successful_pipeline_result):
     """main() passes --week value through to load_anchor."""
     from scipaper.__main__ import main
 
-    with patch("sys.argv", ["scipaper", "--run", "--week", "2025-W10"]), \
+    with patch("sys.argv", ["scipaper", "--run", "--week", "2026-W10"]), \
          patch("scipaper.__main__.load_anchor", return_value=sample_anchor) as mock_load, \
          patch("scipaper.__main__.run_pipeline", new_callable=AsyncMock, return_value=successful_pipeline_result), \
          patch("scipaper.__main__.setup_logging"):
         main()
 
-    mock_load.assert_called_once_with("2025-W10")
+    mock_load.assert_called_once_with("2026-W10")
 
 
 def test_main_log_level_passed_to_setup_logging(

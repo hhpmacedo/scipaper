@@ -110,6 +110,26 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
         authors_html = ""
         if piece.authors:
             authors_html = f'<p class="authors">{escape(", ".join(piece.authors))}</p>'
+        abstract_html = ""
+        if piece.structured_abstract:
+            sa = piece.structured_abstract
+            abstract_items = []
+            if sa.get("what_they_did"):
+                abstract_items.append(
+                    f'<li><strong>What they did</strong> &mdash; {escape(sa["what_they_did"])}</li>'
+                )
+            if sa.get("key_result"):
+                abstract_items.append(
+                    f'<li><strong>Key result</strong> &mdash; {escape(sa["key_result"])}</li>'
+                )
+            if sa.get("why_it_matters"):
+                abstract_items.append(
+                    f'<li><strong>Why it matters</strong> &mdash; {escape(sa["why_it_matters"])}</li>'
+                )
+            if abstract_items:
+                abstract_html = (
+                    f'<ul class="structured-abstract">{"".join(abstract_items)}</ul>'
+                )
         hero_figure_html = ""
         if i == 0 and piece.hero_figure_url:
             caption_html = ""
@@ -126,6 +146,7 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
             f'<h2>{title_html}</h2>'
             f'{authors_html}'
             f'<p class="hook">{escape(piece.hook)}</p>'
+            f'{abstract_html}'
             f'{hero_figure_html}'
             f'<div class="content">{content_html}</div>'
             f'</article>'
@@ -178,6 +199,9 @@ header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; let
 .piece h2 a:hover {{ color: #e63b19; border-bottom-color: #e63b19; }}
 .piece .authors {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #666; margin-bottom: 12px; }}
 .hook {{ color: #333; font-style: italic; margin-top: 0; margin-bottom: 16px; }}
+.structured-abstract {{ list-style: none; padding: 0; margin: 0 0 20px; font-size: 15px; color: #333; }}
+.structured-abstract li {{ margin-bottom: 6px; }}
+.structured-abstract strong {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #000; }}
 .hero-figure {{ margin: 24px 0; }}
 .hero-figure img {{ max-width: 100%; height: auto; border: 2px solid #000; display: block; }}
 .hero-figure figcaption {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; color: #666; margin-top: 8px; }}
@@ -662,7 +686,7 @@ async def generate_web_archive(
     Creates:
     - index.html (landing page with subscribe form)
     - archive.html (edition list)
-    - /editions/2025-W10.html (individual editions)
+    - /editions/2026-W10.html (individual editions)
     - /rss.xml (RSS feed)
     - /feed.json (JSON feed)
 

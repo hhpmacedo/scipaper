@@ -2,11 +2,11 @@ name: Weekly Edition
 
 on:
   schedule:
-    - cron: "0 18 * * 0" # Sundays 18:00 UTC
+    - cron: "0 18 * * 2" # Tuesdays 18:00 UTC
   workflow_dispatch:
     inputs:
       week:
-        description: "Anchor week override (e.g., 2025-W10)"
+        description: "Anchor week override (e.g., 2026-W10)"
         required: false
 
 jobs:

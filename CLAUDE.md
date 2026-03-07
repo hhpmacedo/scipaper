@@ -36,7 +36,7 @@ pip install -r requirements.txt
 
 # Run full pipeline end-to-end
 python -m scipaper --run                    # Uses latest anchor document
-python -m scipaper --run --week 2025-W10    # Override anchor week
+python -m scipaper --run --week 2026-W10    # Override anchor week
 python -m scipaper --run --json-logs        # JSON log output (for CI)
 python -m scipaper --run --no-cache        # Bypass SQLite cache
 

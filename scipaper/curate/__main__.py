@@ -274,7 +274,7 @@ def main():
     )
     parser.add_argument(
         "--week", type=str, default=None,
-        help="Anchor document week (e.g., 2025-W10)",
+        help="Anchor document week (e.g., 2026-W10)",
     )
     parser.add_argument(
         "--log-level", type=str, default="INFO",
