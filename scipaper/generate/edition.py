@@ -25,7 +25,7 @@ class QuickTake:
 @dataclass
 class Edition:
     """A complete edition ready for publishing."""
-    week: str  # ISO week: 2025-W10
+    week: str  # ISO week: 2026-W10
     issue_number: int
 
     # Main pieces (3-5)

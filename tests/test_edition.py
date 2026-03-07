@@ -52,12 +52,12 @@ def make_scored_paper(arxiv_id="2403.12345", title="Test Paper", abstract="Test 
 
 class TestEdition:
     def test_post_init_sets_created_at(self):
-        ed = Edition(week="2025-W10", issue_number=1)
+        ed = Edition(week="2026-W10", issue_number=1)
         assert ed.created_at is not None
 
     def test_preserves_provided_created_at(self):
         dt = datetime(2025, 1, 1)
-        ed = Edition(week="2025-W10", issue_number=1, created_at=dt)
+        ed = Edition(week="2026-W10", issue_number=1, created_at=dt)
         assert ed.created_at == dt
 
 
@@ -101,9 +101,9 @@ class TestAssembleEdition:
                 QuickTake(paper_id=str(i + 10), title=f"Paper {i}", one_liner="Summary.", paper_url="https://arxiv.org")
                 for i in range(2)
             ]
-            edition = run_async(assemble_edition(pieces, runners, "2025-W10", 1))
+            edition = run_async(assemble_edition(pieces, runners, "2026-W10", 1))
 
-        assert edition.week == "2025-W10"
+        assert edition.week == "2026-W10"
         assert edition.issue_number == 1
         assert len(edition.pieces) == 3
         assert len(edition.quick_takes) == 2
@@ -113,7 +113,7 @@ class TestAssembleEdition:
         pieces = [make_piece(paper_id=str(i)) for i in range(10)]
         config = AssemblyConfig(max_pieces=3, max_quick_takes=0)
 
-        edition = run_async(assemble_edition(pieces, [], "2025-W10", 1, config))
+        edition = run_async(assemble_edition(pieces, [], "2026-W10", 1, config))
         assert len(edition.pieces) == 3
 
     def test_quick_take_fallback_on_error(self):
@@ -122,7 +122,7 @@ class TestAssembleEdition:
 
         with patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt:
             mock_qt.side_effect = Exception("API error")
-            edition = run_async(assemble_edition(pieces, runners, "2025-W10", 1))
+            edition = run_async(assemble_edition(pieces, runners, "2026-W10", 1))
 
         # Should still have a quick take from fallback
         assert len(edition.quick_takes) == 1
@@ -131,7 +131,7 @@ class TestAssembleEdition:
 class TestGenerateEditionSubject:
     def test_with_pieces(self):
         ed = Edition(
-            week="2025-W10",
+            week="2026-W10",
             issue_number=42,
             pieces=[make_piece(hook="A surprising finding about LLMs")],
         )
@@ -142,7 +142,7 @@ class TestGenerateEditionSubject:
     def test_truncates_long_hook(self):
         long_hook = "A" * 80
         ed = Edition(
-            week="2025-W10",
+            week="2026-W10",
             issue_number=1,
             pieces=[make_piece(hook=long_hook)],
         )
@@ -150,7 +150,7 @@ class TestGenerateEditionSubject:
         assert len(subject) < 80
 
     def test_fallback_without_pieces(self):
-        ed = Edition(week="2025-W10", issue_number=1)
+        ed = Edition(week="2026-W10", issue_number=1)
         subject = generate_edition_subject(ed)
         assert "Signal #1" in subject
         assert "This Week" in subject

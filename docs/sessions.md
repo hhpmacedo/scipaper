@@ -165,7 +165,7 @@ Append-only session log. Each entry captures what happened and where to pick up.
 - Changed default generation model to Opus 4.6 (Sonnet stays for scoring/verification)
 - Production readiness audit — all modules implemented, 228 tests, zero stubs
 - Added Vercel deploy step to `weekly-edition.yml` (via Vercel CLI `--prod`)
-- Published first edition (2025-W10): 3 pieces, 2845 words, pushed to live site
+- Published first edition (2026-W10): 3 pieces, 2845 words, pushed to live site
 
 **Key decisions:**
 

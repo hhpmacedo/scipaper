@@ -3,7 +3,7 @@ Top-level CLI entrypoint for the Signal pipeline.
 
 Usage:
     python -m scipaper --run              # Run the full pipeline
-    python -m scipaper --run --week 2025-W10
+    python -m scipaper --run --week 2026-W10
     python -m scipaper --run --log-level DEBUG
     python -m scipaper --run --json-logs
 """
@@ -117,7 +117,7 @@ def main() -> None:
         type=str,
         default=None,
         metavar="WEEK",
-        help="Override anchor week (e.g. 2025-W10)",
+        help="Override anchor week (e.g. 2026-W10)",
     )
     parser.add_argument(
         "--log-level",

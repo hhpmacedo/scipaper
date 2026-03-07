@@ -132,7 +132,7 @@ def make_sample_papers():
 
 def make_anchor():
     return AnchorDocument(
-        week="2025-W10",
+        week="2026-W10",
         updated_by="test",
         updated_at=datetime.now(timezone.utc),
         hot_topics=[
@@ -188,7 +188,7 @@ class TestEndToEndPipeline:
             style=StyleConfig(min_words=50, max_words=5000),
             assembly=AssemblyConfig(max_pieces=3, max_quick_takes=2),
             web=WebConfig(output_dir=tmp_path / "public"),
-            week="2025-W10",
+            week="2026-W10",
             issue_number=42,
             skip_pdf_download=True,
         )
@@ -232,7 +232,7 @@ class TestEndToEndPipeline:
 
         # Verify edition was produced
         assert result.edition is not None
-        assert result.edition.week == "2025-W10"
+        assert result.edition.week == "2026-W10"
         assert result.edition.issue_number == 42
         assert len(result.edition.pieces) >= 1
         assert result.edition.total_words > 0
@@ -246,7 +246,7 @@ class TestEndToEndPipeline:
         # Verify web archive was generated
         assert result.web_output is not None
         assert (result.web_output / "index.html").exists()
-        assert (result.web_output / "editions" / "2025-W10.html").exists()
+        assert (result.web_output / "editions" / "2026-W10.html").exists()
         assert (result.web_output / "rss.xml").exists()
         assert (result.web_output / "feed.json").exists()
 
@@ -255,13 +255,13 @@ class TestEndToEndPipeline:
         assert "Signal" in index
         assert "#42" in index
 
-        edition_page = (result.web_output / "editions" / "2025-W10.html").read_text()
+        edition_page = (result.web_output / "editions" / "2026-W10.html").read_text()
         assert "Teaching LLMs" in edition_page or "Step by Step" in edition_page
 
     def test_pipeline_with_no_papers(self):
         """Pipeline handles empty input gracefully."""
         anchor = make_anchor()
-        config = PipelineConfig(week="2025-W10", skip_pdf_download=True)
+        config = PipelineConfig(week="2026-W10", skip_pdf_download=True)
 
         with patch("scipaper.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock:
             mock.return_value = 5.0

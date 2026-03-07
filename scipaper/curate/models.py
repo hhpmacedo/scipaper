@@ -70,7 +70,7 @@ class AnchorDocument:
     Weekly relevance anchor document.
     The only human input in the entire system.
     """
-    week: str  # ISO week format: 2025-W10
+    week: str  # ISO week format: 2026-W10
     updated_by: str
     updated_at: datetime
     

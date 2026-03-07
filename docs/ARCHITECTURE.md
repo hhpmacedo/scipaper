@@ -152,8 +152,8 @@ class Paper:
 **Relevance Anchor Document:**
 
 ```yaml
-# anchors/2025-W10.yaml
-week: 2025-W10
+# anchors/2026-W10.yaml
+week: 2026-W10
 updated_by: hugo
 updated_at: 2025-03-03T10:00:00Z
 

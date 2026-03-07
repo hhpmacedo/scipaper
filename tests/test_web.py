@@ -34,7 +34,7 @@ def make_piece(paper_id="2403.12345", title="Test Piece", hook="A test hook."):
     )
 
 
-def make_edition(week="2025-W10", issue_number=1, **kwargs):
+def make_edition(week="2026-W10", issue_number=1, **kwargs):
     defaults = dict(
         week=week,
         issue_number=issue_number,
@@ -79,7 +79,7 @@ class TestGenerateEditionPage:
         html = generate_edition_page(edition)
         assert "Signal" in html
         assert "#1" in html
-        assert "2025-W10" in html
+        assert "2026-W10" in html
 
     def test_contains_pieces(self):
         edition = make_edition()
@@ -124,11 +124,11 @@ class TestGenerateIndexPage:
 
     def test_lists_editions(self):
         editions = [
-            make_edition(week="2025-W10", issue_number=1),
+            make_edition(week="2026-W10", issue_number=1),
             make_edition(week="2025-W11", issue_number=2),
         ]
         html = generate_index_page(editions)
-        assert "2025-W10" in html
+        assert "2026-W10" in html
         assert "2025-W11" in html
         assert "#1" in html
         assert "#2" in html
@@ -158,11 +158,11 @@ class TestGenerateLandingPage:
         assert "weekly" in html.lower()
 
     def test_contains_latest_edition_link(self):
-        editions = [make_edition(week="2025-W10", issue_number=1)]
+        editions = [make_edition(week="2026-W10", issue_number=1)]
         config = WebConfig(site_url="https://signal.test")
         html = generate_landing_page(editions, config)
-        assert "2025-W10" in html
-        assert "signal.test/editions/2025-W10.html" in html
+        assert "2026-W10" in html
+        assert "signal.test/editions/2026-W10.html" in html
 
     def test_contains_archive_link(self):
         config = WebConfig(site_url="https://signal.test")
@@ -189,11 +189,11 @@ class TestGenerateArchivePage:
 
     def test_lists_editions(self):
         editions = [
-            make_edition(week="2025-W10", issue_number=1),
+            make_edition(week="2026-W10", issue_number=1),
             make_edition(week="2025-W11", issue_number=2),
         ]
         html = generate_archive_page(editions)
-        assert "2025-W10" in html
+        assert "2026-W10" in html
         assert "2025-W11" in html
 
     def test_has_home_link(self):
@@ -213,7 +213,7 @@ class TestGenerateRssFeed:
         assert "<channel>" in rss
 
     def test_contains_items(self):
-        editions = [make_edition(week="2025-W10", issue_number=1)]
+        editions = [make_edition(week="2026-W10", issue_number=1)]
         rss = generate_rss_feed(editions)
         assert "<item>" in rss
         assert "Signal #1" in rss
@@ -234,7 +234,7 @@ class TestGenerateJsonFeed:
         assert "items" in feed
 
     def test_contains_items(self):
-        editions = [make_edition(week="2025-W10", issue_number=1)]
+        editions = [make_edition(week="2026-W10", issue_number=1)]
         feed = json.loads(generate_json_feed(editions))
         assert len(feed["items"]) == 1
         assert "Signal #1" in feed["items"][0]["title"]
@@ -253,7 +253,7 @@ class TestGenerateWebArchive:
 
         assert (output / "index.html").exists()
         assert (output / "archive.html").exists()
-        assert (output / "editions" / "2025-W10.html").exists()
+        assert (output / "editions" / "2026-W10.html").exists()
         assert (output / "rss.xml").exists()
         assert (output / "feed.json").exists()
 
@@ -270,25 +270,25 @@ class TestGenerateWebArchive:
     def test_archive_lists_editions(self, tmp_path):
         """archive.html should list all editions."""
         config = WebConfig(output_dir=tmp_path / "public")
-        editions = [make_edition(week="2025-W10", issue_number=1)]
+        editions = [make_edition(week="2026-W10", issue_number=1)]
 
         output = run_async(generate_web_archive(editions, config))
 
         archive_html = (output / "archive.html").read_text()
-        assert "2025-W10" in archive_html
+        assert "2026-W10" in archive_html
 
     def test_multiple_editions(self, tmp_path):
         config = WebConfig(output_dir=tmp_path / "public")
         editions = [
-            make_edition(week="2025-W10", issue_number=1),
+            make_edition(week="2026-W10", issue_number=1),
             make_edition(week="2025-W11", issue_number=2),
         ]
 
         output = run_async(generate_web_archive(editions, config))
 
-        assert (output / "editions" / "2025-W10.html").exists()
+        assert (output / "editions" / "2026-W10.html").exists()
         assert (output / "editions" / "2025-W11.html").exists()
 
         archive = (output / "archive.html").read_text()
-        assert "2025-W10" in archive
+        assert "2026-W10" in archive
         assert "2025-W11" in archive

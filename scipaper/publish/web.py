@@ -686,7 +686,7 @@ async def generate_web_archive(
     Creates:
     - index.html (landing page with subscribe form)
     - archive.html (edition list)
-    - /editions/2025-W10.html (individual editions)
+    - /editions/2026-W10.html (individual editions)
     - /rss.xml (RSS feed)
     - /feed.json (JSON feed)
 
