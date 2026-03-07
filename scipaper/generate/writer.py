@@ -36,6 +36,9 @@ class Piece:
     paper_url: str = ""
     authors: list = None  # List of author name strings
 
+    # Structured abstract (3-part: what_they_did, key_result, why_it_matters)
+    structured_abstract: Optional[dict] = None
+
     # Hero figure (lead piece only)
     hero_figure_url: Optional[str] = None
     hero_figure_caption: Optional[str] = None
@@ -82,6 +85,11 @@ Return your response as JSON:
 {
   "title": "piece title",
   "hook": "one sentence hook",
+  "structured_abstract": {
+    "what_they_did": "1-2 sentences: what the researchers actually built or tested",
+    "key_result": "1-2 sentences: the most important finding, with a concrete number if possible",
+    "why_it_matters": "1 sentence: what this means for practitioners, grounded not speculative"
+  },
   "content": "the full piece with citations",
   "sections": ["The Problem", "What They Did", "The Results", "Why It Matters"],
   "hero_figure": null or <integer figure number>
@@ -180,10 +188,21 @@ async def generate_piece(
                 hero_figure_caption = fig.caption or f"Figure {fig.index}"
                 break
 
+    # Parse structured abstract (validate keys)
+    raw_abstract = parsed.get("structured_abstract")
+    structured_abstract = None
+    if isinstance(raw_abstract, dict):
+        structured_abstract = {
+            "what_they_did": raw_abstract.get("what_they_did", ""),
+            "key_result": raw_abstract.get("key_result", ""),
+            "why_it_matters": raw_abstract.get("why_it_matters", ""),
+        }
+
     piece = Piece(
         paper_id=paper.arxiv_id,
         title=parsed.get("title", paper.title),
         hook=parsed.get("hook", ""),
+        structured_abstract=structured_abstract,
         content=content,
         word_count=len(content.split()),
         citations=citations,
