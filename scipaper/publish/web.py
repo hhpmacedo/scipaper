@@ -395,6 +395,68 @@ footer a:hover {{ color: #e63b19; }}
 </html>"""
 
 
+def generate_confirmed_page(config: Optional[WebConfig] = None) -> str:
+    """
+    Generate the page shown after a subscriber clicks the Buttondown
+    confirmation link in their email.
+    """
+    config = config or WebConfig()
+
+    og = _og_tags(
+        f"Confirmed — {config.site_title}",
+        "Subscription confirmed. AI research, translated. Every Tuesday.",
+        f"{config.site_url}/confirmed.html",
+        image_url=f"{config.site_url}/og-image.png",
+    )
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmed &mdash; {escape(config.site_title)}</title>
+{og}
+<style>
+* {{ margin: 0; padding: 0; box-sizing: border-box; }}
+body {{ font-family: "Helvetica Neue", Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 40px 20px; color: #000; line-height: 1.5; }}
+.top-rule {{ border: none; border-top: 8px solid #000; margin-bottom: 60px; }}
+header {{ padding: 0 0 40px; }}
+header h1 {{ font-size: 80px; font-weight: 900; letter-spacing: -3px; text-transform: uppercase; line-height: 0.9; }}
+header h1 a {{ text-decoration: none; color: inherit; }}
+header p {{ font-size: 18px; font-weight: 400; color: #000; margin-top: 8px; letter-spacing: 1px; text-transform: uppercase; }}
+.divider {{ border: none; border-top: 4px solid #000; margin: 0 0 40px; }}
+.confirmation {{ padding: 40px 0; }}
+.confirmation h2 {{ font-size: 32px; font-weight: 900; margin-bottom: 16px; }}
+.confirmation p {{ font-size: 18px; margin-bottom: 12px; color: #333; }}
+.confirmation a {{ color: #000; font-weight: 700; border-bottom: 2px solid #000; text-decoration: none; }}
+.confirmation a:hover {{ color: #e63b19; border-bottom-color: #e63b19; }}
+footer {{ margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
+footer a {{ color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }}
+footer a:hover {{ color: #e63b19; }}
+</style>
+</head>
+<body>
+<hr class="top-rule">
+<header>
+<h1><a href="{config.site_url}">Signal</a></h1>
+<p>AI Research for the Curious</p>
+</header>
+
+<hr class="divider">
+
+<div class="confirmation">
+<h2>Confirmed.</h2>
+<p>Your subscription is active. Your first edition arrives next Tuesday.</p>
+<p><a href="{config.site_url}/archive.html">Browse the archive</a> while you wait.</p>
+</div>
+
+<footer>
+<nav><a href="{config.site_url}">Home</a> <a href="{config.site_url}/archive.html">Archive</a> <a href="{config.site_url}/about.html">About</a> <a href="{config.site_url}/rss.xml">RSS</a></nav>
+</footer>
+</body>
+</html>"""
+
+
 def generate_archive_page(
     editions: List[Edition], config: Optional[WebConfig] = None
 ) -> str:
@@ -618,6 +680,10 @@ async def generate_web_archive(
 
     # Generate OG image
     _generate_og_image(output / "og-image.png")
+
+    # Generate email-confirmed page
+    confirmed_html = generate_confirmed_page(config)
+    (output / "confirmed.html").write_text(confirmed_html)
 
     # Generate feeds
     rss = generate_rss_feed(editions, config)
