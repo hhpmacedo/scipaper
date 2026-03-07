@@ -131,7 +131,7 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
                     f'<ul class="structured-abstract">{"".join(abstract_items)}</ul>'
                 )
         hero_figure_html = ""
-        if i == 0 and piece.hero_figure_url:
+        if piece.hero_figure_url:
             caption_html = ""
             if piece.hero_figure_caption:
                 caption_html = f'<figcaption>{escape(piece.hero_figure_caption)}</figcaption>'
@@ -152,6 +152,26 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
             f'</article>'
         )
 
+    # Table of contents
+    toc_items = []
+    for i, piece in enumerate(edition.pieces):
+        short_title = piece.title
+        if len(short_title) > 80:
+            short_title = short_title[:77] + "..."
+        toc_items.append(
+            f'<li><a href="#{escape(piece.paper_id)}">{escape(short_title)}</a></li>'
+        )
+    if edition.quick_takes:
+        toc_items.append(
+            f'<li><a href="#quick-takes">Quick Takes ({len(edition.quick_takes)} papers)</a></li>'
+        )
+    toc_html = (
+        f'<nav class="toc">'
+        f'<h2>In This Issue</h2>'
+        f'<ol>{"".join(toc_items)}</ol>'
+        f'</nav>'
+    ) if toc_items else ""
+
     quick_takes_html = ""
     if edition.quick_takes:
         qt_items = []
@@ -163,7 +183,7 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
                 f'</li>'
             )
         quick_takes_html = (
-            f'<section class="quick-takes">'
+            f'<section class="quick-takes" id="quick-takes">'
             f'<h2>Quick Takes</h2>'
             f'<ul>{"".join(qt_items)}</ul>'
             f'</section>'
@@ -205,6 +225,13 @@ header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; let
 .hero-figure {{ margin: 24px 0; }}
 .hero-figure img {{ max-width: 100%; height: auto; border: 2px solid #000; display: block; }}
 .hero-figure figcaption {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; color: #666; margin-top: 8px; }}
+.toc {{ margin-bottom: 40px; padding-bottom: 30px; border-bottom: 2px solid #000; }}
+.toc h2 {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }}
+.toc ol {{ list-style: none; padding: 0; counter-reset: toc; }}
+.toc li {{ counter-increment: toc; margin-bottom: 8px; font-size: 16px; }}
+.toc li::before {{ content: counter(toc) ". "; font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 700; }}
+.toc a {{ color: #000; text-decoration: none; border-bottom: 1px solid #999; }}
+.toc a:hover {{ color: #e63b19; border-bottom-color: #e63b19; }}
 .content {{ font-size: 17px; }}
 .content p {{ margin-bottom: 14px; }}
 .quick-takes {{ margin-top: 40px; padding-top: 30px; border-top: 4px solid #000; }}
@@ -231,6 +258,8 @@ footer a:hover {{ color: #e63b19; }}
 </header>
 
 <hr class="divider">
+
+{toc_html}
 
 {"".join(pieces_html)}
 

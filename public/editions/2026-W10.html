@@ -156,6 +156,43 @@
         color: #666;
         margin-top: 8px;
       }
+      .toc {
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 2px solid #000;
+      }
+      .toc h2 {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 12px;
+      }
+      .toc ol {
+        list-style: none;
+        padding: 0;
+        counter-reset: toc;
+      }
+      .toc li {
+        counter-increment: toc;
+        margin-bottom: 8px;
+        font-size: 16px;
+      }
+      .toc li::before {
+        content: counter(toc) ". ";
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        font-weight: 700;
+      }
+      .toc a {
+        color: #000;
+        text-decoration: none;
+        border-bottom: 1px solid #999;
+      }
+      .toc a:hover {
+        color: #e63b19;
+        border-bottom-color: #e63b19;
+      }
       .content {
         font-size: 17px;
       }
@@ -244,6 +281,32 @@
     </header>
 
     <hr class="divider" />
+
+    <nav class="toc">
+      <h2>In This Issue</h2>
+      <ol>
+        <li>
+          <a href="#2603.04212v1"
+            >Can You Tell Which AI Wrote That Code? A New Method Tries to
+            Fingerprint LLM-Generated Programs</a
+          >
+        </li>
+        <li>
+          <a href="#2603.04257v1"
+            >Memex: Teaching AI Agents to Take Notes Instead of Forgetting</a
+          >
+        </li>
+        <li>
+          <a href="#2603.03825v1"
+            >The Paradox of Multimodal Training: Why Text-Only Data Makes Vision
+            Models See Better</a
+          >
+        </li>
+        <li>
+          <a href="#quick-takes">Quick Takes (5 papers)</a>
+        </li>
+      </ol>
+    </nav>
 
     <article class="piece" id="2603.04212v1">
       <h2>
@@ -814,7 +877,7 @@
       </div>
     </article>
 
-    <section class="quick-takes">
+    <section class="quick-takes" id="quick-takes">
       <h2>Quick Takes</h2>
       <ul>
         <li>
