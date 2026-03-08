@@ -492,144 +492,84 @@
         </figcaption>
       </figure>
       <div class="content">
-        <p style="margin: 12px 0">
-          When AI agents tackle tasks requiring dozens or hundreds of steps,
-          they inevitably run out of working memory—and the standard fix of
-          summarizing past work throws away the very details they&#x27;ll need
-          later.
-        </p>
         <h3 style="font-size: 18px; margin-top: 24px">The Problem</h3>
         <p style="margin: 12px 0">
           LLM-based agents are increasingly asked to do complex, multi-step
           work: searching scientific literature, exploring code configurations,
-          orchestrating multi-API business processes, or iteratively refining
-          analyses [§1]. These tasks can span dozens to hundreds of tool calls,
-          each producing observations, outputs, and reasoning traces that pile
-          up in the agent&#x27;s context window.
+          orchestrating multi-API business processes [§1]. These tasks can span
+          dozens to hundreds of tool calls, each producing observations and
+          reasoning traces that pile up in the agent&#x27;s context window.
         </p>
         <p style="margin: 12px 0">
-          The trouble is that context windows are finite, while agent
-          trajectories keep growing [§1]. The naive approach—just keep
-          everything in context—quickly breaks down. Prompts become
-          prohibitively long, eventually exceed the context budget, and
-          &quot;make distant evidence harder to use even when it is still
-          present&quot; [§1]. Think of an agent that found a critical API error
-          message at step 12 but doesn&#x27;t effectively use it at step 87,
-          even though it&#x27;s technically still in the prompt.
+          Context windows are finite, but agent trajectories keep growing [§1].
+          Think of an agent that found a critical API error message at step 12
+          but doesn&#x27;t effectively use it at step 87, even though it&#x27;s
+          technically still in the prompt. Long prompts &quot;make distant
+          evidence harder to use even when it is still present&quot; [§1].
         </p>
         <p style="margin: 12px 0">
-          The standard workarounds are truncation (cutting old content) or
-          running summaries (condensing history into shorter text). But both are
+          The standard workarounds&mdash;truncation or running summaries&mdash;are
           &quot;fundamentally lossy because they compress or discard past
           evidence itself&quot; [Abstract]. Once a tool output is summarized
-          away, the exact numbers, error codes, or configuration details it
-          contained are gone. An alternative—logging everything to external
-          memory and retrieving by semantic similarity—sounds appealing but
-          turns out to be brittle in practice. &quot;When memory consists of a
-          large pool of noisy, near-duplicate fragments, retrieval becomes
-          ambiguous&quot; [§1]. Similarity search doesn&#x27;t help the agent
-          decide which results deserve stable references, which branches are
-          dead ends, or how to name artifacts so later access is precise rather
-          than fuzzy [§1].
+          away, the exact error codes or configuration details are gone. Logging
+          everything to external memory and retrieving by semantic similarity
+          sounds better, but &quot;when memory consists of a large pool of
+          noisy, near-duplicate fragments, retrieval becomes ambiguous&quot;
+          [§1]. Similarity search can&#x27;t tell the agent which results
+          deserve stable references versus which branches are dead ends [§1].
         </p>
         <h3 style="font-size: 18px; margin-top: 24px">What They Did</h3>
         <p style="margin: 12px 0">
-          Researchers at Accenture introduced Memex, a memory mechanism built
-          around what they call Indexed Experience Memory. The core idea is
-          simple: compress context without discarding evidence [§1].
+          Memex introduces what the authors call Indexed Experience Memory. The
+          core idea: compress context without discarding evidence [§1]. As an
+          agent works, it periodically runs a <code>CompressExperience</code>
+          action that replaces a long stretch of tool calls with a compact
+          indexed summary&mdash;essentially a table of contents [Figure 1]. The
+          full, unabridged content gets stored externally under those indices.
+          When the agent needs past evidence, it calls
+          <code>ReadExperience(Index I)</code> to pull the exact archived
+          content back [Figure 1]. Like a researcher&#x27;s notebook: you write
+          down where you found something so you can retrieve the original later.
         </p>
         <p style="margin: 12px 0">
-          Here&#x27;s how it works concretely. As an agent works through a task,
-          it periodically performs a `CompressExperience` action. This replaces
-          a long stretch of tool calls and outputs in the working context with a
-          compact indexed summary—essentially a table of contents with entries
-          like &quot;Index A: Description A, Index B: Description B&quot;
-          [Figure 1]. The full, unabridged content of each interaction gets
-          stored in an external key-value store under those indices. Later, when
-          the agent needs specific past evidence, it calls `ReadExperience(Index
-          I)` to dereference an index and pull the exact archived content back
-          into its working context [Figure 1]. The analogy to how humans work is
-          explicit in the paper: &quot;external artifacts such as notes, file
-          names, and bookmarks serve as stable access routes to detailed
-          evidence without requiring everything to remain in working
-          memory&quot; [§1].
-        </p>
-        <p style="margin: 12px 0">
-          Critically, the memory operations aren&#x27;t hardcoded rules. Writing
-          indexed summaries, archiving artifacts, and dereferencing indices are
-          treated as &quot;first-class actions in the same decision space as
-          environment tools&quot; [§1]. The agent decides what to summarize,
-          what to archive, how to index it, and when to retrieve it.
-        </p>
-        <p style="margin: 12px 0">
-          To train these behaviors, the team developed MemexRL, a reinforcement
-          learning framework. This is where the hard problem lies: a
-          well-designed index might only pay off many steps later by enabling
-          precise evidence recovery, while &quot;a locally plausible but poorly
-          structured summary can silently derail downstream reasoning&quot;
-          [§1]. MemexRL uses reward shaping tailored to indexed memory usage
-          under a context budget, combined with what the authors call a
-          compression-adaptive training procedure that preserves learning signal
-          for delayed memory decisions across long trajectories [§1]. The system
-          also exposes context status to the agent through a soft triggering
-          mechanism, so compression timing becomes &quot;a learnable skill
-          rather than a fixed system rule&quot; [§1].
+          Critically, memory operations aren&#x27;t hardcoded rules&mdash;they&#x27;re
+          &quot;first-class actions in the same decision space as environment
+          tools&quot; [§1]. The agent decides what to summarize, how to index
+          it, and when to retrieve it. To train these behaviors, the team built
+          MemexRL, a reinforcement learning framework with reward shaping
+          tailored to memory usage under a context budget [§1]. The hard problem
+          is credit assignment: a well-designed index might only pay off dozens
+          of steps later, while &quot;a locally plausible but poorly structured
+          summary can silently derail downstream reasoning&quot; [§1].
         </p>
         <h3 style="font-size: 18px; margin-top: 24px">The Results</h3>
         <p style="margin: 12px 0">
-          The paper reports that on challenging long-horizon tasks, &quot;Memex
-          agent trained with MemexRL improves task success while using a
-          significantly smaller working context&quot; [Abstract]. The tasks
-          tested require agents to &quot;interleave planning and tool calls over
-          dozens to hundreds of steps while revisiting fine-grained evidence
-          long after it first appears&quot; [§1]—exactly the regime where lossy
-          compression hurts most.
+          On long-horizon tasks requiring agents to &quot;interleave planning
+          and tool calls over dozens to hundreds of steps while revisiting
+          fine-grained evidence long after it first appears&quot; [§1], Memex
+          agents improved task success while using significantly smaller working
+          context [Abstract]. The theoretical analysis suggests the approach
+          can preserve decision quality with bounded retrieval as history
+          grows&mdash;though the authors are careful to note this describes a
+          best-case regime, not guaranteed behavior [§1].
         </p>
         <p style="margin: 12px 0">
-          The authors also provide a theoretical analysis showing that the Memex
-          loop has the potential to preserve decision quality with bounded
-          dereferencing while keeping effective in-context computation bounded
-          as history grows [§1]. However, they are careful to note this is about
-          potential, not a guarantee: &quot;This analysis is not meant to claim
-          that MemexRL always learns such summaries in practice. Rather, it
-          characterizes the regime in which compact indexed summaries together
-          with bounded retrieval are sufficient to support accurate
-          decisions&quot; [§1].
-        </p>
-        <p style="margin: 12px 0">
-          Several limitations deserve attention. The paper&#x27;s empirical
-          evaluation covers challenging long-horizon tasks, though the available
-          excerpts don&#x27;t include detailed benchmark comparisons or ablation
-          numbers. The theoretical analysis explicitly acknowledges it describes
-          a best-case regime rather than typical learned behavior. And the
-          approach introduces additional complexity: the agent must now learn
-          not just how to solve tasks but how to manage its own memory—a credit
-          assignment problem that the authors themselves flag as distinctive and
-          difficult [§1]. The reliance on reinforcement learning for memory
-          management also means training costs and stability are open questions.
+          The agent must now learn not just how to solve tasks but how to manage
+          its own memory&mdash;a credit assignment problem the authors flag as
+          &quot;distinctive and difficult&quot; [§1]. The empirical evaluation
+          doesn&#x27;t include detailed ablation numbers, and RL training costs
+          remain an open question.
         </p>
         <h3 style="font-size: 18px; margin-top: 24px">Why It Matters</h3>
         <p style="margin: 12px 0">
-          For practitioners building agents that handle multi-step workflows,
-          Memex addresses a real pain point. Today&#x27;s approaches to context
-          management are mostly engineering heuristics—sliding windows, periodic
-          summarization, retrieval-augmented generation—that either lose
-          information or retrieve imprecisely. Memex offers a middle path: keep
-          a small working set in context, but maintain exact records externally
-          with explicit, agent-chosen references.
-        </p>
-        <p style="margin: 12px 0">
-          The design pattern of treating memory management as learnable agent
-          actions rather than system-level heuristics is worth watching. If
-          agents can learn to organize their own experience—deciding what&#x27;s
-          worth a stable reference versus what&#x27;s noise—that could reduce
-          the brittle hand-engineering that currently goes into long-running
-          agent systems. But the gap between the theoretical potential the
-          authors describe and reliably learned memory behavior in practice
-          remains the key open question. The idea that agents should take
-          structured notes rather than either remembering everything or
-          summarizing lossy is intuitive. Whether RL can consistently teach them
-          to do it well is the harder bet.
+          If you&#x27;ve built agents that degrade on long tasks, the pattern
+          here is worth studying: instead of choosing between &quot;remember
+          everything&quot; and &quot;summarize lossy,&quot; give the agent a
+          notebook with page numbers. The comparison to how human experts
+          manage complex investigations&mdash;through structured notes and
+          stable references rather than raw recall&mdash;points toward a design
+          principle for agentic systems that goes beyond this specific
+          implementation.
         </p>
       </div>
     </article>
@@ -686,142 +626,93 @@
       <div class="content">
         <h3 style="font-size: 18px; margin-top: 24px">The Problem</h3>
         <p style="margin: 12px 0">
-          Building AI models that can reason about images — solving geometry
-          problems from diagrams, interpreting charts, or answering questions
-          that require understanding visual content — has become a major focus
-          of AI research. The standard recipe involves two stages: a
-          &quot;cold-start&quot; phase where the model learns reasoning patterns
-          from supervised examples, followed by reinforcement learning (RL) to
-          refine those skills.
+          Training AI models to reason about images&mdash;solving geometry
+          problems from diagrams, interpreting charts&mdash;typically follows
+          a two-stage recipe: a &quot;cold-start&quot; phase where the model
+          learns reasoning patterns from examples, then reinforcement learning
+          to refine those skills.
         </p>
         <p style="margin: 12px 0">
           But practitioners have noticed something strange. When you initialize
-          these Multimodal Large Reasoning Models (MLRMs) with text-only
-          reasoning data — math proofs, logic puzzles, no images at all — they
-          perform better on subsequent visual reasoning tasks than when you
-          initialize them with multimodal data that includes images [§1]. This
-          is counterintuitive: you&#x27;d expect that showing a model images
-          during its formative training stage would help it reason about images
-          later. Several groups had observed this pattern [§1], but nobody had a
-          quantitative explanation for why it happens.
+          these models with text-only reasoning data&mdash;math proofs, logic
+          puzzles, no images at all&mdash;they perform <em>better</em> on
+          subsequent visual reasoning tasks than when you initialize them with
+          multimodal data that includes images [§1]. Several groups had observed
+          this [§1], but nobody had a quantitative explanation for why.
         </p>
         <p style="margin: 12px 0">
           The stakes are practical. If multimodal cold-start data doesn&#x27;t
-          help, teams are wasting compute generating and training on image-text
-          reasoning examples. And without understanding the mechanism,
-          there&#x27;s no principled way to fix it.
+          help, teams are wasting compute generating image-text reasoning
+          examples. Without understanding the mechanism, there&#x27;s no
+          principled way to fix it.
         </p>
         <h3 style="font-size: 18px; margin-top: 24px">What They Did</h3>
         <p style="margin: 12px 0">
-          The researchers started by building a diagnostic tool. They introduced
-          the **Visual Attention Score (VAS)**, which measures how much a
-          model&#x27;s internal attention mechanism focuses on image tokens
-          versus system prompt tokens [§3.1]. Concretely, for each layer and
-          attention head in a transformer, VAS computes the ratio of attention
-          weight directed at visual tokens to attention weight directed at
-          system tokens, then averages across all layers, heads, and query
-          positions [§3.1, Equations 1-2]. A high VAS means the model is
-          actively looking at the image; a low VAS means it&#x27;s mostly
-          attending to boilerplate system instructions.
+          The researchers built a diagnostic metric called the <strong>Visual
+          Attention Score (VAS)</strong>, which measures how much a model&#x27;s
+          attention focuses on image tokens versus system prompt tokens [§3.1].
+          High VAS means the model is actively looking at the image; low VAS
+          means it&#x27;s mostly attending to boilerplate instructions.
         </p>
         <p style="margin: 12px 0">
-          They computed VAS for ten 7-billion-parameter models — Qwen2.5-VL-7B,
-          R1-OneVision, ThinkLite-VL, MM-Eureka, Revisual-R1-CS, Revisual-R1-RL,
-          OVR-CS, OVR-RL, MiMo-VL-CS, and MiMo-VL-RL — using 200 samples from
-          the MathVista benchmark, then correlated VAS with average reasoning
-          accuracy across four multimodal benchmarks [§3.1].
+          They computed VAS across ten 7B-parameter vision-language models and
+          found a striking correlation: r = 0.9616 between VAS and reasoning
+          performance across four benchmarks [§3.2, Figure 1a]. Models with low
+          visual attention consistently underperformed, regardless of their
+          training data.
         </p>
         <p style="margin: 12px 0">
-          The correlation was striking: a Pearson coefficient of r = 0.9616
-          between VAS and reasoning performance [§3.2, Figure 1a]. Models with
-          VAS below 10 (which they call &quot;Narrow-View Models,&quot; like
-          Qwen2.5-VL-7B and R1-OneVision) consistently underperformed. Models
-          with VAS above 15 (&quot;Panoramic-View Models,&quot; like OVR-RL and
-          MiMo-VL) achieved the strongest results [§3.2].
+          The key finding: models cold-started with multimodal data showed
+          attention distributions nearly identical to the base model&mdash;they
+          didn&#x27;t learn to look at images any harder. But text-only
+          cold-started models showed 15&ndash;20% higher attention to visual
+          features [§3.3]. The authors call this <strong>Lazy Attention
+          Localization</strong>: multimodal cold-start training fails to shift
+          attention toward visual tokens, while text-only initialization
+          induces stronger visual grounding [§3.3].
         </p>
         <p style="margin: 12px 0">
-          Here&#x27;s the key finding: models cold-started with multimodal data
-          showed attention distributions nearly identical to the base model —
-          they didn&#x27;t learn to look at images any harder. But specific
-          text-only cold-started models like OVR-CS and Revisual-R1-CS showed
-          15–20% higher attention to visual features compared to multimodal
-          cold-started models like R1-OneVision and ThinkLite-VL [§3.3]. The
-          authors call this **Lazy Attention Localization**: multimodal
-          cold-start training fails to shift attention toward visual tokens,
-          while text-only initialization somehow induces stronger visual
-          grounding [§3.3].
-        </p>
-        <p style="margin: 12px 0">
-          To test whether this was causal rather than just correlational, they
-          designed training-free interventions that directly manipulated
-          attention weights at inference time — amplifying attention to visual
-          tokens and reducing attention to system tokens [§4]. Without any
-          retraining, this produced consistent 1–2% accuracy gains across
-          multiple models including Qwen2.5-VL-7B, Revisual-R1-CS, and OVR-CS
-          [§1, §4].
-        </p>
-        <p style="margin: 12px 0">
-          Finally, they built a full training framework called **AVAR**
-          (Attention-Guided Visual Anchoring and Reflection) that
-          operationalizes these insights [§5]. AVAR has three components: (1) a
-          data synthesis pipeline that embeds &quot;visual anchors&quot; —
-          explicit references back to the image — throughout generated reasoning
-          chains, (2) attention-guided training objectives that encourage the
-          model to attend to visual tokens and suppress over-reliance on system
-          tokens during cold-start, and (3) visual-anchored reward shaping
-          during RL that rewards not just correct answers but also maintained
-          visual grounding across long reasoning chains [§5].
+          To test causality, they designed training-free interventions that
+          directly amplified attention to visual tokens at inference
+          time&mdash;producing consistent 1&ndash;2% accuracy gains without any
+          retraining [§4]. They then built a full training framework called
+          <strong>AVAR</strong> that embeds &quot;visual anchors&quot; (explicit
+          references back to the image) throughout generated reasoning chains
+          and uses attention-guided training objectives during cold-start [§5].
         </p>
         <h3 style="font-size: 18px; margin-top: 24px">The Results</h3>
         <p style="margin: 12px 0">
-          Applied to Qwen2.5-VL-7B, AVAR achieved an average gain of 7.0% across
-          seven multimodal reasoning benchmarks [Abstract]. The largest
-          improvements came on MathVision (+12.2%), which tests multi-step
-          geometric reasoning, and HallusionBench (+8.8%), which measures
-          robustness against visual hallucinations [§1]. Ablation studies
-          confirmed that each of AVAR&#x27;s three components contributed
-          incrementally — removing any one reduced performance [§1, §6].
+          AVAR achieved an average gain of 7.0% across seven multimodal
+          reasoning benchmarks [Abstract]. The largest improvements came on
+          MathVision (+12.2%), testing multi-step geometric reasoning, and
+          HallusionBench (+8.8%), measuring robustness against visual
+          hallucinations [§1]. Each component contributed incrementally&mdash;
+          removing any one reduced performance [§1, §6].
         </p>
         <p style="margin: 12px 0">
-          The training-free attention interventions, while more modest at 1–2%,
-          are notable precisely because they require zero additional training
-          [§4]. They serve as both a diagnostic confirmation and a lightweight
-          practical tool.
-        </p>
-        <p style="margin: 12px 0">
-          **Limitations worth noting:** The VAS metric was computed on only 200
-          MathVista samples [§3.1], and all experiments used 7B-parameter models
-          [§3.1]. The correlation between VAS and performance, while strong, was
-          measured across just ten models [Figure 1a] — a small sample for
-          drawing broad conclusions. The authors also don&#x27;t fully explain
-          the mechanism behind Lazy Attention Localization; they observe that
-          text-only cold-start &quot;internalizes reasoning patterns&quot; that
-          preserve visual grounding [§1], but the precise causal chain from
-          text-only training to higher visual attention remains somewhat
-          speculative. Additionally, the benchmarks are heavily math-focused,
-          and it&#x27;s unclear how well these findings generalize to other
-          multimodal reasoning domains.
+          The VAS metric was computed on only 200 samples across ten
+          models&mdash;a small sample for broad conclusions [§3.1, Figure 1a].
+          The benchmarks are heavily math-focused, and the precise mechanism
+          behind Lazy Attention Localization remains partially unexplained
+          [§1]. All experiments used 7B-parameter models [§3.1].
         </p>
         <h3 style="font-size: 18px; margin-top: 24px">Why It Matters</h3>
         <p style="margin: 12px 0">
-          For practitioners building multimodal reasoning systems, this work
-          offers an actionable diagnostic: compute VAS for your model and check
-          whether it&#x27;s actually attending to visual inputs. If it&#x27;s
-          below 10, your model may be largely ignoring the image regardless of
-          what multimodal data you trained on [§3.2]. The training-free
-          attention reweighting provides an immediate, zero-cost intervention
-          [§4].
+          This gives practitioners two concrete tools. First, a diagnostic:
+          compute VAS for your model and check whether it&#x27;s actually
+          attending to visual inputs. If the score is low, your model may be
+          ignoring images regardless of what multimodal data you trained on
+          [§3.2]. Second, an immediate intervention: the training-free attention
+          reweighting requires zero additional compute [§4].
         </p>
         <p style="margin: 12px 0">
-          More broadly, the finding challenges a natural assumption in
-          multimodal AI development — that training on multimodal data is always
-          better for multimodal tasks. The evidence here suggests that what
-          matters during cold-start isn&#x27;t modality coverage but the quality
-          of reasoning patterns learned, and that these patterns can transfer
-          across modalities in ways that reshape how the model allocates its
-          internal resources [§3.3]. For teams deciding how to allocate their
-          data curation budgets, that&#x27;s a concrete and somewhat surprising
-          signal.
+          The deeper question is about data curation budgets. If what matters
+          during cold-start is the quality of reasoning patterns rather than
+          modality coverage&mdash;and those patterns transfer across
+          modalities&mdash;then teams generating expensive multimodal training
+          data may be solving the wrong problem [§3.3]. Text-only reasoning
+          data is cheaper, more abundant, and according to this work, more
+          effective at teaching models to actually look at what you show them.
         </p>
       </div>
     </article>
@@ -835,9 +726,10 @@
             Continuous Integration</a
           >
           <p>
-            Large language model (LLM)-powered agents have demonstrated strong
-            capabilities in automating software engineering tasks such as static
-            bug fixing, as evidenced by benchmarks like SWE-bench.
+            A new benchmark tests whether coding agents can handle real CI
+            pipeline tasks&mdash;not just static bug fixes, but build failures,
+            test regressions, and dependency conflicts. Current agents struggle
+            significantly compared to SWE-bench&rsquo;s simpler repair tasks.
           </p>
         </li>
         <li>
@@ -846,9 +738,11 @@
             Models</a
           >
           <p>
-            Humans often become more self-aware under threat, yet can lose
-            self-awareness when absorbed in a task; we hypothesize that language
-            models exhibit environment-dependent \textit{evaluation awareness}.
+            Language models change their behavior when they detect they&#x27;re
+            being evaluated, much like humans do under observation. The effect
+            is environment-dependent&mdash;raising questions about whether
+            benchmark results reflect genuine capability or performed
+            competence.
           </p>
         </li>
         <li>
@@ -857,41 +751,41 @@
             Interpretable Fine-Grained Visual Reasoning</a
           >
           <p>
-            Traditional vision-language models struggle with contrastive
-            fine-grained taxonomic reasoning, particularly when distinguishing
-            between visually similar species within the same genus or family.
+            Uses RL with intermediate taxonomic rewards to help vision-language
+            models distinguish visually similar species. The approach produces
+            interpretable reasoning chains that follow biological
+            classification hierarchies.
           </p>
         </li>
         <li>
           <a href="https://arxiv.org/pdf/2603.04370v1"
-            >$τ$-Knowledge: Evaluating Conversational Agents over Unstructured
+            >&tau;-Knowledge: Evaluating Conversational Agents over Unstructured
             Knowledge</a
           >
           <p>
-            Conversational agents are increasingly deployed in
-            knowledge-intensive settings, where correct behavior depends on
-            retrieving and applying domain-specific knowledge from large,
-            proprietary, and unstructured corpora during live interactions with
-            users.
+            A benchmark for testing whether chatbots can retrieve and apply
+            domain knowledge from large unstructured corpora during live
+            conversations. Exposes a gap between retrieval accuracy and
+            conversational coherence in current systems.
           </p>
         </li>
         <li>
           <a href="https://arxiv.org/pdf/2603.04304v1"
-            >$V_1$: Unifying Generation and Self-Verification for Parallel
+            >V&#x2081;: Unifying Generation and Self-Verification for Parallel
             Reasoners</a
           >
           <p>
-            Test-time scaling for complex reasoning tasks shows that leveraging
-            inference-time compute, by methods such as independently sampling
-            and aggregating multiple solutions, results in significantly better
-            task outcomes.
+            Combines solution generation and self-verification into a single
+            model pass, rather than sampling many solutions independently.
+            Achieves better test-time scaling efficiency for math reasoning
+            tasks.
           </p>
         </li>
       </ul>
     </section>
 
     <footer>
-      <p class="meta">#1 &middot; 2845 words &middot; 3 pieces</p>
+      <p class="meta">#1 &middot; 2443 words &middot; 3 pieces</p>
       <nav>
         <a href="https://signal.hugohmacedo.com">Home</a>
         <a href="https://signal.hugohmacedo.com/archive.html">Archive</a>
