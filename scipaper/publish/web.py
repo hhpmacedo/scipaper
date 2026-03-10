@@ -141,11 +141,21 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
                 f'{caption_html}'
                 f'</figure>'
             )
+        signal_block_html = ""
+        if piece.signal_block and piece.signal_block.strip():
+            signal_block_html = (
+                f'<aside class="signal-block">'
+                f'<span class="signal-block-label">Signal</span>'
+                f'{escape(piece.signal_block.strip())}'
+                f'</aside>'
+            )
+
         pieces_html.append(
             f'<article class="piece" id="{escape(piece.paper_id)}">'
             f'<h2>{title_html}</h2>'
             f'{authors_html}'
             f'<p class="hook">{escape(piece.hook)}</p>'
+            f'{signal_block_html}'
             f'{abstract_html}'
             f'{hero_figure_html}'
             f'<div class="content">{content_html}</div>'
@@ -187,6 +197,26 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
             f'<h2>Quick Takes</h2>'
             f'<ul>{"".join(qt_items)}</ul>'
             f'</section>'
+        )
+
+    # Issue summary: one line per piece, derived from signal_block first sentence
+    issue_summary_html = ""
+    summary_lines = []
+    for piece in edition.pieces:
+        if piece.signal_block and piece.signal_block.strip():
+            # Use the first sentence of the signal block
+            first_sentence = piece.signal_block.strip().split(". ")[0]
+            if not first_sentence.endswith("."):
+                first_sentence += "."
+            summary_lines.append(f'<li>{escape(first_sentence)}</li>')
+        elif piece.hook:
+            summary_lines.append(f'<li>{escape(piece.hook)}</li>')
+    if summary_lines:
+        issue_summary_html = (
+            f'<div class="issue-summary">'
+            f'<p class="issue-summary-label">This week in Signal</p>'
+            f'<ul>{"".join(summary_lines)}</ul>'
+            f'</div>'
         )
 
     og_description = edition.pieces[0].hook if edition.pieces else "AI research, translated."
@@ -234,6 +264,13 @@ header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; let
 .toc a:hover {{ color: #e63b19; border-bottom-color: #e63b19; }}
 .content {{ font-size: 17px; }}
 .content p {{ margin-bottom: 14px; }}
+.signal-block {{ background: #f5f5f5; border-left: 4px solid #000; padding: 16px 20px; margin: 0 0 24px; font-size: 15px; line-height: 1.6; color: #222; }}
+.signal-block-label {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #666; display: block; margin-bottom: 6px; }}
+.issue-summary {{ margin-bottom: 40px; padding: 20px; border: 3px solid #000; background: #fff; }}
+.issue-summary-label {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 12px; }}
+.issue-summary ul {{ list-style: none; padding: 0; margin: 0; }}
+.issue-summary li {{ font-size: 15px; line-height: 1.5; padding: 8px 0; border-bottom: 1px solid #e0e0e0; color: #222; }}
+.issue-summary li:last-child {{ border-bottom: none; }}
 .quick-takes {{ margin-top: 40px; padding-top: 30px; border-top: 4px solid #000; }}
 .quick-takes h2 {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }}
 .quick-takes ul {{ list-style: none; padding: 0; }}
@@ -258,6 +295,8 @@ footer a:hover {{ color: #e63b19; }}
 </header>
 
 <hr class="divider">
+
+{issue_summary_html}
 
 {toc_html}
 

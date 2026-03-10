@@ -202,19 +202,36 @@ async def score_relevance(
 
 
 NARRATIVE_POTENTIAL_PROMPT = """
-You are evaluating a research paper's "narrative potential" for a newsletter that explains AI research to technically literate non-researchers.
+You are evaluating a research paper's "narrative potential" for Signal, a newsletter that explains AI research to technically literate non-researchers (software engineers, PMs, founders — people who use AI daily but don't read papers).
 
-Score this paper from 1-10 on narrative potential based on:
+Score this paper from 1-10 on narrative potential. The score is a weighted sum of four criteria:
 
-1. **Clear Problem/Solution** (0-2 points): Is there a clear problem being solved? Can you state it in one sentence?
+1. **Surprise Factor** (weight: 30%, max 3 points)
+   Does the finding contradict a common assumption, produce an unexpected result, or challenge conventional wisdom?
+   - 3 pts: Clearly counterintuitive (e.g., text-only training improves vision tasks)
+   - 2 pts: Interesting but not shocking (e.g., smaller model matches larger one on specific task)
+   - 1 pt: Incremental with one notable wrinkle
+   - 0 pts: Pure benchmark improvement with no surprise
 
-2. **Surprising Result** (0-3 points): Is there something counterintuitive, unexpected, or "wow" worthy in the results?
+2. **Concreteness** (weight: 25%, max 2.5 points)
+   Can the method and results be explained with a concrete example that doesn't require ML expertise?
+   - 2.5 pts: Paper includes demos, worked examples, or cases a non-researcher can picture
+   - 1.5 pts: Method has a clear analogy; results have specific numbers
+   - 0.5 pts: Abstract method with only benchmark numbers
+   - 0 pts: Purely theoretical or math-heavy with no grounding
 
-3. **Concrete Examples** (0-2 points): Does the paper include demos, examples, or cases that would resonate with practitioners?
+3. **Practitioner Relevance** (weight: 25%, max 2.5 points)
+   Does this connect to something the audience is currently doing or deciding?
+   - 2.5 pts: Directly affects a decision practitioners make now (e.g., AI governance, model selection, agent design)
+   - 1.5 pts: Relevant to a near-term concern (1-2 years)
+   - 0.5 pts: Interesting for the field but not actionable for practitioners
+   - 0 pts: Purely academic with no practitioner angle
 
-4. **Explainability** (0-2 points): Can the core idea be explained without heavy math? Would a software engineer get it?
-
-5. **Practical Relevance** (0-1 point): Is there a clear "so what" for people who build things with AI?
+4. **Results Reportability** (weight: 20%, max 2 points)
+   Does the paper have clear, interpretable numbers that can be reported with context?
+   - 2 pts: Specific numbers with baseline comparisons (e.g., "87% vs 62% for prior best")
+   - 1 pt: Numbers present but no clear baseline or comparison
+   - 0 pts: Vague results ("reliable performance", "significant improvement") — papers like this produce weak articles and should be penalized
 
 Paper Title: {title}
 
@@ -223,14 +240,13 @@ Paper Abstract:
 
 Respond with ONLY a JSON object:
 {{
-  "score": <1-10>,
-  "problem_solution": <0-2>,
-  "surprising_result": <0-3>,
-  "concrete_examples": <0-2>,
-  "explainability": <0-2>,
-  "practical_relevance": <0-1>,
-  "one_line_hook": "<the surprising thing, if any>",
-  "reasoning": "<brief explanation>"
+  "score": <1-10, weighted sum of criteria scaled to 1-10>,
+  "surprise_factor": <0-3>,
+  "concreteness": <0-2.5>,
+  "practitioner_relevance": <0-2.5>,
+  "results_reportability": <0-2>,
+  "one_line_hook": "<the surprising capability or finding, if any — not a method description>",
+  "reasoning": "<brief explanation of scores>"
 }}
 """
 
@@ -315,7 +331,19 @@ def _parse_score_response(text: str) -> float:
 
     try:
         data = json.loads(text)
-        return float(data["score"])
+        score = float(data["score"])
+        # Log sub-scores for debugging if present
+        sub_fields = ["surprise_factor", "concreteness", "practitioner_relevance", "results_reportability"]
+        if any(f in data for f in sub_fields):
+            import logging
+            _logger = logging.getLogger(__name__)
+            _logger.debug(
+                f"Narrative sub-scores: surprise={data.get('surprise_factor')}, "
+                f"concreteness={data.get('concreteness')}, "
+                f"relevance={data.get('practitioner_relevance')}, "
+                f"reportability={data.get('results_reportability')}"
+            )
+        return score
     except (json.JSONDecodeError, KeyError, ValueError):
         # Try to find a number in the response
         match = re.search(r'"score"\s*:\s*(\d+(?:\.\d+)?)', text)

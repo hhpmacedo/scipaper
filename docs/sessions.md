@@ -209,3 +209,62 @@ Append-only session log. Each entry captures what happened and where to pick up.
 1. Verify Vercel deployment picked up the changes
 2. Create anchor document for next edition week
 3. Wire `ClientPool` and `PipelineCache` into module functions
+
+---
+
+### 2026-03-07 19:49 — Dual-Depth Article Architecture
+
+**What was done:**
+
+- Added `signal_block` field to `Piece` dataclass (`generate/writer.py`)
+- Rewrote `GENERATION_SYSTEM_PROMPT`: capability-only hooks, signal block spec (3-question structure), section word budgets, audience ceiling hard rules, banned words, voice DO/NEVER, anti-patterns
+- Upgraded `NARRATIVE_POTENTIAL_PROMPT` to 4-criterion weighted rubric (Surprise 30%, Concreteness 25%, Practitioner Relevance 25%, Results Reportability 20%) in `curate/score.py`
+- Added 3 new style checks to `verify/style.py`: `check_hook_form()`, `check_numbers_in_results()`, `check_signal_block()`
+- Upgraded Quick Takes from abstract-first-sentence fallback to LLM-generated (Haiku) finding-first format in `generate/edition.py`
+- Updated `publish/web.py` and `publish/email.py` to render Signal Blocks and Issue Summary
+- Updated `docs/STYLE_CONSTITUTION.md` to v1.1.0, logged DEC-006 in `docs/DECISIONS.md`
+- Created `data/anchors/2026-W10.1.yaml`
+- Ran W10.1 edition: 3 papers, all 3 passed style checks (0 errors), 2657 words, deployed to Vercel
+
+**Key decisions:**
+
+- Signal block is a separate field (not inside `content`) — rendered between hook and body, serves executive readers
+- Issue Summary derived from signal_block first sentences — no extra LLM call needed
+- Pipeline always re-ingests (no skip-ingest mode) — W10.1 picked fresh today's ArXiv papers, which is fine since still within W10 date range
+
+**State:** All working. Site live at signal.hugohmacedo.com with new architecture. Hero figure extraction confirmed working (this run's lead paper had no extractable figures).
+
+**Next steps:**
+
+1. Add `--skip-ingest` flag to pipeline CLI for reusing cached papers
+2. Wire `ClientPool` and `PipelineCache` into module functions
+3. Set up failure alerting (Slack/email)
+4. Test automated weekly GitHub Actions dispatch
+
+---
+
+### 2026-03-08 15:53 — Edition enrichment: hero figures + TOC
+
+**What was done:**
+
+- Added hero figures to all 3 lead articles in 2026-W10 edition (previously only first had one)
+  - Memex: bar chart (24.2% vs 85.6% success rate) — `public/figures/2603.04257v1_fig3.png`
+  - Vision: geometry problem illustration — `public/figures/2603.03825v1_fig7.png`
+- Added table of contents with anchor links to edition pages (both static HTML and web.py template)
+- Fixed hero figure restriction in `web.py` — was `if i == 0` (first piece only), now shows on all pieces
+- Added `id="quick-takes"` to quick takes section for TOC linking
+
+**Key decisions:**
+
+- Selected most impactful single figure per paper (result chart for Memex, concrete example for Vision)
+- Only committed used figures to git; unused extracted figures left untracked locally
+- TOC uses CSS counters matching brutalist design
+
+**State:** Edition 2026-W10 fully enriched (structured abstracts, hero figures x3, TOC). Template updated for future editions.
+
+**Next steps:**
+
+1. Verify Vercel deployment reflects TOC and new figures
+2. Wire `ClientPool` and `PipelineCache` into module functions
+3. Set up failure alerting (Slack/email)
+4. Add `--skip-ingest` flag to pipeline CLI

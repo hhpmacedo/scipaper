@@ -82,6 +82,33 @@ Phase 1 is email-only newsletter with web archive. No social, no video, no API.
 
 ---
 
+### DEC-006: Dual-Depth Article Architecture (Style Constitution v1.1)
+
+**Status:** RESOLVED
+**Date:** 2026-03-07
+
+**Decision:** Upgrade the article format, writing prompt, scoring, and QA pipeline to serve both builders and executives without creating separate content versions.
+
+**Changes implemented:**
+
+1. **Article structure:** Added Signal Block (2-3 sentence executive off-ramp between hook and body). Added Issue Summary at top of each edition (one line per piece from signal_block). Updated hook rule: capability/finding only, never a method description.
+
+2. **Writing prompt (GENERATION_SYSTEM_PROMPT):** Rewrote with hard rules: require specific performance number in Results; enforce audience ceiling (no transformer/attention internals without analogy-first explanation); ground every abstraction within two sentences; cap at 1000 words with section budgets; dual-frame every limitation (technical + production timeline). Added voice rules and anti-patterns from Issue #1.
+
+3. **Paper scoring (NARRATIVE_POTENTIAL_PROMPT):** Replaced 5-criterion rubric with 4-criterion rubric weighted by impact: surprise factor (30%), concreteness (25%), practitioner relevance (25%), results reportability (20%). Papers with vague results sections now penalized.
+
+4. **Style checker (verify/style.py):** Added `check_hook_form` (rejects method-description hooks), `check_numbers_in_results` (requires specific metric in Results), `check_signal_block` (requires signal block). Lowered word cap from 1200 to 1000.
+
+5. **Quick Takes (edition.py):** Upgraded from abstract-first-sentence fallback to LLM-generated one-liners using Haiku. Prompt requires specific finding, not topic description.
+
+6. **Style Constitution:** Bumped to v1.1.0. Added Signal Block spec, hook rule, numbers rule, dual-frame limitations rule, audience ceiling, voice rules + anti-patterns, updated section budgets, upgraded checklist to 12 items.
+
+**Rationale:** Issue #1 evaluation revealed consistent quality gaps: hooks that describe methods rather than findings, Results sections without numbers, jargon above the audience ceiling, abstractions not grounded, Quick Takes that describe topics rather than findings. These are systemic — they trace back to implicit standards in the original prompt. Making them explicit and machine-checkable ensures they hold across issues without human review.
+
+The dual-depth architecture (builder path + executive path through the same article) requires no separate content — just a Signal Block and a restructured hook. The cost is ~60 additional words per article.
+
+---
+
 ## Decision Template
 
 ```markdown

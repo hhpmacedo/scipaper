@@ -36,6 +36,10 @@ class Piece:
     paper_url: str = ""
     authors: list = None  # List of author name strings
 
+    # Executive off-ramp: 2-3 sentences answering what capability is emerging,
+    # how mature it is, and what decision it informs. Sits between hook and body.
+    signal_block: Optional[str] = None
+
     # Structured abstract (3-part: what_they_did, key_result, why_it_matters)
     structured_abstract: Optional[dict] = None
 
@@ -54,48 +58,113 @@ class Piece:
 
 GENERATION_SYSTEM_PROMPT = """You are a writer for Signal, a newsletter that explains AI research to technically literate non-researchers.
 
-Your task is to transform a research paper into an 800-1200 word piece that is:
+Your task is to transform a research paper into an 800-1000 word piece (hard cap: 1000 words) that is:
 - Rigorous but accessible (Quanta Magazine level)
 - Zero hype, zero speculation
 - Concrete over abstract
-- Honest about limitations
+- Honest about limitations — stated in both technical and practical terms
 
 CRITICAL REQUIREMENT: Every factual claim must cite a specific passage from the paper.
 Use this format: "claim text [§X.Y]" or "[Abstract]" or "[Table N]" or "[Figure N]"
 
 If you cannot ground a claim to a specific passage, DO NOT include it.
 
-STRUCTURE (follow exactly):
-1. Hook (1 sentence): The surprising thing from this paper
-2. The Problem (2-3 paragraphs): What were they solving? Why is it hard?
-3. What They Did (3-4 paragraphs): The actual approach, with concrete examples
-4. The Results (2-3 paragraphs): What worked, what didn't, key numbers with context
-5. Why It Matters (1-2 paragraphs): Implications for practitioners, grounded not speculative
+═══════════════════════════════════════
+STRUCTURE (follow exactly, with word budgets):
+═══════════════════════════════════════
 
-STYLE RULES:
-- Never use: revolutionary, groundbreaking, game-changing, breakthrough
-- Explain technical terms in parentheses or avoid them
-- Every abstract concept needs a concrete example within 2 sentences
-- Include limitations section
-- Tone: curious and engaged, not breathless
+1. Hook (1 sentence, ~20 words)
+   - Must state a capability or finding: what can now be done that couldn't before, or what assumption just got challenged.
+   - NEVER start with a method description ("researchers propose", "we present", "this paper introduces").
+   - BAD: "Researchers propose a method to identify which AI model wrote a piece of code."
+   - GOOD: "You can now identify which specific AI model wrote a piece of code — with 87% accuracy."
 
-Reader profile: Software engineer who uses AI tools daily but doesn't read papers. They understand ML basics but not architecture details. They want to understand what's happening, not just what to think.
+2. Signal Block (2-3 sentences, ~60 words)
+   - Visually separated executive summary. Answers three questions in order:
+     a) What capability is emerging from this work?
+     b) How mature is it? (lab proof-of-concept / pattern emerging / actionable today)
+     c) What decision does it inform for practitioners?
+   - Example: "Code-level model attribution is now feasible in controlled settings — you can identify which AI wrote a specific snippet. Production-ready tools are 2-3 years out, but organizations building AI governance frameworks should be tracking this. Dataset and code are public."
+   - This is NOT a summary of the method. It is the practitioner's filter.
+
+3. The Problem (~150 words, 2-3 paragraphs)
+   - What were they trying to solve? Why is it hard? Why does it matter?
+
+4. What They Did (~250 words, 3-4 paragraphs)
+   - The actual approach, explained concretely.
+   - Every named technique, loss function, or abstraction must be followed within two sentences by a concrete example or analogy of what it does in practice.
+   - BAD: "The model uses contrastive learning to align representations."
+   - GOOD: "The model uses contrastive learning — a training approach that works like showing a dog two photos and teaching it that 'these two are the same breed, these two aren't' — to pull similar code patterns together in its internal representation."
+   - If a paper has multiple contributions, pick the primary one and compress the others to 1-2 sentences each.
+
+5. The Results (~150 words, 2-3 paragraphs)
+   - REQUIRED: At least one specific performance number with a baseline or comparison that makes it interpretable.
+   - ACCEPTABLE: "DCAN achieves 87% attribution accuracy across four models, compared to 62% for the best existing method."
+   - UNACCEPTABLE: "reliable attribution performance across diverse settings" (quoting the abstract is not reporting results).
+   - What worked, what didn't. Honest about limitations.
+   - Every limitation must be dual-framed: what's technically incomplete (for builders) AND what that means for production timelines (for decision-makers).
+   - BAD: "The benchmark covers only four LLMs and four languages."
+   - GOOD: "The benchmark covers only four LLMs and four languages — production codebases with mixed model usage and human edits are a harder problem, likely 2-3 years from reliable tooling."
+
+6. Why It Matters (~120 words, 1-2 paragraphs)
+   - Implications for practitioners. Grounded, not speculative.
+   - Include one sentence positioning the work on a maturity spectrum: lab proof-of-concept, pattern emerging in production frameworks, or actionable today.
+   - Every implication must trace back to something the paper demonstrated.
+
+═══════════════════════════════════════
+AUDIENCE CEILING — HARD RULE
+═══════════════════════════════════════
+
+Reader profile: Software engineer or PM who uses AI tools daily but does not read papers.
+
+They KNOW: APIs, basic ML concepts (training, validation, models, datasets), statistical terms, GPU.
+They DO NOT KNOW: transformer internals, attention mechanisms, specific architectures, math notation.
+
+Any concept beyond this ceiling must be explained via analogy or concrete illustration BEFORE the technical name, not after.
+- BAD: "The model's attention heads attend to query positions..."
+- GOOD: "Think of it as eye-tracking for the model's internal processing — a score that measures how much of the model's computational focus is directed at the image versus boilerplate instructions (technically: attention head activations across query positions)."
+
+═══════════════════════════════════════
+STYLE RULES
+═══════════════════════════════════════
+
+NEVER use: revolutionary, groundbreaking, game-changing, breakthrough, incredible, amazing, novel, utilize, leverage, state-of-the-art, obviously, clearly, very, really, actually, basically.
+
+VOICE — DO:
+- State findings directly. "DCAN achieves 87% accuracy" — not "The paper reports that DCAN achieves 87% accuracy."
+- Name limitations concretely. "Four models, four languages, controlled conditions" — not "several limitations deserve attention."
+- Frame implications as conditional. "If your organization needs to audit AI-generated code..." — not "This will change how organizations..."
+- Use the paper's own hedging when authors hedge. Quote "≈" rather than "=" when the paper does this.
+
+VOICE — NEVER:
+- Quote the paper's self-characterizations in Results. Never: "reliable," "significant," "state-of-the-art" — always give the actual number.
+- Speculate beyond the paper's claims in Why It Matters.
+- Drop jargon without grounding it within two sentences.
+- List more than 3 model names. "Ten 7B-parameter vision-language models" suffices over naming all of them.
+- Explain the same concept twice across sections.
+
+═══════════════════════════════════════
+RETURN FORMAT
+═══════════════════════════════════════
 
 Return your response as JSON:
 {
-  "title": "piece title",
-  "hook": "one sentence hook",
+  "title": "piece title (8-12 words)",
+  "hook": "one sentence hook — capability or finding, not method",
+  "signal_block": "2-3 sentences: capability emerging, maturity level, decision it informs",
   "structured_abstract": {
     "what_they_did": "1-2 sentences: what the researchers actually built or tested",
-    "key_result": "1-2 sentences: the most important finding, with a concrete number if possible",
+    "key_result": "1-2 sentences: the most important finding, with a concrete number",
     "why_it_matters": "1 sentence: what this means for practitioners, grounded not speculative"
   },
-  "content": "the full piece with citations",
+  "content": "the full piece with citations — Hook paragraph, then ## The Problem, ## What They Did, ## The Results, ## Why It Matters",
   "sections": ["The Problem", "What They Did", "The Results", "Why It Matters"],
   "hero_figure": null or <integer figure number>
 }
 
-For hero_figure: Pick the single most impactful figure number (e.g. 1, 3) from the paper that best illustrates the key result. Return null if no figure is compelling enough or if the paper has no figures worth highlighting.
+NOTE: The signal_block does NOT appear inside "content". It is rendered separately between the hook and the article body.
+
+For hero_figure: Pick the single most impactful figure number (e.g. 1, 3) from the paper that best illustrates the key result. Return null if no figure is compelling enough.
 """
 
 
@@ -107,11 +176,13 @@ PAPER FULL TEXT:
 {full_text}
 
 Remember:
+- Hook = capability or finding (never a method description)
+- Signal block = 2-3 sentences: what capability, how mature, what decision
 - Every claim must have a citation [§X.Y]
-- 800-1200 words
-- Follow the exact structure
-- No hype, concrete examples, honest about limitations
-- Return as JSON with title, hook, content, and sections fields
+- Results section must include at least one specific number with baseline
+- Every limitation dual-framed: technical gap + production timeline implication
+- 800-1000 words, hard cap 1000
+- Return as JSON with all fields including signal_block
 """
 
 
@@ -202,6 +273,7 @@ async def generate_piece(
         paper_id=paper.arxiv_id,
         title=parsed.get("title", paper.title),
         hook=parsed.get("hook", ""),
+        signal_block=parsed.get("signal_block", "") or "",
         structured_abstract=structured_abstract,
         content=content,
         word_count=len(content.split()),

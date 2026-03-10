@@ -45,9 +45,13 @@ def render_edition_html(edition: Edition, web_base_url: str) -> str:
     Render edition to HTML email.
 
     Hybrid layout:
+    - Issue summary block at top (one line per piece from signal_block)
     - Lead piece (index 0): rendered in full
     - Secondary pieces (index 1+): hook + first paragraph + "Read more" link
     """
+    # Issue summary: one sentence per piece from signal_block
+    issue_summary_html = _render_issue_summary_html(edition)
+
     pieces_html = []
     for i, piece in enumerate(edition.pieces):
         if i == 0:
@@ -65,6 +69,8 @@ def render_edition_html(edition: Edition, web_base_url: str) -> str:
 <h1 style="margin: 0; font-size: 28px;">Signal</h1>
 <p style="margin: 4px 0 0; color: #666; font-size: 14px;">AI Research for the Curious &mdash; Issue #{edition.issue_number} &middot; {edition.week}</p>
 </div>
+
+{issue_summary_html}
 
 {"".join(pieces_html)}
 
@@ -102,6 +108,7 @@ def _render_piece_full_html(piece: Piece, is_lead: bool = False) -> str:
         )
 
     abstract_html = _render_structured_abstract_html(piece)
+    signal_block_html = _render_signal_block_html(piece)
 
     return (
         f'<article id="{escape(piece.paper_id)}" style="margin-top: 32px; padding-bottom: 24px; '
@@ -110,6 +117,7 @@ def _render_piece_full_html(piece: Piece, is_lead: bool = False) -> str:
         f'{escape(piece.title)}</h2>'
         f'<p style="color: #666; font-style: italic; margin-top: 0;">'
         f'{escape(piece.hook)}</p>'
+        f'{signal_block_html}'
         f'{abstract_html}'
         f'{hero_figure_html}'
         f'<div style="font-size: 16px;">{content_html}</div>'
@@ -123,6 +131,7 @@ def _render_piece_preview_html(piece: Piece, week: str, web_base_url: str) -> st
     read_more_url = f"{web_base_url}/editions/{week}.html#{piece.paper_id}"
 
     abstract_html = _render_structured_abstract_html(piece)
+    signal_block_html = _render_signal_block_html(piece)
 
     return (
         f'<article id="{escape(piece.paper_id)}" style="margin-top: 32px; padding-bottom: 24px; '
@@ -131,6 +140,7 @@ def _render_piece_preview_html(piece: Piece, week: str, web_base_url: str) -> st
         f'{escape(piece.title)}</h2>'
         f'<p style="color: #666; font-style: italic; margin-top: 0;">'
         f'{escape(piece.hook)}</p>'
+        f'{signal_block_html}'
         f'{abstract_html}'
         f'<div style="font-size: 16px;">'
         f'<p style="margin: 12px 0;">{escape(first_paragraph)}</p>'
@@ -139,6 +149,50 @@ def _render_piece_preview_html(piece: Piece, week: str, web_base_url: str) -> st
         f'<a href="{read_more_url}" style="color: #333; font-weight: 600;">Read more &rarr;</a>'
         f'</p>'
         f'</article>'
+    )
+
+
+def _render_issue_summary_html(edition: Edition) -> str:
+    """Render the issue-level summary block (one sentence per piece from signal_block)."""
+    lines = []
+    for piece in edition.pieces:
+        if piece.signal_block and piece.signal_block.strip():
+            first_sentence = piece.signal_block.strip().split(". ")[0]
+            if not first_sentence.endswith("."):
+                first_sentence += "."
+            lines.append(
+                f'<li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0; '
+                f'font-size: 15px; color: #222;">{escape(first_sentence)}</li>'
+            )
+        elif piece.hook:
+            lines.append(
+                f'<li style="padding: 8px 0; border-bottom: 1px solid #e0e0e0; '
+                f'font-size: 15px; color: #222;">{escape(piece.hook)}</li>'
+            )
+    if not lines:
+        return ""
+    return (
+        f'<div style="margin: 24px 0; padding: 16px 20px; border: 2px solid #000; background: #fff;">'
+        f'<p style="font-family: Helvetica Neue, Arial, sans-serif; font-size: 11px; '
+        f'font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #666; margin: 0 0 12px;">'
+        f'This week in Signal</p>'
+        f'<ul style="list-style: none; padding: 0; margin: 0;">{"".join(lines)}</ul>'
+        f'</div>'
+    )
+
+
+def _render_signal_block_html(piece: Piece) -> str:
+    """Render the per-article signal block for email."""
+    if not piece.signal_block or not piece.signal_block.strip():
+        return ""
+    return (
+        f'<div style="background: #f5f5f5; border-left: 4px solid #000; '
+        f'padding: 14px 18px; margin: 0 0 20px; font-size: 14px; line-height: 1.6; color: #222;">'
+        f'<span style="font-family: Helvetica Neue, Arial, sans-serif; font-size: 10px; '
+        f'font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #666; '
+        f'display: block; margin-bottom: 6px;">Signal</span>'
+        f'{escape(piece.signal_block.strip())}'
+        f'</div>'
     )
 
 

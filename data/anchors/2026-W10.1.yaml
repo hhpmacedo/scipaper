@@ -1,0 +1,68 @@
+# Relevance Anchor Document
+# Week: 2026-W11 (March 9-15, 2026)
+#
+# This is the ONLY human input in the Signal pipeline.
+
+week: "2026-W10.1"
+updated_by: "hugo"
+updated_at: "2026-03-07T00:00:00Z"
+
+hot_topics:
+  - "reasoning models and test-time compute scaling"
+  - "multimodal models and vision-language understanding"
+  - "agentic systems, long-horizon planning, tool use"
+  - "efficient inference and serving at scale"
+  - "AI safety, alignment, and interpretability"
+  - "code generation and software engineering automation"
+  - "small models matching large models via distillation"
+  - "memory and context management in AI agents"
+  - "AI governance, attribution, and auditing"
+
+declining_topics:
+  - "basic prompt engineering techniques"
+  - "GPT wrapper applications"
+  - "simple chatbot implementations"
+  - "RLHF basics (now well-understood)"
+
+boost_keywords:
+  - "o1"
+  - "o3"
+  - "Claude"
+  - "Gemini"
+  - "DeepSeek"
+  - "Qwen"
+  - "reasoning"
+  - "agent"
+  - "tool use"
+  - "long context"
+  - "RAG"
+  - "chain-of-thought"
+  - "distillation"
+  - "synthetic data"
+  - "attribution"
+  - "interpretability"
+  - "MoE"
+  - "mixture of experts"
+  - "inference scaling"
+  - "vision-language"
+  - "multimodal"
+
+institutions_of_interest:
+  - "Anthropic"
+  - "OpenAI"
+  - "Google DeepMind"
+  - "Meta AI"
+  - "Microsoft Research"
+  - "Stanford"
+  - "MIT"
+  - "Berkeley"
+  - "CMU"
+  - "Tsinghua"
+  - "DeepSeek"
+  - "Alibaba"
+
+notes: |
+  Strong week for agentic systems and reasoning papers.
+  Interested in anything touching AI governance or attribution.
+  Multimodal papers with concrete practitioner implications preferred.
+  Avoid pure benchmark papers without a clear insight or surprise.

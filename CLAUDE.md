@@ -6,13 +6,13 @@ Autonomous weekly newsletter pipeline that curates AI research papers and transl
 
 - **Status**: Active (Ops)
 - **Live URL**: https://signal.hugohmacedo.com
-- **Last session**: 2026-03-05
-- **Current focus**: Edition pages now show paper links + author names. About page ("How It Works") added. All footer navs updated.
+- **Last session**: 2026-03-08
+- **Current focus**: Edition enrichment complete — hero figures on all 3 lead articles, TOC with anchor links, template updated for future editions.
 - **Next steps**:
-  1. Verify Vercel secrets are set and test a manual workflow dispatch
-  2. Create anchor document for next week (automate weekly template)
-  3. Wire `ClientPool` and `PipelineCache` into individual module functions (follow-up)
-  4. Set up failure alerting (Slack/email on pipeline failure)
+  1. Verify Vercel deployment reflects TOC and new figures
+  2. Wire `ClientPool` and `PipelineCache` into individual module functions
+  3. Set up failure alerting (Slack/email on pipeline failure)
+  4. Add `--skip-ingest` flag to pipeline CLI to reuse existing papers
 
 ## Team
 
@@ -124,6 +124,7 @@ All modules are fully implemented. Key entry points:
 - `docs/ARCHITECTURE.md` -- Technical design, pipeline diagrams, data stores
 - `docs/STYLE_CONSTITUTION.md` -- Writing guidelines (version-controlled, locked)
 - `docs/DECISIONS.md` -- Technical decisions log (all resolved: DEC-000 through DEC-005)
+- `docs/VERSIONING.md` -- Explicit version history of curation and writing algorithms (keep up to date on changes)
 - `docs/PHASES.md` -- Development phases (0-6), ~8 weeks to first public edition
 
 ## Environment Variables

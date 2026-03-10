@@ -24,6 +24,15 @@ CAUTION_WORDS = [
     "very", "really", "actually", "basically", "state-of-the-art",
 ]
 
+# Hook patterns that indicate a method description instead of a capability/finding
+_HOOK_METHOD_PATTERNS = [
+    r"^researchers (propose|present|introduce|develop|design)",
+    r"^we (propose|present|introduce|develop|design)",
+    r"^this paper (presents|introduces|proposes|describes)",
+    r"^in this (paper|work|study)",
+    r"^a (new |novel )?(method|approach|framework|system|model) (for|to)",
+]
+
 
 @dataclass
 class StyleIssue:
@@ -54,7 +63,7 @@ class StyleReport:
 class StyleConfig:
     """Style checking configuration."""
     min_words: int = 800
-    max_words: int = 1200
+    max_words: int = 1000  # Hard cap per updated Style Constitution
     strict_mode: bool = False  # If True, warnings become errors
 
 
@@ -143,6 +152,107 @@ def check_citations(content: str) -> List[StyleIssue]:
     return issues
 
 
+def check_hook_form(hook: str) -> List[StyleIssue]:
+    """Check that the hook states a capability or finding, not a method description."""
+    issues = []
+    hook_lower = hook.strip().lower()
+
+    for pattern in _HOOK_METHOD_PATTERNS:
+        if re.match(pattern, hook_lower):
+            issues.append(StyleIssue(
+                severity="error",
+                issue_type="hook_method_description",
+                location="hook",
+                description="Hook describes a method, not a capability or finding.",
+                suggestion=(
+                    "Rewrite hook to answer: what can now be done that couldn't before, "
+                    "or what assumption just got challenged? Lead with the result, not the approach."
+                ),
+            ))
+            break
+
+    return issues
+
+
+def check_numbers_in_results(content: str) -> List[StyleIssue]:
+    """Check that The Results section contains at least one specific performance number."""
+    issues = []
+
+    # Extract The Results section
+    results_match = re.search(
+        r'##\s*The Results\s*\n(.*?)(?=\n##|\Z)',
+        content,
+        re.DOTALL | re.IGNORECASE,
+    )
+    if not results_match:
+        return issues  # Missing section caught by check_structure
+
+    results_text = results_match.group(1)
+
+    # Look for numeric performance indicators: digits followed by %, x, or comparison context
+    has_number = bool(re.search(
+        r'\b\d+(?:\.\d+)?(?:\s*%|\s*x\b|\s*times\b|\s*accuracy|\s*points?)',
+        results_text,
+        re.IGNORECASE,
+    ))
+    # Also accept patterns like "87 out of 100" or "X vs Y" with numbers
+    has_comparison = bool(re.search(
+        r'\b\d+(?:\.\d+)?\b.{0,40}\bvs\.?\b.{0,40}\b\d+(?:\.\d+)?\b',
+        results_text,
+        re.IGNORECASE,
+    ))
+
+    if not has_number and not has_comparison:
+        issues.append(StyleIssue(
+            severity="error",
+            issue_type="missing_performance_number",
+            location="The Results",
+            description=(
+                "The Results section contains no specific performance number with interpretable context. "
+                "Quoting the abstract ('reliable performance') is not reporting results."
+            ),
+            suggestion=(
+                "Add at least one specific number with a baseline: "
+                "e.g., '87% accuracy vs. 62% for the prior best method'. "
+                "If the paper has no reportable numbers, flag this explicitly in the Results section."
+            ),
+        ))
+
+    return issues
+
+
+def check_signal_block(signal_block: str) -> List[StyleIssue]:
+    """Check that the signal block is present and covers capability, maturity, and decision."""
+    issues = []
+
+    if not signal_block or not signal_block.strip():
+        issues.append(StyleIssue(
+            severity="error",
+            issue_type="missing_signal_block",
+            location="signal_block",
+            description="Signal block is missing. Required for executive readers.",
+            suggestion=(
+                "Add a 2-3 sentence signal block covering: "
+                "(a) what capability is emerging, "
+                "(b) maturity level (lab / emerging / actionable), "
+                "(c) what decision it informs for practitioners."
+            ),
+        ))
+        return issues
+
+    word_count = len(signal_block.split())
+    if word_count < 20:
+        issues.append(StyleIssue(
+            severity="warning",
+            issue_type="signal_block_too_short",
+            location="signal_block",
+            description=f"Signal block is only {word_count} words — likely missing maturity or decision framing.",
+            suggestion="Expand to 2-3 sentences covering capability, maturity, and practitioner decision.",
+        ))
+
+    return issues
+
+
 async def check_style_compliance(
     piece: Piece,
     config: Optional[StyleConfig] = None
@@ -161,13 +271,16 @@ async def check_style_compliance(
     config = config or StyleConfig()
     
     issues = []
-    
+
     # Run checks
     issues.extend(check_banned_words(piece.content))
     issues.extend(check_structure(piece.content))
     issues.extend(check_citations(piece.content))
-    
-    # Word count
+    issues.extend(check_hook_form(piece.hook))
+    issues.extend(check_numbers_in_results(piece.content))
+    issues.extend(check_signal_block(piece.signal_block or ""))
+
+    # Word count (hard cap now 1000)
     word_count, word_count_ok = check_word_count(piece.content, config)
     if not word_count_ok:
         issues.append(StyleIssue(

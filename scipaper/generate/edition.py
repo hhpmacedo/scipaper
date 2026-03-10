@@ -2,15 +2,40 @@
 Edition assembly from generated pieces.
 """
 
+import json
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import List, Optional
 from datetime import datetime, timezone
 
 from .writer import Piece
 from ..curate.models import ScoredPaper
+from ..retry import api_retry
 
 logger = logging.getLogger(__name__)
+
+
+QUICK_TAKE_PROMPT = """Write a Quick Take for a Signal newsletter. Signal explains AI research to software engineers and PMs who use AI but don't read papers.
+
+A Quick Take is ONE sentence (occasionally two) in this format:
+[Brief context] — [specific finding or result with a concrete number if available].
+
+Rules:
+- Must include what the paper FOUND, not what it STUDIED.
+- Never use abstract-level descriptions like "researchers explore X" or "this paper studies Y".
+- Never use banned words: revolutionary, groundbreaking, breakthrough, game-changing.
+- If the paper has a concrete number, include it.
+
+BAD: "Traditional vision-language models struggle with contrastive fine-grained taxonomic reasoning."
+GOOD: "Fine-grained image classification gets harder when categories share visual features — a new benchmark shows top models drop 34 percentage points compared to standard classification tests."
+
+Paper Title: {title}
+Paper Abstract: {abstract}
+
+Return ONLY a JSON object:
+{{"one_liner": "<your one-sentence quick take>"}}
+"""
 
 
 @dataclass
@@ -111,14 +136,84 @@ async def assemble_edition(
 
 async def generate_quick_take(
     paper: ScoredPaper,
-    config: Optional[AssemblyConfig] = None
+    config: Optional[AssemblyConfig] = None,
+    llm_provider: str = "anthropic",
+    llm_model: Optional[str] = None,
+    anthropic_api_key: Optional[str] = None,
+    openai_api_key: Optional[str] = None,
 ) -> QuickTake:
-    """Generate a brief summary for a runner-up paper."""
-    return _fallback_quick_take(paper)
+    """Generate a brief summary for a runner-up paper using LLM."""
+    prompt = QUICK_TAKE_PROMPT.format(
+        title=paper.paper.title,
+        abstract=paper.paper.abstract[:1000],  # Cap abstract to avoid token waste
+    )
+
+    try:
+        one_liner = await _llm_quick_take(
+            prompt,
+            provider=llm_provider,
+            model=llm_model,
+            anthropic_api_key=anthropic_api_key,
+            openai_api_key=openai_api_key,
+        )
+        return QuickTake(
+            paper_id=paper.paper.arxiv_id,
+            title=paper.paper.title,
+            one_liner=one_liner,
+            paper_url=paper.paper.pdf_url or f"https://arxiv.org/abs/{paper.paper.arxiv_id}",
+        )
+    except Exception as e:
+        logger.warning(f"LLM quick take failed for {paper.paper.arxiv_id}, using fallback: {e}")
+        return _fallback_quick_take(paper)
+
+
+@api_retry
+async def _llm_quick_take(
+    prompt: str,
+    provider: str = "anthropic",
+    model: Optional[str] = None,
+    anthropic_api_key: Optional[str] = None,
+    openai_api_key: Optional[str] = None,
+) -> str:
+    """Call LLM and return one_liner string."""
+    if provider == "anthropic":
+        import anthropic
+        _model = model or "claude-haiku-4-5-20251001"
+        client = anthropic.AsyncAnthropic(api_key=anthropic_api_key)
+        response = await client.messages.create(
+            model=_model,
+            max_tokens=200,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text = response.content[0].text.strip()
+    elif provider == "openai":
+        from openai import AsyncOpenAI
+        _model = model or "gpt-4o-mini"
+        client = AsyncOpenAI(api_key=openai_api_key)
+        response = await client.chat.completions.create(
+            model=_model,
+            max_tokens=200,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text = response.choices[0].message.content.strip()
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
+
+    # Extract JSON
+    if "```" in text:
+        match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+        if match:
+            text = match.group(1)
+    try:
+        data = json.loads(text)
+        return data["one_liner"]
+    except (json.JSONDecodeError, KeyError):
+        # If not JSON, treat entire response as the one-liner
+        return text.strip('"').strip()
 
 
 def _fallback_quick_take(paper: ScoredPaper) -> QuickTake:
-    """Generate a quick take from abstract without LLM."""
+    """Generate a quick take from abstract without LLM (fallback only)."""
     abstract = paper.paper.abstract
     # Take first sentence of abstract as one-liner
     first_sentence = abstract.split(". ")[0] + "." if abstract else paper.paper.title
