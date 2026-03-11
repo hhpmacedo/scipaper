@@ -44,6 +44,9 @@ def _og_tags(
     return "\n".join(tags)
 
 
+PLAUSIBLE_SCRIPT = '<script defer data-domain="signal.hugohmacedo.com" src="https://plausible.io/js/script.js"></script>'
+
+
 def _generate_og_image(output_path: Path) -> None:
     """Generate a 1200x630 PNG Open Graph image matching the brutalist site design."""
     try:
@@ -286,6 +289,7 @@ footer a:hover {{ color: #e63b19; }}
 .copyright a {{ color: #666; margin-right: 0; font-weight: 400; }}
 .copyright a:hover {{ color: #e63b19; }}
 </style>
+{PLAUSIBLE_SCRIPT}
 </head>
 <body>
 <hr class="top-rule">
@@ -385,6 +389,7 @@ footer a:hover {{ color: #e63b19; }}
   .subscribe input[type="submit"] {{ width: 100%; }}
 }}
 </style>
+{PLAUSIBLE_SCRIPT}
 </head>
 <body>
 <hr class="top-rule">
@@ -472,6 +477,7 @@ footer a:hover {{ color: #e63b19; }}
 .copyright a {{ color: #666; margin-right: 0; font-weight: 400; }}
 .copyright a:hover {{ color: #e63b19; }}
 </style>
+{PLAUSIBLE_SCRIPT}
 </head>
 <body>
 <hr class="top-rule">
@@ -538,6 +544,7 @@ footer a:hover {{ color: #e63b19; }}
 .copyright a {{ color: #666; margin-right: 0; font-weight: 400; }}
 .copyright a:hover {{ color: #e63b19; }}
 </style>
+{PLAUSIBLE_SCRIPT}
 </head>
 <body>
 <hr class="top-rule">
@@ -619,6 +626,7 @@ footer a:hover {{ color: #e63b19; }}
 .copyright a {{ color: #666; margin-right: 0; font-weight: 400; }}
 .copyright a:hover {{ color: #e63b19; }}
 </style>
+{PLAUSIBLE_SCRIPT}
 </head>
 <body>
 <hr class="top-rule">
@@ -685,6 +693,7 @@ footer a:hover {{ color: #e63b19; }}
 .copyright a {{ color: #666; margin-right: 0; font-weight: 400; }}
 .copyright a:hover {{ color: #e63b19; }}
 </style>
+{PLAUSIBLE_SCRIPT}
 </head>
 <body>
 <hr class="top-rule">
