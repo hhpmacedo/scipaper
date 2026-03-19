@@ -6,13 +6,13 @@ Autonomous weekly newsletter pipeline that curates AI research papers and transl
 
 - **Status**: Active (Ops)
 - **Live URL**: https://signal.hugohmacedo.com
-- **Last session**: 2026-03-08
-- **Current focus**: Edition enrichment complete — hero figures on all 3 lead articles, TOC with anchor links, template updated for future editions.
+- **Last session**: 2026-03-18
+- **Current focus**: First live edition sent to subscribers — W11 pipeline ran successfully, email rendered and posted to Buttondown, archive updated, Plausible analytics added.
 - **Next steps**:
-  1. Verify Vercel deployment reflects TOC and new figures
-  2. Wire `ClientPool` and `PipelineCache` into individual module functions
-  3. Set up failure alerting (Slack/email on pipeline failure)
-  4. Add `--skip-ingest` flag to pipeline CLI to reuse existing papers
+  1. Set up GitHub Actions for weekly automated pipeline runs
+  2. Add `--publish-only` CLI flag to re-send email without re-running full pipeline
+  3. Fix email size — slimmed renderer in place but needs testing under 102KB consistently
+  4. Wire `ClientPool` and `PipelineCache` into individual module functions
 
 ## Team
 

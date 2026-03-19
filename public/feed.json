@@ -5,11 +5,11 @@
   "feed_url": "https://signal.hugohmacedo.com/feed.json",
   "items": [
     {
-      "id": "https://signal.hugohmacedo.com/editions/2026-W11.html",
-      "url": "https://signal.hugohmacedo.com/editions/2026-W11.html",
-      "title": "Signal #1 \u2014 2026-W11",
-      "summary": "Give a frontier AI agent a GPU and 10 hours, and it can fine-tune a base language model from scratch \u2014 sometimes outperforming the model's own developers.",
-      "date_published": "2026-03-10T16:50:49.995781+00:00"
+      "id": "https://signal.hugohmacedo.com/editions/2026-W12.html",
+      "url": "https://signal.hugohmacedo.com/editions/2026-W12.html",
+      "title": "Signal #1 \u2014 2026-W12",
+      "summary": "Adding images to moral dilemmas causes leading AI models to abandon the ethical reasoning their text-based safety training was designed to enforce.",
+      "date_published": "2026-03-18T14:35:59.943077+00:00"
     }
   ]
 }

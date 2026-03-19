@@ -98,9 +98,10 @@ STRUCTURE (follow exactly, with word budgets):
    - If a paper has multiple contributions, pick the primary one and compress the others to 1-2 sentences each.
 
 5. The Results (~150 words, 2-3 paragraphs)
-   - REQUIRED: At least one specific performance number with a baseline or comparison that makes it interpretable.
-   - ACCEPTABLE: "DCAN achieves 87% attribution accuracy across four models, compared to 62% for the best existing method."
-   - UNACCEPTABLE: "reliable attribution performance across diverse settings" (quoting the abstract is not reporting results).
+   - REQUIRED: At least one specific, concrete finding that lets the reader gauge magnitude.
+   - If the paper has benchmark numbers: quote them with a baseline. "DCAN achieves 87% attribution accuracy, compared to 62% for the best existing method."
+   - If the paper has NO benchmark numbers (e.g. interpretability, theoretical, or qualitative work): state a specific qualitative finding with concrete detail, then explicitly note "This paper reports no benchmark comparisons — [reason, e.g. 'the contribution is a method, not a performance claim']."
+   - UNACCEPTABLE: "reliable attribution performance across diverse settings", "substantially higher fidelity", "measurable fraction" — these are paraphrases, not results.
    - What worked, what didn't. Honest about limitations.
    - Every limitation must be dual-framed: what's technically incomplete (for builders) AND what that means for production timelines (for decision-makers).
    - BAD: "The benchmark covers only four LLMs and four languages."

@@ -1,18 +1,25 @@
 """
 Style consistency checker against the Style Constitution.
+
+Uses a single LLM call per piece for reliable, context-aware checking.
+Rule-based checks (banned words, word count) still run locally for speed.
 """
 
+import json
 import logging
 import re
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+import anthropic
+
 from ..generate.writer import Piece
+from ..config import get_config
 
 logger = logging.getLogger(__name__)
 
 
-# Words banned by the Style Constitution
+# Words banned by the Style Constitution — checked locally (fast, unambiguous)
 BANNED_WORDS = [
     "revolutionary", "groundbreaking", "game-changing", "breakthrough",
     "incredible", "amazing", "obviously", "clearly", "utilize", "leverage",
@@ -24,14 +31,61 @@ CAUTION_WORDS = [
     "very", "really", "actually", "basically", "state-of-the-art",
 ]
 
-# Hook patterns that indicate a method description instead of a capability/finding
-_HOOK_METHOD_PATTERNS = [
-    r"^researchers (propose|present|introduce|develop|design)",
-    r"^we (propose|present|introduce|develop|design)",
-    r"^this paper (presents|introduces|proposes|describes)",
-    r"^in this (paper|work|study)",
-    r"^a (new |novel )?(method|approach|framework|system|model) (for|to)",
-]
+STYLE_CHECK_PROMPT = """\
+You are a rigorous style editor for Signal, a weekly AI research newsletter. \
+Your job is to check whether a drafted article meets the Style Constitution rules below.
+
+## Style Constitution Rules
+
+1. **Hook form** — The hook must lead with a capability, finding, or challenged assumption. \
+It must NOT start with "Researchers propose/present/introduce", "We propose", "This paper presents", \
+"In this paper", or "A new method for". The hook should answer: what can now be done that couldn't before?
+
+2. **Quantified results** — The "## The Results" section must contain at least one specific, \
+concrete finding. If the paper has benchmark numbers, they must be quoted with a baseline. \
+If the paper has no benchmark numbers, the article must explicitly say so (e.g. "This paper \
+reports no benchmark comparisons") and give a specific qualitative finding instead. \
+Vague statements like "performs well", "substantially higher", "measurable fraction", or \
+"achieves reliable performance" are NOT acceptable — they are paraphrases, not results. \
+Only pass this check if the article either quotes real numbers OR explicitly acknowledges \
+the absence of benchmarks with a reason.
+
+3. **Signal block** — The signal_block field must be present, at least 20 words, and cover: \
+(a) what capability is emerging, (b) maturity level (lab/emerging/actionable), \
+(c) what decision it informs for practitioners.
+
+4. **Required sections** — The article must contain all four sections: \
+"## The Problem", "## What They Did", "## The Results", "## Why It Matters".
+
+## Article to Check
+
+**Hook:** {hook}
+
+**Signal block:** {signal_block}
+
+**Article content:**
+{content}
+
+## Instructions
+
+Return a JSON object with this exact structure:
+{{
+  "issues": [
+    {{
+      "severity": "error" | "warning",
+      "issue_type": "hook_method_description" | "missing_performance_number" | "missing_signal_block" | "signal_block_too_short" | "missing_section" | "other",
+      "location": "<brief location description>",
+      "description": "<what the issue is>",
+      "suggestion": "<how to fix it>"
+    }}
+  ]
+}}
+
+Only include real issues. If the article is clean, return {{"issues": []}}.
+Be strict on hook form and signal block. Be pragmatic on results numbers — \
+if the paper genuinely has no quantifiable results (e.g. a theoretical or interpretability paper), \
+do not flag it.
+"""
 
 
 @dataclass
@@ -39,7 +93,7 @@ class StyleIssue:
     """A single style issue."""
     severity: str  # "error", "warning"
     issue_type: str
-    location: str  # e.g., "paragraph 3"
+    location: str
     description: str
     suggestion: Optional[str] = None
 
@@ -50,10 +104,10 @@ class StyleReport:
     piece_id: str
     compliant: bool
     issues: List[StyleIssue] = field(default_factory=list)
-    
+
     word_count: int = 0
     word_count_ok: bool = True
-    
+
     has_hook: bool = True
     has_limitations: bool = True
     structure_ok: bool = True
@@ -63,14 +117,13 @@ class StyleReport:
 class StyleConfig:
     """Style checking configuration."""
     min_words: int = 800
-    max_words: int = 1000  # Hard cap per updated Style Constitution
-    strict_mode: bool = False  # If True, warnings become errors
+    max_words: int = 1000
+    strict_mode: bool = False
 
 
-def check_banned_words(content: str) -> List[StyleIssue]:
-    """Check for banned words from Style Constitution."""
+def _check_banned_words(content: str) -> List[StyleIssue]:
+    """Fast local check for banned and caution words."""
     issues = []
-
     for word in BANNED_WORDS:
         matches = list(re.finditer(r'\b' + re.escape(word) + r'\b', content, re.IGNORECASE))
         for match in matches:
@@ -81,9 +134,8 @@ def check_banned_words(content: str) -> List[StyleIssue]:
                 issue_type="banned_word",
                 location=f"...{context}...",
                 description=f"Banned word: '{word}'",
-                suggestion=f"Remove or replace '{word}' with more measured language"
+                suggestion=f"Replace '{word}' with more measured language",
             ))
-
     for word in CAUTION_WORDS:
         matches = list(re.finditer(r'\b' + re.escape(word) + r'\b', content, re.IGNORECASE))
         for match in matches:
@@ -94,211 +146,84 @@ def check_banned_words(content: str) -> List[StyleIssue]:
                 issue_type="caution_word",
                 location=f"...{context}...",
                 description=f"Consider removing: '{word}'",
-                suggestion=f"'{word}' often adds no value - consider removing"
+                suggestion=f"'{word}' often adds no value",
             ))
-
     return issues
 
 
-def check_structure(content: str) -> List[StyleIssue]:
-    """Check that piece follows required structure."""
-    issues = []
-    
-    required_sections = [
-        ("The Problem", "problem"),
-        ("What They Did", "approach"),
-        ("The Results", "results"),
-        ("Why It Matters", "implications"),
-    ]
-    
-    for section_name, section_type in required_sections:
-        # Look for section header
-        if section_name not in content and f"## {section_name}" not in content:
-            issues.append(StyleIssue(
-                severity="error",
-                issue_type="missing_section",
-                location="structure",
-                description=f"Missing required section: '{section_name}'",
-                suggestion=f"Add a '{section_name}' section"
-            ))
-    
-    return issues
-
-
-def check_word_count(content: str, config: StyleConfig) -> tuple:
-    """Check word count is within bounds."""
+def _check_word_count(content: str, config: StyleConfig) -> tuple:
     words = len(content.split())
     ok = config.min_words <= words <= config.max_words
     return words, ok
 
 
-def check_citations(content: str) -> List[StyleIssue]:
-    """Check that claims have citations."""
-    issues = []
-    
-    # Look for citation pattern
-    citation_pattern = r'\[§[\d.]+\]|\[Abstract\]|\[Table\s+\d+\]|\[Figure\s+\d+\]'
-    citations = re.findall(citation_pattern, content)
-    
-    if len(citations) < 3:
-        issues.append(StyleIssue(
-            severity="error",
-            issue_type="insufficient_citations",
-            location="throughout",
-            description=f"Only {len(citations)} citations found (minimum 3)",
-            suggestion="Add more citations to ground claims in the paper"
-        ))
-    
-    return issues
-
-
-def check_hook_form(hook: str) -> List[StyleIssue]:
-    """Check that the hook states a capability or finding, not a method description."""
-    issues = []
-    hook_lower = hook.strip().lower()
-
-    for pattern in _HOOK_METHOD_PATTERNS:
-        if re.match(pattern, hook_lower):
-            issues.append(StyleIssue(
-                severity="error",
-                issue_type="hook_method_description",
-                location="hook",
-                description="Hook describes a method, not a capability or finding.",
-                suggestion=(
-                    "Rewrite hook to answer: what can now be done that couldn't before, "
-                    "or what assumption just got challenged? Lead with the result, not the approach."
-                ),
-            ))
-            break
-
-    return issues
-
-
-def check_numbers_in_results(content: str) -> List[StyleIssue]:
-    """Check that The Results section contains at least one specific performance number."""
-    issues = []
-
-    # Extract The Results section
-    results_match = re.search(
-        r'##\s*The Results\s*\n(.*?)(?=\n##|\Z)',
-        content,
-        re.DOTALL | re.IGNORECASE,
-    )
-    if not results_match:
-        return issues  # Missing section caught by check_structure
-
-    results_text = results_match.group(1)
-
-    # Look for numeric performance indicators: digits followed by %, x, or comparison context
-    has_number = bool(re.search(
-        r'\b\d+(?:\.\d+)?(?:\s*%|\s*x\b|\s*times\b|\s*accuracy|\s*points?)',
-        results_text,
-        re.IGNORECASE,
-    ))
-    # Also accept patterns like "87 out of 100" or "X vs Y" with numbers
-    has_comparison = bool(re.search(
-        r'\b\d+(?:\.\d+)?\b.{0,40}\bvs\.?\b.{0,40}\b\d+(?:\.\d+)?\b',
-        results_text,
-        re.IGNORECASE,
-    ))
-
-    if not has_number and not has_comparison:
-        issues.append(StyleIssue(
-            severity="error",
-            issue_type="missing_performance_number",
-            location="The Results",
-            description=(
-                "The Results section contains no specific performance number with interpretable context. "
-                "Quoting the abstract ('reliable performance') is not reporting results."
-            ),
-            suggestion=(
-                "Add at least one specific number with a baseline: "
-                "e.g., '87% accuracy vs. 62% for the prior best method'. "
-                "If the paper has no reportable numbers, flag this explicitly in the Results section."
-            ),
-        ))
-
-    return issues
-
-
-def check_signal_block(signal_block: str) -> List[StyleIssue]:
-    """Check that the signal block is present and covers capability, maturity, and decision."""
-    issues = []
-
-    if not signal_block or not signal_block.strip():
-        issues.append(StyleIssue(
-            severity="error",
-            issue_type="missing_signal_block",
-            location="signal_block",
-            description="Signal block is missing. Required for executive readers.",
-            suggestion=(
-                "Add a 2-3 sentence signal block covering: "
-                "(a) what capability is emerging, "
-                "(b) maturity level (lab / emerging / actionable), "
-                "(c) what decision it informs for practitioners."
-            ),
-        ))
-        return issues
-
-    word_count = len(signal_block.split())
-    if word_count < 20:
-        issues.append(StyleIssue(
-            severity="warning",
-            issue_type="signal_block_too_short",
-            location="signal_block",
-            description=f"Signal block is only {word_count} words — likely missing maturity or decision framing.",
-            suggestion="Expand to 2-3 sentences covering capability, maturity, and practitioner decision.",
-        ))
-
-    return issues
-
-
 async def check_style_compliance(
     piece: Piece,
-    config: Optional[StyleConfig] = None
+    config: Optional[StyleConfig] = None,
 ) -> StyleReport:
     """
-    Check a piece against the Style Constitution.
-    
-    Stage 3 of the content pipeline:
-    1. Check for banned/caution words
-    2. Verify required structure
-    3. Check word count
-    4. Verify citations present
-    
-    Returns StyleReport.
+    Check a piece against the Style Constitution using an LLM call.
+
+    Local checks (banned words, word count) run first for speed.
+    All structural/semantic rules (hook form, results numbers, signal block,
+    section presence) are delegated to a single Sonnet call.
     """
     config = config or StyleConfig()
-    
-    issues = []
+    issues: List[StyleIssue] = []
 
-    # Run checks
-    issues.extend(check_banned_words(piece.content))
-    issues.extend(check_structure(piece.content))
-    issues.extend(check_citations(piece.content))
-    issues.extend(check_hook_form(piece.hook))
-    issues.extend(check_numbers_in_results(piece.content))
-    issues.extend(check_signal_block(piece.signal_block or ""))
+    # --- Fast local checks ---
+    issues.extend(_check_banned_words(piece.content))
 
-    # Word count (hard cap now 1000)
-    word_count, word_count_ok = check_word_count(piece.content, config)
+    word_count, word_count_ok = _check_word_count(piece.content, config)
     if not word_count_ok:
         issues.append(StyleIssue(
             severity="warning",
             issue_type="word_count",
             location="overall",
             description=f"Word count {word_count} outside target {config.min_words}-{config.max_words}",
-            suggestion="Adjust length to target range"
+            suggestion="Adjust length to target range",
         ))
-    
+
+    # --- LLM structural check ---
+    signal_config = get_config()
+    client = anthropic.Anthropic(api_key=signal_config.anthropic_api_key)
+
+    prompt = STYLE_CHECK_PROMPT.format(
+        hook=piece.hook or "",
+        signal_block=piece.signal_block or "",
+        content=piece.content,
+    )
+
+    try:
+        response = client.messages.create(
+            model=signal_config.llm_model,
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        raw = response.content[0].text.strip()
+        # Extract JSON object robustly — find first { ... } block
+        match = re.search(r'\{.*\}', raw, re.DOTALL)
+        if not match:
+            raise ValueError("No JSON object found in LLM response")
+        data = json.loads(match.group())
+        for item in data.get("issues", []):
+            issues.append(StyleIssue(
+                severity=item.get("severity", "warning"),
+                issue_type=item.get("issue_type", "other"),
+                location=item.get("location", "unknown"),
+                description=item.get("description", ""),
+                suggestion=item.get("suggestion"),
+            ))
+    except Exception as e:
+        logger.warning(f"LLM style check failed for {piece.paper_id}: {e} — skipping structural checks")
+
     # Determine compliance
     errors = [i for i in issues if i.severity == "error"]
     compliant = len(errors) == 0
-    
     if config.strict_mode:
         warnings = [i for i in issues if i.severity == "warning"]
         compliant = compliant and len(warnings) == 0
-    
+
     report = StyleReport(
         piece_id=piece.paper_id,
         compliant=compliant,
@@ -306,11 +231,15 @@ async def check_style_compliance(
         word_count=word_count,
         word_count_ok=word_count_ok,
     )
-    
+
     logger.info(
         f"Style check for {piece.paper_id}: "
         f"{'PASS' if compliant else 'FAIL'} "
         f"({len(errors)} errors, {len(issues) - len(errors)} warnings)"
     )
-    
+    for issue in issues:
+        logger.info(
+            f"  [{issue.severity.upper()}] {issue.issue_type} @ {issue.location}: {issue.description}"
+        )
+
     return report

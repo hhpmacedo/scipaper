@@ -268,3 +268,57 @@ Append-only session log. Each entry captures what happened and where to pick up.
 2. Wire `ClientPool` and `PipelineCache` into module functions
 3. Set up failure alerting (Slack/email)
 4. Add `--skip-ingest` flag to pipeline CLI
+
+---
+
+### 2026-03-18 13:48 — First live edition sent to subscribers
+
+**What was done:**
+
+- Ran full pipeline for 2026-W11: 200 papers ingested, 4 selected, 4 generated, 4 verified, 4 passed
+- Fixed Buttondown API key (was posting to wrong account — updated `.env`)
+- Slimmed email renderer: was 144KB (Gmail truncates at 102KB), reduced to ~12KB by sending only lead article in full + "Read more" links for remaining pieces
+- Re-posted lean draft to correct Buttondown account (subscribers account)
+- Updated archive to include all 3 editions: W10 (#1), W10.1 (#2), W11 (#3)
+- Added Plausible Cloud analytics script to all 8 HTML pages + web publisher templates
+- Committed and pushed all changes to main; Vercel deployed automatically
+
+**Key decisions:**
+
+- Email strategy: lead article full text only, remaining pieces as titled previews with links to web edition
+- Plausible Cloud (not self-hosted) on domain `signal.hugohmacedo.com`
+
+**State:** Pipeline runs manually and works end-to-end. Website live with 3 editions. Buttondown draft ready to review and send. No automation yet.
+
+**Next steps:**
+
+1. Review and send W11 draft in Buttondown
+2. Set up GitHub Actions for weekly automated pipeline runs
+3. Add `--publish-only` flag to CLI to re-send emails without full re-run
+
+---
+
+### 2026-03-18 13:48 — Algorithm versioning: VERSIONING.md created + updated
+
+**What was done:**
+
+- Created `docs/VERSIONING.md` with explicit version history traced from full git log
+- Curation table: v1.0 through v3.2 (added v3.2 for narrative prompt overhaul in cfebcd8)
+- Writing table: v1.0 through v4.3 (added v4.3 for Signal block + structured prompt overhaul)
+- Added TL;DR section summarizing current live algorithm for both pipelines
+- Updated CLAUDE.md to reference VERSIONING.md with instruction to keep it up to date
+
+**Key decisions:**
+
+- Minor versions (x.1, x.2) = infrastructure/reliability, no algorithm change
+- Major versions = scoring criteria, prompt structure, or output format changes
+- TL;DR reflects live deployed state; tables trace full history
+
+**State:** VERSIONING.md complete and accurate as of 2026-03-18. Live versions: Curation v3.2, Writing v4.3.
+
+**Next steps:**
+
+1. Verify Vercel deployment reflects TOC and new figures
+2. Wire `ClientPool` and `PipelineCache` into module functions
+3. Set up failure alerting (Slack/email on pipeline failure)
+4. Add `--skip-ingest` flag to pipeline CLI
