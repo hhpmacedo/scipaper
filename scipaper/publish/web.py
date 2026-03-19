@@ -281,6 +281,19 @@ header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; let
 .quick-takes a {{ color: #000; font-weight: 700; text-decoration: none; border-bottom: 2px solid #000; }}
 .quick-takes a:hover {{ color: #e63b19; border-bottom-color: #e63b19; }}
 .quick-takes p {{ margin-top: 4px; color: #333; font-size: 15px; }}
+.edition-subscribe {{ margin-top: 60px; padding: 40px 0; border-top: 4px solid #000; border-bottom: 4px solid #000; }}
+.edition-subscribe h2 {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }}
+.edition-subscribe p {{ font-size: 15px; color: #333; margin-bottom: 16px; }}
+.edition-subscribe form {{ display: flex; gap: 0; }}
+.edition-subscribe input[type="email"] {{ flex: 1; padding: 14px 16px; font-size: 16px; border: 3px solid #000; border-right: none; font-family: inherit; background: #fff; outline: none; }}
+.edition-subscribe input[type="email"]::placeholder {{ color: #999; }}
+.edition-subscribe input[type="submit"] {{ padding: 14px 32px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; background: #e63b19; color: #fff; border: 3px solid #e63b19; cursor: pointer; font-family: inherit; transition: background 0.15s; }}
+.edition-subscribe input[type="submit"]:hover {{ background: #c42f12; border-color: #c42f12; }}
+@media (max-width: 480px) {{
+  .edition-subscribe form {{ flex-direction: column; }}
+  .edition-subscribe input[type="email"] {{ border-right: 3px solid #000; border-bottom: none; }}
+  .edition-subscribe input[type="submit"] {{ width: 100%; }}
+}}
 footer {{ margin-top: 60px; padding-top: 20px; border-top: 2px solid #000; font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
 footer .meta {{ margin-bottom: 12px; color: #666; }}
 footer a {{ color: #000; text-decoration: none; margin-right: 16px; font-weight: 700; }}
@@ -307,6 +320,29 @@ footer a:hover {{ color: #e63b19; }}
 {"".join(pieces_html)}
 
 {quick_takes_html}
+
+<div class="edition-subscribe">
+<h2>Subscribe &mdash; free</h2>
+<p>AI research, translated. Every week.</p>
+<form id="edition-subscribe-form">
+<input type="email" name="email" id="edition-subscribe-email" placeholder="you@example.com" required>
+<input type="submit" value="Subscribe">
+</form>
+</div>
+<script>
+document.getElementById('edition-subscribe-form').addEventListener('submit', function(e) {{
+  e.preventDefault();
+  var email = document.getElementById('edition-subscribe-email').value;
+  fetch('https://buttondown.com/api/emails/embed-subscribe/{config.buttondown_username}', {{
+    method: 'POST',
+    headers: {{'Content-Type': 'application/x-www-form-urlencoded'}},
+    body: 'email=' + encodeURIComponent(email),
+    mode: 'no-cors'
+  }}).then(function() {{
+    window.location.href = '{config.site_url}/subscribed.html';
+  }});
+}});
+</script>
 
 <footer>
 <p class="meta">#{edition.issue_number} &middot; {edition.total_words} words &middot; {len(edition.pieces)} pieces</p>
