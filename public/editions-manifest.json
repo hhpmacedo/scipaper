@@ -1,0 +1,30 @@
+[
+  {
+    "week": "2026-W10",
+    "issue_number": 1,
+    "title": "First Edition",
+    "pieces": 0,
+    "words": 0
+  },
+  {
+    "week": "2026-W10.1",
+    "issue_number": 2,
+    "title": "Safety Alignment Backfires in Non-English Languages Across LLM Groups",
+    "pieces": 3,
+    "words": 2800
+  },
+  {
+    "week": "2026-W11",
+    "issue_number": 3,
+    "title": "LLM Agents Can Now Post-Train Other LLMs \u2014 With Caveats",
+    "pieces": 4,
+    "words": 3568
+  },
+  {
+    "week": "2026-W12",
+    "issue_number": 4,
+    "title": "Visual Inputs Break Moral Safety Filters in Vision-Language Models",
+    "pieces": 3,
+    "words": 2722
+  }
+]

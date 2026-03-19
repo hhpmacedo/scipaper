@@ -23,7 +23,7 @@ from .generate.edition import AssemblyConfig, Edition, assemble_edition
 from .generate.pdf_parser import ParserConfig, download_paper_pdf, parse_paper_pdf, save_hero_figure
 from .generate.writer import GenerationConfig, generate_piece
 from .publish.email import ButtondownConfig, DeliveryReport, send_edition_email
-from .publish.web import WebConfig, generate_web_archive
+from .publish.web import WebConfig, generate_web_archive, next_issue_number
 from .verify.checker import VerificationConfig, attempt_auto_fix, verify_piece
 from .verify.style import StyleConfig, check_style_compliance
 
@@ -239,7 +239,7 @@ async def run_pipeline(
         verified_pieces,
         runners_up,
         config.week or anchor.week,
-        config.issue_number,
+        config.issue_number or next_issue_number(config.web),
         config.assembly,
     )
     result.edition = edition

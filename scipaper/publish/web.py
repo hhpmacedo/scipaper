@@ -99,6 +99,56 @@ class WebConfig:
     buttondown_username: str = "signalhhmacedo"
 
 
+MANIFEST_FILE = "editions-manifest.json"
+
+
+def load_manifest(config: Optional["WebConfig"] = None) -> list:
+    """
+    Load the editions manifest from public/editions-manifest.json.
+    Returns list of dicts with week, issue_number, title, pieces, words.
+    """
+    config = config or WebConfig()
+    path = config.output_dir / MANIFEST_FILE
+    if not path.exists():
+        return []
+    return json.loads(path.read_text())
+
+
+def save_manifest(entries: list, config: Optional["WebConfig"] = None) -> None:
+    """Persist the editions manifest."""
+    config = config or WebConfig()
+    path = config.output_dir / MANIFEST_FILE
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(entries, indent=2))
+
+
+def next_issue_number(config: Optional["WebConfig"] = None) -> int:
+    """Return the next issue number based on the manifest."""
+    entries = load_manifest(config)
+    if not entries:
+        return 1
+    return max(e["issue_number"] for e in entries) + 1
+
+
+def append_to_manifest(edition: "Edition", config: Optional["WebConfig"] = None) -> None:
+    """Add a new edition entry to the manifest (idempotent by week)."""
+    config = config or WebConfig()
+    entries = load_manifest(config)
+    # Replace if week already exists, otherwise append
+    entries = [e for e in entries if e["week"] != edition.week]
+    title = edition.pieces[0].title if edition.pieces else edition.week
+    entries.append({
+        "week": edition.week,
+        "issue_number": edition.issue_number,
+        "title": title,
+        "pieces": len(edition.pieces),
+        "words": edition.total_words,
+    })
+    # Keep sorted by issue number
+    entries.sort(key=lambda e: e["issue_number"])
+    save_manifest(entries, config)
+
+
 def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) -> str:
     """
     Generate static HTML page for a single edition.
@@ -790,16 +840,40 @@ footer a:hover {{ color: #e63b19; }}
 generate_index_page = generate_archive_page
 
 
+def _stub_edition_from_manifest(entry: dict) -> Edition:
+    """Build a minimal Edition from a manifest entry (for archive/feed generation)."""
+    from ..generate.writer import Piece
+    stub_piece = Piece(
+        paper_id="",
+        title=entry["title"],
+        hook="",
+        content="",
+        word_count=0,
+        citations=[],
+        generated_at="",
+        model_used="",
+    )
+    return Edition(
+        week=entry["week"],
+        issue_number=entry["issue_number"],
+        pieces=[stub_piece],
+        total_words=entry.get("words", 0),
+    )
+
+
 async def generate_web_archive(
     editions: List[Edition], config: Optional[WebConfig] = None
 ) -> Path:
     """
     Generate complete static web archive.
 
+    Loads the editions manifest to include all previously published editions
+    in the archive, landing page, and feeds — not just the current run.
+
     Creates:
     - index.html (landing page with subscribe form)
     - archive.html (edition list)
-    - /editions/2026-W10.html (individual editions)
+    - /editions/YYYY-WNN.html (individual edition pages)
     - /rss.xml (RSS feed)
     - /feed.json (JSON feed)
 
@@ -815,8 +889,24 @@ async def generate_web_archive(
     figures_dir = output / "figures"
     figures_dir.mkdir(exist_ok=True)
 
-    # Generate landing page
-    landing_html = generate_landing_page(editions, config)
+    # Update manifest with any new editions passed in
+    for edition in editions:
+        append_to_manifest(edition, config)
+
+    # Load full manifest and build the complete editions list for archive/feeds
+    manifest = load_manifest(config)
+    new_weeks = {e.week for e in editions}
+    all_editions: List[Edition] = []
+    for entry in sorted(manifest, key=lambda e: e["issue_number"], reverse=True):
+        if entry["week"] in new_weeks:
+            # Use the full edition object we just generated
+            full = next(e for e in editions if e.week == entry["week"])
+            all_editions.append(full)
+        else:
+            all_editions.append(_stub_edition_from_manifest(entry))
+
+    # Generate landing page (uses latest edition = first in list)
+    landing_html = generate_landing_page(all_editions, config)
     (output / "index.html").write_text(landing_html)
 
     # Generate subscribed confirmation page
@@ -824,14 +914,14 @@ async def generate_web_archive(
     (output / "subscribed.html").write_text(subscribed_html)
 
     # Generate archive
-    archive_html = generate_archive_page(editions, config)
+    archive_html = generate_archive_page(all_editions, config)
     (output / "archive.html").write_text(archive_html)
 
     # Generate about page
     about_html = generate_about_page(config)
     (output / "about.html").write_text(about_html)
 
-    # Generate edition pages
+    # Generate edition pages only for new editions (past pages already on disk)
     for edition in editions:
         page_html = generate_edition_page(edition, config)
         (editions_dir / f"{edition.week}.html").write_text(page_html)
@@ -844,14 +934,14 @@ async def generate_web_archive(
     (output / "confirmed.html").write_text(confirmed_html)
 
     # Generate feeds
-    rss = generate_rss_feed(editions, config)
+    rss = generate_rss_feed(all_editions, config)
     (output / "rss.xml").write_text(rss)
 
-    json_feed = generate_json_feed(editions, config)
+    json_feed = generate_json_feed(all_editions, config)
     (output / "feed.json").write_text(json_feed)
 
     logger.info(
-        f"Generated web archive: {len(editions)} editions to {output}"
+        f"Generated web archive: {len(all_editions)} editions to {output}"
     )
 
     return output
