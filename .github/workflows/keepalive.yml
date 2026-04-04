@@ -1,0 +1,24 @@
+name: Keepalive
+
+# GitHub disables scheduled workflows after 60 days of repo inactivity.
+# This workflow runs monthly to keep the repo active and prevent the
+# weekly-edition pipeline from being silently disabled.
+
+on:
+  schedule:
+    - cron: "0 12 1 * *" # 1st of every month at 12:00 UTC
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Re-enable scheduled workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT repos/${{ github.repository }}/actions/workflows/weekly-edition.yml/enable
+          echo "weekly-edition workflow enabled"
