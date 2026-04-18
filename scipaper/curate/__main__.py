@@ -12,6 +12,7 @@ import argparse
 import asyncio
 import json
 import logging
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -39,29 +40,62 @@ def setup_logging(level: str = "INFO"):
     )
 
 
+def current_iso_week() -> str:
+    """Return today's date as an ISO week label, e.g. '2026-W16'."""
+    today = datetime.now(timezone.utc).date()
+    y, w, _ = today.isocalendar()
+    return f"{y}-W{w:02d}"
+
+
+def _most_recent_anchor(exclude: Path = None) -> Path:
+    """Return the lexically-latest anchor file, optionally excluding one."""
+    candidates = sorted(
+        (p for p in ANCHORS_DIR.glob("*.yaml") if p != exclude),
+        reverse=True,
+    )
+    return candidates[0] if candidates else None
+
+
 def load_anchor(week: str = None) -> AnchorDocument:
-    """Load the most recent anchor document."""
-    anchor_files = sorted(ANCHORS_DIR.glob("*.yaml"), reverse=True)
+    """
+    Load the anchor document for the given (or current) ISO week.
 
-    if week:
-        target = ANCHORS_DIR / f"{week}.yaml"
-        if target.exists():
-            anchor_files = [target]
-        else:
-            logger.warning(f"Anchor for {week} not found, using latest")
+    Self-healing: if no anchor exists for the week, copy the most recent one
+    to data/anchors/{week}.yaml and rewrite its `week` field. The human is
+    warned in the log but the pipeline does not block. This lets the weekly
+    cron keep shipping even if no fresh anchor was hand-written.
+    """
+    week = week or current_iso_week()
+    target = ANCHORS_DIR / f"{week}.yaml"
 
-    if not anchor_files:
-        logger.error("No anchor documents found in data/anchors/")
-        sys.exit(1)
+    if not target.exists():
+        source = _most_recent_anchor(exclude=target)
+        if source is None:
+            logger.error("No anchor documents found in data/anchors/")
+            sys.exit(1)
+        logger.warning(
+            f"No anchor for {week}; seeding from {source.name}. "
+            f"Edit data/anchors/{target.name} to refresh topics before the next run."
+        )
+        text = source.read_text()
+        text = re.sub(
+            r'^week:\s*"[^"]*"', f'week: "{week}"', text, count=1, flags=re.MULTILINE
+        )
+        header = (
+            f"# Auto-seeded from {source.name} on "
+            f"{datetime.now(timezone.utc).date().isoformat()}.\n"
+            f"# Edit this file to refresh topics; it is not a final hand-curated anchor.\n"
+        )
+        ANCHORS_DIR.mkdir(parents=True, exist_ok=True)
+        target.write_text(header + text)
 
-    anchor_path = anchor_files[0]
-    logger.info(f"Using anchor: {anchor_path}")
+    logger.info(f"Using anchor: {target}")
 
-    with open(anchor_path) as f:
+    with open(target) as f:
         data = yaml.safe_load(f)
 
     return AnchorDocument(
-        week=data.get("week", ""),
+        week=data.get("week", week),
         updated_by=data.get("updated_by", ""),
         updated_at=data.get("updated_at", datetime.now(timezone.utc)),
         hot_topics=data.get("hot_topics", []),

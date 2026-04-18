@@ -20,10 +20,10 @@ import os
 import sys
 from datetime import datetime, timezone
 
-from .curate.__main__ import load_anchor
+from .curate.__main__ import current_iso_week, load_anchor
 from .pipeline import PipelineConfig, run_pipeline
 from .publish.email import ButtondownConfig
-from .publish.web import WebConfig
+from .publish.web import WebConfig, issue_number_for_week
 
 
 class JSONFormatter(logging.Formatter):
@@ -54,17 +54,20 @@ def setup_logging(log_level: str, json_logs: bool = False) -> None:
 
 async def cmd_run_pipeline(args) -> None:
     """Run the full pipeline end-to-end."""
-    anchor = load_anchor(getattr(args, "week", None))
+    # Edition week is the current ISO week unless explicitly overridden.
+    # The anchor doc is just topical guidance — its own `week` field is informational.
+    week = getattr(args, "week", None) or current_iso_week()
+    anchor = load_anchor(week)
 
+    web_config = WebConfig()
     config = PipelineConfig(
         email=ButtondownConfig(api_key=os.environ.get("BUTTONDOWN_API_KEY")),
-        web=WebConfig(),
+        web=web_config,
         web_base_url=os.environ.get("SIGNAL_WEB_URL", "https://signal.hugohmacedo.com"),
         use_cache=not getattr(args, "no_cache", False),
+        week=week,
+        issue_number=issue_number_for_week(week, web_config),
     )
-
-    if getattr(args, "week", None):
-        config.week = args.week
 
     result = await run_pipeline(anchor, config)
 

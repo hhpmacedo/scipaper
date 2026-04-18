@@ -23,7 +23,13 @@ from .generate.edition import AssemblyConfig, Edition, assemble_edition
 from .generate.pdf_parser import ParserConfig, download_paper_pdf, parse_paper_pdf, save_hero_figure
 from .generate.writer import GenerationConfig, generate_piece
 from .publish.email import ButtondownConfig, DeliveryReport, send_edition_email
-from .publish.web import WebConfig, generate_web_archive, next_issue_number
+from .publish.web import (
+    WebConfig,
+    generate_web_archive,
+    issue_number_for_week,
+    manifest_has_week,
+    next_issue_number,
+)
 from .verify.checker import VerificationConfig, attempt_auto_fix, verify_piece
 from .verify.style import StyleConfig, check_style_compliance
 
@@ -235,11 +241,15 @@ async def run_pipeline(
         logger.warning("No verified pieces — skipping publishing")
         return result
 
+    edition_week = config.week or anchor.week
+    edition_issue = config.issue_number or issue_number_for_week(edition_week, config.web)
+    already_published = manifest_has_week(edition_week, config.web)
+
     edition = await assemble_edition(
         verified_pieces,
         runners_up,
-        config.week or anchor.week,
-        config.issue_number or next_issue_number(config.web),
+        edition_week,
+        edition_issue,
         config.assembly,
     )
     result.edition = edition
@@ -249,16 +259,22 @@ async def run_pipeline(
         f"{edition.total_words} words"
     )
 
-    # Email
+    # Email — skip on idempotent re-runs to avoid duplicate Buttondown drafts.
     if config.email:
-        try:
-            report = await send_edition_email(edition, config.email, config.web_base_url)
-            result.delivery_report = report
-            logger.info(f"Email sent to Buttondown: {report.sent}, id={report.buttondown_id}")
-        except Exception as e:
-            msg = f"Email delivery failed: {e}"
-            logger.error(msg)
-            result.errors.append(msg)
+        if already_published:
+            logger.warning(
+                f"Edition {edition_week} (#{edition_issue}) already in manifest; "
+                f"skipping Buttondown email to avoid duplicate."
+            )
+        else:
+            try:
+                report = await send_edition_email(edition, config.email, config.web_base_url)
+                result.delivery_report = report
+                logger.info(f"Email sent to Buttondown: {report.sent}, id={report.buttondown_id}")
+            except Exception as e:
+                msg = f"Email delivery failed: {e}"
+                logger.error(msg)
+                result.errors.append(msg)
 
     # Web archive
     if config.web:
