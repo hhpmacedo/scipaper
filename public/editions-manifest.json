@@ -1,12 +1,5 @@
 [
   {
-    "week": "2026-W10",
-    "issue_number": 1,
-    "title": "First Edition",
-    "pieces": 0,
-    "words": 0
-  },
-  {
     "week": "2026-W10.1",
     "issue_number": 2,
     "title": "Safety Alignment Backfires in Non-English Languages Across LLM Groups",

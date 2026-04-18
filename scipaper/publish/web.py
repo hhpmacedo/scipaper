@@ -130,6 +130,31 @@ def next_issue_number(config: Optional["WebConfig"] = None) -> int:
     return max(e["issue_number"] for e in entries) + 1
 
 
+def issue_number_for_week(
+    week: str, config: Optional["WebConfig"] = None
+) -> int:
+    """
+    Return the issue number to use for `week`.
+
+    Reuses an existing number if the week is already in the manifest
+    (idempotent re-runs of the same week), otherwise picks the next one.
+    """
+    entries = load_manifest(config)
+    for entry in entries:
+        if entry["week"] == week:
+            return entry["issue_number"]
+    if not entries:
+        return 1
+    return max(e["issue_number"] for e in entries) + 1
+
+
+def manifest_has_week(
+    week: str, config: Optional["WebConfig"] = None
+) -> bool:
+    """True if the manifest already contains an entry for this week."""
+    return any(e["week"] == week for e in load_manifest(config))
+
+
 def append_to_manifest(edition: "Edition", config: Optional["WebConfig"] = None) -> None:
     """Add a new edition entry to the manifest (idempotent by week)."""
     config = config or WebConfig()
