@@ -5,32 +5,39 @@
   "feed_url": "https://signal.hugohmacedo.com/feed.json",
   "items": [
     {
+      "id": "https://signal.hugohmacedo.com/editions/2026-W17.html",
+      "url": "https://signal.hugohmacedo.com/editions/2026-W17.html",
+      "title": "Signal #6 \u2014 2026-W17",
+      "summary": "Current benchmarks for AI web coding miss most of what makes a website work \u2014 visual fidelity, interactive behavior, and the ability to fix bugs \u2014 and a new 1,526-task evaluation exposes how badly models struggle with aesthetics.",
+      "date_published": "2026-04-21T19:02:31.468924+00:00"
+    },
+    {
       "id": "https://signal.hugohmacedo.com/editions/2026-W16.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W16.html",
       "title": "Signal #5 \u2014 2026-W16",
-      "summary": "Resetting a persistent AI agent's visible self-description after it has accumulated memories restores only about 32% of the behavioral drift \u2014 the rest is locked in deeper layers.",
-      "date_published": "2026-04-18T10:48:49.489257+00:00"
+      "summary": "",
+      "date_published": "2026-04-21T19:02:33.136650+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W12.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W12.html",
       "title": "Signal #4 \u2014 2026-W12",
       "summary": "",
-      "date_published": "2026-04-18T10:48:51.204676+00:00"
+      "date_published": "2026-04-21T19:02:33.136659+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W11.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W11.html",
       "title": "Signal #3 \u2014 2026-W11",
       "summary": "",
-      "date_published": "2026-04-18T10:48:51.204687+00:00"
+      "date_published": "2026-04-21T19:02:33.136664+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W10.1.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W10.1.html",
       "title": "Signal #2 \u2014 2026-W10.1",
       "summary": "",
-      "date_published": "2026-04-18T10:48:51.204695+00:00"
+      "date_published": "2026-04-21T19:02:33.136668+00:00"
     }
   ]
 }

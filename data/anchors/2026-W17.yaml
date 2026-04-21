@@ -1,0 +1,78 @@
+# Auto-seeded from 2026-W16.yaml on 2026-04-21.
+# Edit this file to refresh topics; it is not a final hand-curated anchor.
+# Auto-seeded from 2026-W10.yaml on 2026-04-18.
+# Edit this file to refresh topics; it is not a final hand-curated anchor.
+# Relevance Anchor Document
+# Week: 2026-W10 (March 3-9, 2025)
+# 
+# This is the ONLY human input in the Signal pipeline.
+# Update weekly (~30 minutes) to reflect current AI discourse.
+
+week: "2026-W17"
+updated_by: "hugo"
+updated_at: "2025-03-04T10:00:00Z"
+
+# Topics currently dominating AI discourse
+# Score papers higher if they relate to these
+hot_topics:
+  - "reasoning models and test-time compute (o1, o3 style)"
+  - "long context understanding and retrieval"
+  - "multimodal understanding beyond CLIP"
+  - "efficient fine-tuning and adaptation"
+  - "AI safety, alignment, and interpretability"
+  - "code generation and software engineering"
+  - "agentic systems and tool use"
+  - "small models matching large models"
+
+# Topics that were hot but are cooling off
+# Don't penalize, but don't boost either
+declining_topics:
+  - "basic prompt engineering techniques"
+  - "GPT wrapper applications"
+  - "simple chatbot implementations"
+  - "RLHF basics (now well-understood)"
+
+# Specific keywords to boost
+# Names, methods, or terms that signal relevance
+boost_keywords:
+  - "o1"
+  - "o3"
+  - "Claude"
+  - "Gemini"
+  - "DeepSeek"
+  - "Qwen"
+  - "long context"
+  - "RAG"
+  - "chain-of-thought"
+  - "reasoning"
+  - "agent"
+  - "tool use"
+  - "function calling"
+  - "MoE"
+  - "mixture of experts"
+  - "distillation"
+  - "synthetic data"
+  - "constitutional AI"
+  - "RLAIF"
+
+# Institutions whose work is usually relevant
+# Don't over-weight, but use as tiebreaker
+institutions_of_interest:
+  - "Anthropic"
+  - "OpenAI"
+  - "Google DeepMind"
+  - "Meta AI"
+  - "Microsoft Research"
+  - "Stanford"
+  - "MIT"
+  - "Berkeley"
+  - "CMU"
+  - "Tsinghua"
+  - "DeepSeek"
+  - "Alibaba"
+
+# Notes for this week
+notes: |
+  Focus on reasoning papers this week - lots of interest post-o3.
+  Also watch for any long-context breakthrough papers.
+  Avoid papers that are just "we fine-tuned X on Y" without insight.
