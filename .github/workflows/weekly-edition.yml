@@ -20,6 +20,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Preflight — check required secrets
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BUTTONDOWN_API_KEY: ${{ secrets.BUTTONDOWN_API_KEY }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          missing=()
+          [ -z "$ANTHROPIC_API_KEY" ] && missing+=("ANTHROPIC_API_KEY")
+          [ -z "$BUTTONDOWN_API_KEY" ] && missing+=("BUTTONDOWN_API_KEY")
+          [ -z "$VERCEL_TOKEN" ]       && missing+=("VERCEL_TOKEN")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing required secrets: ${missing[*]}"
+            echo "::error::Configure them at Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SEMANTIC_SCHOLAR_KEY }}" ]; then
+            echo "::warning::SEMANTIC_SCHOLAR_KEY not set — Semantic Scholar calls may be rate-limited (HTTP 429)"
+          fi
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
