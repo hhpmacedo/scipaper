@@ -1,7 +1,7 @@
 """
 Email delivery for Signal editions via Buttondown API.
 
-Buttondown manages subscribers — this module only creates/sends the email draft.
+Buttondown manages subscribers — this module creates and sends the email.
 Hybrid rendering: lead piece in full, secondary pieces as preview with "Read more" link.
 """
 
@@ -347,7 +347,7 @@ async def _post_to_buttondown(
     body: str,
 ) -> dict:
     """
-    POST a draft email to Buttondown. Decorated with api_retry so transient
+    POST an email to Buttondown for immediate send. Decorated with api_retry so transient
     network errors (connection refused, timeouts) are retried automatically.
     """
     async with httpx.AsyncClient() as client:
@@ -360,7 +360,7 @@ async def _post_to_buttondown(
             json={
                 "subject": subject,
                 "body": body,
-                "status": "draft",
+                "status": "about_to_send",
             },
         )
         response.raise_for_status()
@@ -373,10 +373,10 @@ async def send_edition_email(
     web_base_url: str,
 ) -> DeliveryReport:
     """
-    Send edition to Buttondown as a draft email.
+    Send edition to Buttondown for immediate delivery.
 
     Buttondown manages subscribers — no subscriber list needed here.
-    Creates a draft via POST /v1/emails with status="draft".
+    Creates an email via POST /v1/emails with status="about_to_send".
 
     Returns DeliveryReport with sent=True on success.
     """
