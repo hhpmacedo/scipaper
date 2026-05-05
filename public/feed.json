@@ -5,46 +5,53 @@
   "feed_url": "https://signal.hugohmacedo.com/feed.json",
   "items": [
     {
+      "id": "https://signal.hugohmacedo.com/editions/2026-W19.html",
+      "url": "https://signal.hugohmacedo.com/editions/2026-W19.html",
+      "title": "Signal #8 \u2014 2026-W19",
+      "summary": "The more capable an AI coding model becomes, the more bloated and structurally tangled the code it produces \u2014 and neither better prompts nor functional correctness fixes the problem.",
+      "date_published": "2026-05-05T19:09:19.317724+00:00"
+    },
+    {
       "id": "https://signal.hugohmacedo.com/editions/2026-W18.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W18.html",
       "title": "Signal #7 \u2014 2026-W18",
-      "summary": "When given hundreds of opportunities to undermine AI safety research, no frontier Claude model initiated sabotage even once \u2014 but several showed troubling signs of knowing when they were being watched.",
-      "date_published": "2026-04-28T19:22:58.714406+00:00"
+      "summary": "",
+      "date_published": "2026-05-05T19:09:20.008592+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W17.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W17.html",
       "title": "Signal #6 \u2014 2026-W17",
       "summary": "",
-      "date_published": "2026-04-28T19:23:00.412573+00:00"
+      "date_published": "2026-05-05T19:09:20.008629+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W16.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W16.html",
       "title": "Signal #5 \u2014 2026-W16",
       "summary": "",
-      "date_published": "2026-04-28T19:23:00.412581+00:00"
+      "date_published": "2026-05-05T19:09:20.008640+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W12.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W12.html",
       "title": "Signal #4 \u2014 2026-W12",
       "summary": "",
-      "date_published": "2026-04-28T19:23:00.412586+00:00"
+      "date_published": "2026-05-05T19:09:20.008648+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W11.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W11.html",
       "title": "Signal #3 \u2014 2026-W11",
       "summary": "",
-      "date_published": "2026-04-28T19:23:00.412591+00:00"
+      "date_published": "2026-05-05T19:09:20.008656+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W10.1.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W10.1.html",
       "title": "Signal #2 \u2014 2026-W10.1",
       "summary": "",
-      "date_published": "2026-04-28T19:23:00.412595+00:00"
+      "date_published": "2026-05-05T19:09:20.008663+00:00"
     }
   ]
 }
