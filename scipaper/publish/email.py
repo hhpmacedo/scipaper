@@ -356,6 +356,7 @@ async def _post_to_buttondown(
             headers={
                 "Authorization": f"Token {api_key}",
                 "Content-Type": "application/json",
+                "X-Buttondown-Live-Dangerously": "true",
             },
             json={
                 "subject": subject,
