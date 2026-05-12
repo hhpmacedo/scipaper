@@ -47,5 +47,12 @@
     "title": "AI Code Generators Build Working Software That Rots From Within",
     "pieces": 2,
     "words": 1732
+  },
+  {
+    "week": "2026-W20",
+    "issue_number": 9,
+    "title": "A Single Misleading Document Can Tank Long-Context AI Performance",
+    "pieces": 3,
+    "words": 2646
   }
 ]
