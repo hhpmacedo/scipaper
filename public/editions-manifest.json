@@ -54,5 +54,12 @@
     "title": "A Single Misleading Document Can Tank Long-Context AI Performance",
     "pieces": 3,
     "words": 2646
+  },
+  {
+    "week": "2026-W21",
+    "issue_number": 10,
+    "title": "LLMs Ignore Tool Access Rules Up to 68% of the Time",
+    "pieces": 4,
+    "words": 3593
   }
 ]
