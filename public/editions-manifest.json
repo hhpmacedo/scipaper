@@ -61,5 +61,12 @@
     "title": "LLMs Ignore Tool Access Rules Up to 68% of the Time",
     "pieces": 4,
     "words": 3593
+  },
+  {
+    "week": "2026-W22",
+    "issue_number": 11,
+    "title": "LLM Agents Break More on Paraphrases Than on Reformatting",
+    "pieces": 2,
+    "words": 1765
   }
 ]
