@@ -5,74 +5,81 @@
   "feed_url": "https://signal.hugohmacedo.com/feed.json",
   "items": [
     {
+      "id": "https://signal.hugohmacedo.com/editions/2026-W23.html",
+      "url": "https://signal.hugohmacedo.com/editions/2026-W23.html",
+      "title": "Signal #12 \u2014 2026-W23",
+      "summary": "Multimodal AI agents that call tools during reasoning solve almost no problems that tool-free versions can't \u2014 93\u201396% of their \"tool-solved\" answers are reachable without tools.",
+      "date_published": "2026-06-02T20:41:39.548634+00:00"
+    },
+    {
       "id": "https://signal.hugohmacedo.com/editions/2026-W22.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W22.html",
       "title": "Signal #11 \u2014 2026-W22",
-      "summary": "Rewording a question changes an LLM agent's final answer roughly 20 percentage points more often than merely reformatting it \u2014 even when both perturbations are equally severe.",
-      "date_published": "2026-05-26T20:00:14.830793+00:00"
+      "summary": "",
+      "date_published": "2026-06-02T20:41:42.285809+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W21.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W21.html",
       "title": "Signal #10 \u2014 2026-W21",
       "summary": "",
-      "date_published": "2026-05-26T20:00:17.973032+00:00"
+      "date_published": "2026-06-02T20:41:42.285818+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W20.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W20.html",
       "title": "Signal #9 \u2014 2026-W20",
       "summary": "",
-      "date_published": "2026-05-26T20:00:17.973040+00:00"
+      "date_published": "2026-06-02T20:41:42.285823+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W19.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W19.html",
       "title": "Signal #8 \u2014 2026-W19",
       "summary": "",
-      "date_published": "2026-05-26T20:00:17.973044+00:00"
+      "date_published": "2026-06-02T20:41:42.285828+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W18.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W18.html",
       "title": "Signal #7 \u2014 2026-W18",
       "summary": "",
-      "date_published": "2026-05-26T20:00:17.973049+00:00"
+      "date_published": "2026-06-02T20:41:42.285832+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W17.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W17.html",
       "title": "Signal #6 \u2014 2026-W17",
       "summary": "",
-      "date_published": "2026-05-26T20:00:17.973053+00:00"
+      "date_published": "2026-06-02T20:41:42.285836+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W16.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W16.html",
       "title": "Signal #5 \u2014 2026-W16",
       "summary": "",
-      "date_published": "2026-05-26T20:00:17.973056+00:00"
+      "date_published": "2026-06-02T20:41:42.285840+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W12.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W12.html",
       "title": "Signal #4 \u2014 2026-W12",
       "summary": "",
-      "date_published": "2026-05-26T20:00:17.973059+00:00"
+      "date_published": "2026-06-02T20:41:42.285844+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W11.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W11.html",
       "title": "Signal #3 \u2014 2026-W11",
       "summary": "",
-      "date_published": "2026-05-26T20:00:17.973063+00:00"
+      "date_published": "2026-06-02T20:41:42.285847+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W10.1.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W10.1.html",
       "title": "Signal #2 \u2014 2026-W10.1",
       "summary": "",
-      "date_published": "2026-05-26T20:00:17.973067+00:00"
+      "date_published": "2026-06-02T20:41:42.285851+00:00"
     }
   ]
 }

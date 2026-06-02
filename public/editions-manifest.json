@@ -68,5 +68,12 @@
     "title": "LLM Agents Break More on Paraphrases Than on Reformatting",
     "pieces": 2,
     "words": 1765
+  },
+  {
+    "week": "2026-W23",
+    "issue_number": 12,
+    "title": "Tool-Augmented AI Agents Often Learn the Protocol, Not the Capability",
+    "pieces": 2,
+    "words": 1724
   }
 ]
