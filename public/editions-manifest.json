@@ -75,5 +75,12 @@
     "title": "Tool-Augmented AI Agents Often Learn the Protocol, Not the Capability",
     "pieces": 2,
     "words": 1724
+  },
+  {
+    "week": "2026-W24",
+    "issue_number": 13,
+    "title": "Code Uncertainty Needs Code-Specific Signals, Not NL Ports",
+    "pieces": 4,
+    "words": 3555
   }
 ]
