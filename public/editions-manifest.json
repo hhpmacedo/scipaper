@@ -82,5 +82,12 @@
     "title": "Code Uncertainty Needs Code-Specific Signals, Not NL Ports",
     "pieces": 4,
     "words": 3555
+  },
+  {
+    "week": "2026-W25",
+    "issue_number": 14,
+    "title": "Teaching LLMs to Find the Evidence, Not Just the Answer",
+    "pieces": 5,
+    "words": 4514
   }
 ]
