@@ -89,5 +89,12 @@
     "title": "Teaching LLMs to Find the Evidence, Not Just the Answer",
     "pieces": 5,
     "words": 4514
+  },
+  {
+    "week": "2026-W26",
+    "issue_number": 15,
+    "title": "Tracking Information Flow Through LLMs to Stop Prompt Injection",
+    "pieces": 2,
+    "words": 1871
   }
 ]

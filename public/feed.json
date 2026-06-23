@@ -5,95 +5,102 @@
   "feed_url": "https://signal.hugohmacedo.com/feed.json",
   "items": [
     {
+      "id": "https://signal.hugohmacedo.com/editions/2026-W26.html",
+      "url": "https://signal.hugohmacedo.com/editions/2026-W26.html",
+      "title": "Signal #15 \u2014 2026-W26",
+      "summary": "A math-grounded method can now detect which input tokens actually control an LLM's output \u2014 catching prompt injections with near-perfect recall while cutting inference costs by 81\u00d7.",
+      "date_published": "2026-06-23T19:50:48.471293+00:00"
+    },
+    {
       "id": "https://signal.hugohmacedo.com/editions/2026-W25.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W25.html",
       "title": "Signal #14 \u2014 2026-W25",
-      "summary": "Open-source language models that score well on standard benchmarks perform near random chance when asked to identify which piece of context actually supports their answer.",
-      "date_published": "2026-06-16T20:38:29.519508+00:00"
+      "summary": "",
+      "date_published": "2026-06-23T19:50:51.504326+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W24.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W24.html",
       "title": "Signal #13 \u2014 2026-W24",
       "summary": "",
-      "date_published": "2026-06-16T20:38:32.003992+00:00"
+      "date_published": "2026-06-23T19:50:51.504340+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W23.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W23.html",
       "title": "Signal #12 \u2014 2026-W23",
       "summary": "",
-      "date_published": "2026-06-16T20:38:32.004000+00:00"
+      "date_published": "2026-06-23T19:50:51.504350+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W22.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W22.html",
       "title": "Signal #11 \u2014 2026-W22",
       "summary": "",
-      "date_published": "2026-06-16T20:38:32.004006+00:00"
+      "date_published": "2026-06-23T19:50:51.504359+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W21.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W21.html",
       "title": "Signal #10 \u2014 2026-W21",
       "summary": "",
-      "date_published": "2026-06-16T20:38:32.004010+00:00"
+      "date_published": "2026-06-23T19:50:51.504364+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W20.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W20.html",
       "title": "Signal #9 \u2014 2026-W20",
       "summary": "",
-      "date_published": "2026-06-16T20:38:32.004014+00:00"
+      "date_published": "2026-06-23T19:50:51.504368+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W19.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W19.html",
       "title": "Signal #8 \u2014 2026-W19",
       "summary": "",
-      "date_published": "2026-06-16T20:38:32.004018+00:00"
+      "date_published": "2026-06-23T19:50:51.504372+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W18.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W18.html",
       "title": "Signal #7 \u2014 2026-W18",
       "summary": "",
-      "date_published": "2026-06-16T20:38:32.004022+00:00"
+      "date_published": "2026-06-23T19:50:51.504375+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W17.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W17.html",
       "title": "Signal #6 \u2014 2026-W17",
       "summary": "",
-      "date_published": "2026-06-16T20:38:32.004025+00:00"
+      "date_published": "2026-06-23T19:50:51.504379+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W16.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W16.html",
       "title": "Signal #5 \u2014 2026-W16",
       "summary": "",
-      "date_published": "2026-06-16T20:38:32.004029+00:00"
+      "date_published": "2026-06-23T19:50:51.504383+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W12.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W12.html",
       "title": "Signal #4 \u2014 2026-W12",
       "summary": "",
-      "date_published": "2026-06-16T20:38:32.004033+00:00"
+      "date_published": "2026-06-23T19:50:51.504387+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W11.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W11.html",
       "title": "Signal #3 \u2014 2026-W11",
       "summary": "",
-      "date_published": "2026-06-16T20:38:32.004037+00:00"
+      "date_published": "2026-06-23T19:50:51.504391+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W10.1.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W10.1.html",
       "title": "Signal #2 \u2014 2026-W10.1",
       "summary": "",
-      "date_published": "2026-06-16T20:38:32.004041+00:00"
+      "date_published": "2026-06-23T19:50:51.504394+00:00"
     }
   ]
 }
