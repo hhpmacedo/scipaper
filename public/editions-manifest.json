@@ -96,5 +96,12 @@
     "title": "Tracking Information Flow Through LLMs to Stop Prompt Injection",
     "pieces": 2,
     "words": 1871
+  },
+  {
+    "week": "2026-W27",
+    "issue_number": 16,
+    "title": "LLM Recommenders Can't Fix What They Never See",
+    "pieces": 4,
+    "words": 3503
   }
 ]
