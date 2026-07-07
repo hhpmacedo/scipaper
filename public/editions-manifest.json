@@ -103,5 +103,12 @@
     "title": "LLM Recommenders Can't Fix What They Never See",
     "pieces": 4,
     "words": 3503
+  },
+  {
+    "week": "2026-W28",
+    "issue_number": 17,
+    "title": "Even GPT-5 Fails Most Tasks in Real-World Agent Benchmarks",
+    "pieces": 4,
+    "words": 3498
   }
 ]
