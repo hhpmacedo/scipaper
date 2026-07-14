@@ -5,116 +5,123 @@
   "feed_url": "https://signal.hugohmacedo.com/feed.json",
   "items": [
     {
+      "id": "https://signal.hugohmacedo.com/editions/2026-W29.html",
+      "url": "https://signal.hugohmacedo.com/editions/2026-W29.html",
+      "title": "Signal #18 \u2014 2026-W29",
+      "summary": "An open-source router that switches between AI models mid-task can preserve task quality while cutting inference costs by up to 90%.",
+      "date_published": "2026-07-14T19:02:32.618382+00:00"
+    },
+    {
       "id": "https://signal.hugohmacedo.com/editions/2026-W28.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W28.html",
       "title": "Signal #17 \u2014 2026-W28",
-      "summary": "GPT-5 completes only ~44% of tasks when LLM agents face realistic noise, missing tools, and ambiguous instructions \u2014 conditions that existing benchmarks conveniently avoid.",
-      "date_published": "2026-07-07T19:41:07.449434+00:00"
+      "summary": "",
+      "date_published": "2026-07-14T19:02:35.730571+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W27.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W27.html",
       "title": "Signal #16 \u2014 2026-W27",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505525+00:00"
+      "date_published": "2026-07-14T19:02:35.730583+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W26.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W26.html",
       "title": "Signal #15 \u2014 2026-W26",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505533+00:00"
+      "date_published": "2026-07-14T19:02:35.730592+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W25.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W25.html",
       "title": "Signal #14 \u2014 2026-W25",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505539+00:00"
+      "date_published": "2026-07-14T19:02:35.730598+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W24.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W24.html",
       "title": "Signal #13 \u2014 2026-W24",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505544+00:00"
+      "date_published": "2026-07-14T19:02:35.730603+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W23.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W23.html",
       "title": "Signal #12 \u2014 2026-W23",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505548+00:00"
+      "date_published": "2026-07-14T19:02:35.730607+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W22.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W22.html",
       "title": "Signal #11 \u2014 2026-W22",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505552+00:00"
+      "date_published": "2026-07-14T19:02:35.730611+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W21.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W21.html",
       "title": "Signal #10 \u2014 2026-W21",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505555+00:00"
+      "date_published": "2026-07-14T19:02:35.730615+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W20.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W20.html",
       "title": "Signal #9 \u2014 2026-W20",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505560+00:00"
+      "date_published": "2026-07-14T19:02:35.730619+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W19.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W19.html",
       "title": "Signal #8 \u2014 2026-W19",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505565+00:00"
+      "date_published": "2026-07-14T19:02:35.730623+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W18.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W18.html",
       "title": "Signal #7 \u2014 2026-W18",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505570+00:00"
+      "date_published": "2026-07-14T19:02:35.730627+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W17.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W17.html",
       "title": "Signal #6 \u2014 2026-W17",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505577+00:00"
+      "date_published": "2026-07-14T19:02:35.730631+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W16.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W16.html",
       "title": "Signal #5 \u2014 2026-W16",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505583+00:00"
+      "date_published": "2026-07-14T19:02:35.730635+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W12.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W12.html",
       "title": "Signal #4 \u2014 2026-W12",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505589+00:00"
+      "date_published": "2026-07-14T19:02:35.730640+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W11.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W11.html",
       "title": "Signal #3 \u2014 2026-W11",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505595+00:00"
+      "date_published": "2026-07-14T19:02:35.730643+00:00"
     },
     {
       "id": "https://signal.hugohmacedo.com/editions/2026-W10.1.html",
       "url": "https://signal.hugohmacedo.com/editions/2026-W10.1.html",
       "title": "Signal #2 \u2014 2026-W10.1",
       "summary": "",
-      "date_published": "2026-07-07T19:41:10.505601+00:00"
+      "date_published": "2026-07-14T19:02:35.730647+00:00"
     }
   ]
 }

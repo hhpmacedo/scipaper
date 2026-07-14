@@ -110,5 +110,12 @@
     "title": "Even GPT-5 Fails Most Tasks in Real-World Agent Benchmarks",
     "pieces": 4,
     "words": 3498
+  },
+  {
+    "week": "2026-W29",
+    "issue_number": 18,
+    "title": "Routing AI Agents Through Multiple Models Cuts Costs Up to 90%",
+    "pieces": 5,
+    "words": 4568
   }
 ]
