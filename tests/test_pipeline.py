@@ -204,9 +204,12 @@ class TestEndToEndPipeline:
             patch("scipaper.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen,
             patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
             patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt,
+            patch("scipaper.generate.edition.generate_editor_note", new_callable=AsyncMock) as mock_note,
         ):
             # Narrative scoring: _score_with_anthropic returns a float
             mock_narrative.return_value = 7.0
+            # Editor's Note
+            mock_note.return_value = "This week's throughline."
             # Content generation
             mock_gen.return_value = MOCK_GENERATION_RESPONSE
             # Verification
@@ -292,9 +295,11 @@ class TestEndToEndPipeline:
             patch("scipaper.generate.writer._generate_with_anthropic", new=flaky_generate),
             patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
             patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt,
+            patch("scipaper.generate.edition.generate_editor_note", new_callable=AsyncMock) as mock_note,
         ):
             mock_narrative.return_value = 7.0
             mock_verify.return_value = MOCK_VERIFICATION_RESPONSE
+            mock_note.return_value = "This week's throughline."
             from scipaper.generate.edition import QuickTake
             mock_qt.return_value = QuickTake(
                 paper_id="r", title="R", one_liner="Summary.", paper_url="https://arxiv.org"
@@ -354,10 +359,12 @@ class TestEndToEndPipeline:
             patch("scipaper.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen,
             patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
             patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt,
+            patch("scipaper.generate.edition.generate_editor_note", new_callable=AsyncMock) as mock_note,
         ):
             mock_narrative.return_value = 7.0
             mock_gen.return_value = MOCK_GENERATION_RESPONSE
             mock_verify.return_value = MOCK_VERIFICATION_RESPONSE
+            mock_note.return_value = "This week's throughline."
             from scipaper.generate.edition import QuickTake
             mock_qt.return_value = QuickTake(
                 paper_id="r", title="R", one_liner="S.", paper_url="https://arxiv.org"
