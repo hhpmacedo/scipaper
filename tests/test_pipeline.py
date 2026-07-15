@@ -191,6 +191,7 @@ class TestEndToEndPipeline:
             week="2026-W10",
             issue_number=42,
             skip_pdf_download=True,
+            backlog_path=tmp_path / "backlog.json",
         )
 
     def test_full_pipeline_produces_edition(self, tmp_path):
@@ -261,10 +262,14 @@ class TestEndToEndPipeline:
         edition_page = (result.web_output / "editions" / "2026-W10.html").read_text()
         assert "Teaching LLMs" in edition_page or "Step by Step" in edition_page
 
-    def test_pipeline_with_no_papers(self):
+    def test_pipeline_with_no_papers(self, tmp_path):
         """Pipeline handles empty input gracefully."""
         anchor = make_anchor()
-        config = PipelineConfig(week="2026-W10", skip_pdf_download=True)
+        config = PipelineConfig(
+            week="2026-W10",
+            skip_pdf_download=True,
+            backlog_path=tmp_path / "backlog.json",
+        )
 
         with patch("scipaper.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock:
             mock.return_value = 5.0
@@ -347,6 +352,85 @@ class TestEndToEndPipeline:
         # All pieces should be rejected (critical issue)
         assert result.pieces_passed == 0
         assert result.edition is None
+
+    def test_pipeline_uses_and_updates_backlog(self, tmp_path):
+        """Scoring/selection run over the eligible backlog, and selected papers
+        are marked covered afterward so they drop out of future eligibility."""
+        papers = make_sample_papers()
+        anchor = make_anchor()
+        config = self._make_config(tmp_path)
+        config.backlog_path = tmp_path / "backlog.json"
+        config.use_rolling_window = True
+
+        with (
+            patch("scipaper.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock_narrative,
+            patch("scipaper.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen,
+            patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
+            patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt,
+            patch("scipaper.generate.edition.generate_editor_note", new_callable=AsyncMock) as mock_note,
+        ):
+            mock_narrative.return_value = 7.0
+            mock_note.return_value = "This week's throughline."
+            mock_gen.return_value = MOCK_GENERATION_RESPONSE
+            mock_verify.return_value = MOCK_VERIFICATION_RESPONSE
+            from scipaper.generate.edition import QuickTake
+            mock_qt.return_value = QuickTake(
+                paper_id="runner",
+                title="Runner-Up Paper",
+                one_liner=MOCK_QUICK_TAKE_RESPONSE,
+                paper_url="https://arxiv.org/abs/runner",
+            )
+
+            result = run_async(run_pipeline(anchor, config, papers=papers))
+
+        assert result.edition is not None
+
+        from scipaper.curate.backlog import Backlog
+
+        assert config.backlog_path.exists()
+        bl = Backlog(config.backlog_path)
+        backlog_ids = set(bl._data.keys())
+        assert backlog_ids == {p.arxiv_id for p in papers}
+
+        selected_ids = {piece.paper_id for piece in result.edition.pieces}
+        assert selected_ids, "expected at least one selected/published piece"
+
+        eligible_ids = {p.arxiv_id for p in bl.eligible(within_days=28)}
+        assert selected_ids.isdisjoint(eligible_ids)
+
+    def test_pipeline_without_rolling_window_behaves_as_before(self, tmp_path):
+        """use_rolling_window=False must score/select over fresh papers only,
+        with no backlog file created — degrading to the pre-Task-6 behavior."""
+        papers = make_sample_papers()
+        anchor = make_anchor()
+        config = self._make_config(tmp_path)
+        config.backlog_path = tmp_path / "backlog.json"
+        config.use_rolling_window = False
+
+        with (
+            patch("scipaper.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock_narrative,
+            patch("scipaper.generate.writer._generate_with_anthropic", new_callable=AsyncMock) as mock_gen,
+            patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
+            patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt,
+            patch("scipaper.generate.edition.generate_editor_note", new_callable=AsyncMock) as mock_note,
+        ):
+            mock_narrative.return_value = 7.0
+            mock_note.return_value = "This week's throughline."
+            mock_gen.return_value = MOCK_GENERATION_RESPONSE
+            mock_verify.return_value = MOCK_VERIFICATION_RESPONSE
+            from scipaper.generate.edition import QuickTake
+            mock_qt.return_value = QuickTake(
+                paper_id="runner",
+                title="Runner-Up Paper",
+                one_liner=MOCK_QUICK_TAKE_RESPONSE,
+                paper_url="https://arxiv.org/abs/runner",
+            )
+
+            result = run_async(run_pipeline(anchor, config, papers=papers))
+
+        assert result.edition is not None
+        assert result.papers_scored == len(papers)
+        assert not config.backlog_path.exists()
 
     def test_pipeline_stats_are_consistent(self, tmp_path):
         """Pipeline result stats form a monotonically decreasing funnel."""
