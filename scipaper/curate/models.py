@@ -24,6 +24,38 @@ class PaperCategory(str, Enum):
     EESS_AS = "eess.AS"  # audio & speech
 
 
+# Coarse research areas for edition diversity. Maps arXiv category -> area label.
+CATEGORY_AREAS = {
+    "cs.CL": "nlp",
+    "cs.CV": "vision",
+    "eess.IV": "vision",
+    "cs.RO": "robotics",
+    "cs.AI": "agents",
+    "cs.MA": "agents",
+    "cs.LG": "ml-methods",
+    "stat.ML": "ml-methods",
+    "cs.HC": "hci",
+    "cs.CY": "society",
+    "cs.SE": "software",
+    "cs.CR": "security",
+    "eess.AS": "speech",
+}
+
+
+def primary_area(paper: "Paper") -> str:
+    """
+    Map a paper to ONE coarse research area via its primary (first) arXiv
+    category. Falls back to scanning all categories, then "other".
+    """
+    cats = paper.categories or []
+    if cats and cats[0] in CATEGORY_AREAS:
+        return CATEGORY_AREAS[cats[0]]
+    for c in cats:
+        if c in CATEGORY_AREAS:
+            return CATEGORY_AREAS[c]
+    return "other"
+
+
 @dataclass
 class Author:
     """Paper author."""
