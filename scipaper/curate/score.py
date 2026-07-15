@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 
 from .models import Paper, AnchorDocument, ScoredPaper
+from .prestige import load_prestige, prestige_score
 from ..retry import api_retry
 
 logger = logging.getLogger(__name__)
@@ -20,12 +21,16 @@ logger = logging.getLogger(__name__)
 class ScoringConfig:
     """Configuration for scoring."""
     # Weights for relevance scoring components
-    topic_match_weight: float = 0.30
+    topic_match_weight: float = 0.25
     keyword_match_weight: float = 0.20
     institution_weight: float = 0.15
     citation_velocity_weight: float = 0.10
     social_signal_weight: float = 0.15
     quality_signal_weight: float = 0.10
+    prestige_weight: float = 0.05
+
+    # Curated prestige list (labs/authors). None means "load default lazily".
+    prestige: Optional[dict] = None
 
     # LLM settings for narrative potential
     llm_provider: str = "anthropic"
@@ -182,6 +187,7 @@ async def score_relevance(
     Returns float between 1 and 10.
     """
     config = config or ScoringConfig()
+    prestige = config.prestige if config.prestige is not None else load_prestige()
 
     # Compute individual components (each 0-1)
     topic_sim = _text_similarity(
@@ -192,6 +198,7 @@ async def score_relevance(
     citation_vel = _citation_velocity(paper)
     social = _social_signal_score(paper)
     quality = _quality_signal(paper)
+    prestige_component = prestige_score(paper, prestige)
 
     # Weighted combination (0-1 scale)
     raw_score = (
@@ -201,6 +208,7 @@ async def score_relevance(
         + citation_vel * config.citation_velocity_weight
         + social * config.social_signal_weight
         + quality * config.quality_signal_weight
+        + prestige_component * config.prestige_weight
     )
 
     # Apply declining topic penalty

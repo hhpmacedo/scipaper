@@ -229,8 +229,21 @@ def test_scoring_weights_sum_to_one():
     from scipaper.curate.score import ScoringConfig
     c = ScoringConfig()
     total = (c.topic_match_weight + c.keyword_match_weight + c.institution_weight
-             + c.citation_velocity_weight + c.social_signal_weight + c.quality_signal_weight)
+             + c.citation_velocity_weight + c.social_signal_weight + c.quality_signal_weight
+             + c.prestige_weight)
     assert abs(total - 1.0) < 1e-9
+
+
+def test_prestige_lab_raises_relevance():
+    from scipaper.curate.score import score_relevance, ScoringConfig
+    from scipaper.curate.models import Paper, Author, AnchorDocument
+    from .conftest import run_async
+    from datetime import datetime, timezone
+    anchor = AnchorDocument(week="2026-W29", updated_by="t", updated_at=datetime.now(timezone.utc), hot_topics=["agents"])
+    cfg = ScoringConfig(prestige={"labs": ["deepmind"], "authors": []})
+    plain = Paper(arxiv_id="a", title="agents", abstract="agents", authors=[Author(name="X", affiliation="Startup")])
+    prestige = Paper(arxiv_id="b", title="agents", abstract="agents", authors=[Author(name="Y", affiliation="Google DeepMind")])
+    assert run_async(score_relevance(prestige, anchor, cfg)) > run_async(score_relevance(plain, anchor, cfg))
 
 
 class TestParseScoreResponse:
