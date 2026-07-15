@@ -128,6 +128,12 @@ class TestHybridRendering:
         assert html.startswith("<!DOCTYPE html>")
         assert "</html>" in html
 
+    def test_editor_note_in_email_html(self):
+        """When editor_note is present, it should render as the lead in the email."""
+        edition = make_edition(editor_note="This week, one clear throughline about agents.")
+        html = render_edition_html(edition, WEB_BASE_URL)
+        assert "This week, one clear throughline about agents." in html
+
 
     def test_email_html_does_not_duplicate_hook(self):
         # NOTE: like the web renderer, the hook legitimately appears more
@@ -212,6 +218,22 @@ class TestPlainTextRendering:
         text = render_edition_text(edition, WEB_BASE_URL)
 
         assert text.count(hook) == 1
+
+    def test_editor_note_in_email_text(self):
+        """When editor_note is present, it should appear at the top, before the first piece."""
+        edition = make_edition(editor_note="This week, one clear throughline about agents.")
+        text = render_edition_text(edition, WEB_BASE_URL)
+
+        note = "This week, one clear throughline about agents."
+        assert note in text
+        assert text.index(note) < text.index(edition.pieces[0].title.upper())
+
+    def test_no_editor_note_unchanged_in_email_text(self):
+        """Without editor_note, plain text output should not gain any new content."""
+        edition = make_edition()  # no editor_note
+        text = render_edition_text(edition, WEB_BASE_URL)
+
+        assert "This week" not in text
 
 
 class TestButtondownConfig:

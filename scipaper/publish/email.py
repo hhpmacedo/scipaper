@@ -134,7 +134,23 @@ def _render_piece_preview_html(piece: Piece, week: str, web_base_url: str) -> st
 
 
 def _render_issue_summary_html(edition: Edition) -> str:
-    """Render the issue-level summary block (one sentence per piece from signal_block)."""
+    """Render the issue-level lead block.
+
+    When the edition has a machine-generated editor's note, render it as the lead —
+    the most accessible text at the top of the email. Otherwise fall back to the
+    existing one-sentence-per-piece bullet summary.
+    """
+    if getattr(edition, "editor_note", None) and edition.editor_note.strip():
+        return (
+            f'<div style="margin: 24px 0; padding: 16px 20px; border: 2px solid #000; background: #fff;">'
+            f'<p style="font-family: Helvetica Neue, Arial, sans-serif; font-size: 11px; '
+            f'font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #666; margin: 0 0 12px;">'
+            f'This week in Signal</p>'
+            f'<p style="font-size: 17px; line-height: 1.5; margin: 0; color: #1a1a1a;">'
+            f'{escape(edition.editor_note.strip())}</p>'
+            f'</div>'
+        )
+
     lines = []
     for piece in edition.pieces:
         if piece.signal_block and piece.signal_block.strip():
@@ -282,6 +298,10 @@ def render_edition_text(edition: Edition, web_base_url: str) -> str:
     lines.append(f"Issue #{edition.issue_number} · {edition.week}")
     lines.append("=" * 50)
     lines.append("")
+
+    if getattr(edition, "editor_note", None) and edition.editor_note.strip():
+        lines.append(edition.editor_note.strip())
+        lines.append("")
 
     for i, piece in enumerate(edition.pieces):
         if i > 0:

@@ -140,6 +140,31 @@ class TestGenerateEditionPage:
         content_region = html.split('<div class="content">', 1)[1].split('</div>', 1)[0]
         assert hook not in content_region
 
+    def test_editor_note_rendered_as_lead(self):
+        piece = Piece(
+            paper_id="1", title="A Title For The Piece Here", hook="Hook one.",
+            content="## The Problem\nX [§1].\n\n## Why It Matters\nY [§2].",
+            word_count=50, citations=[], generated_at="t", model_used="t",
+            signal_block="Hook one. It is emerging. It informs a decision.",
+        )
+        ed = Edition(
+            week="2026-W29", issue_number=18, pieces=[piece], quick_takes=[],
+            editor_note="This week, one clear throughline about agents.",
+        )
+        html = generate_edition_page(ed, WebConfig())
+        assert "This week, one clear throughline about agents." in html
+
+    def test_falls_back_to_bullets_without_editor_note(self):
+        piece = Piece(
+            paper_id="1", title="A Title For The Piece Here", hook="Hook one.",
+            content="## The Problem\nX [§1].", word_count=50, citations=[],
+            generated_at="t", model_used="t",
+            signal_block="Hook one. It is emerging. It informs a decision.",
+        )
+        ed = Edition(week="2026-W29", issue_number=18, pieces=[piece], quick_takes=[])  # no note
+        html = generate_edition_page(ed, WebConfig())
+        assert "This week in Signal" in html
+
 
 class TestGenerateIndexPage:
     def test_valid_html(self):
