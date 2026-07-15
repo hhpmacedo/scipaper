@@ -31,6 +31,7 @@ wheels/
 data/papers/
 data/editions/
 data/cache.db
+data/backlog.json
 *.pdf
 
 # IDE
