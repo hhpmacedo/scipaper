@@ -16,6 +16,7 @@ import httpx
 from ..generate.edition import Edition, QuickTake, generate_edition_subject
 from ..generate.writer import Piece
 from ..retry import api_retry
+from ..text_utils import strip_leading_hook
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +89,8 @@ def render_edition_html(edition: Edition, web_base_url: str) -> str:
 def _render_piece_full_html(piece: Piece, is_lead: bool = False) -> str:
     """Render a piece with full content (no hero figure — keeps email under 102kb)."""
     title_size = "24px" if is_lead else "20px"
-    content_html = _content_to_html(piece.content)
+    body = strip_leading_hook(piece.content, piece.hook)
+    content_html = _content_to_html(body)
 
     abstract_html = _render_structured_abstract_html(piece)
     signal_block_html = _render_signal_block_html(piece)
@@ -110,7 +112,8 @@ def _render_piece_full_html(piece: Piece, is_lead: bool = False) -> str:
 def _render_piece_preview_html(piece: Piece, week: str, web_base_url: str) -> str:
     """Render a piece as a preview: hook + first paragraph + Read more link.
     Keeps it lean — no structured abstract or signal block (those live on the web edition)."""
-    first_paragraph = _extract_first_paragraph(piece.content)
+    body = strip_leading_hook(piece.content, piece.hook)
+    first_paragraph = _extract_first_paragraph(body)
     read_more_url = f"{web_base_url}/editions/{week}.html#{piece.paper_id}"
 
     return (
@@ -302,12 +305,13 @@ def render_edition_text(edition: Edition, web_base_url: str) -> str:
                     lines.append(f"  {label} — {sa[key]}")
             lines.append("")
 
+        body = strip_leading_hook(piece.content, piece.hook)
         if i == 0:
             # Lead: full content
-            lines.append(piece.content)
+            lines.append(body)
         else:
             # Secondary: first paragraph + read more link
-            first_paragraph = _extract_first_paragraph(piece.content)
+            first_paragraph = _extract_first_paragraph(body)
             if first_paragraph:
                 lines.append(first_paragraph)
             lines.append("")

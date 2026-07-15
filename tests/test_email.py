@@ -129,6 +129,31 @@ class TestHybridRendering:
         assert "</html>" in html
 
 
+    def test_email_html_does_not_duplicate_hook(self):
+        # NOTE: like the web renderer, the hook legitimately appears more
+        # than once in the email (the issue-summary fallback line and the
+        # italic hook byline), so a whole-page count == 1 assertion cannot
+        # hold regardless of this fix. What the fix changes is whether the
+        # hook is ALSO duplicated as the opening paragraph of the rendered
+        # content — scope the assertion to that region. Use a single-piece
+        # edition so it renders through the full (lead) renderer.
+        hook = "Models fail on most realistic tasks."
+        content = (
+            f"{hook}\n\n"
+            "## The Problem\nProblem text.\n\n"
+            "## What They Did\nApproach text.\n\n"
+            "## The Results\nResults text.\n\n"
+            "## Why It Matters\nMatters text."
+        )
+        piece = make_piece(hook=hook, content=content)
+        edition = make_edition(pieces=[piece])
+
+        html = render_edition_html(edition, WEB_BASE_URL)
+
+        content_region = html.split('<div style="font-size: 16px;">', 1)[1].split('</div>', 1)[0]
+        assert hook not in content_region
+
+
 class TestPlainTextRendering:
     """Tests for the hybrid plain text rendering."""
 
@@ -167,6 +192,26 @@ class TestPlainTextRendering:
 
         assert "QUICK TAKES" in text
         assert "Quick Take Paper" in text
+
+    def test_email_text_does_not_duplicate_hook(self):
+        # In plain text the hook is printed once as its own line (the byline),
+        # so without the fix it appears twice: once as the byline and again as
+        # the opening line of the rendered body. The fix strips the duplicated
+        # leading paragraph, leaving exactly one occurrence.
+        hook = "Models fail on most realistic tasks."
+        content = (
+            f"{hook}\n\n"
+            "## The Problem\nProblem text.\n\n"
+            "## What They Did\nApproach text.\n\n"
+            "## The Results\nResults text.\n\n"
+            "## Why It Matters\nMatters text."
+        )
+        piece = make_piece(hook=hook, content=content)
+        edition = make_edition(pieces=[piece])
+
+        text = render_edition_text(edition, WEB_BASE_URL)
+
+        assert text.count(hook) == 1
 
 
 class TestButtondownConfig:

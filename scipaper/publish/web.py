@@ -11,6 +11,7 @@ from typing import List, Optional
 from xml.sax.saxutils import escape as xml_escape
 
 from ..generate.edition import Edition
+from ..text_utils import strip_leading_hook
 from .email import _content_to_html
 
 logger = logging.getLogger(__name__)
@@ -182,7 +183,7 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
 
     pieces_html = []
     for i, piece in enumerate(edition.pieces):
-        content_html = _content_to_html(piece.content)
+        content_html = _content_to_html(strip_leading_hook(piece.content, piece.hook))
         paper_url = piece.paper_url or f"https://arxiv.org/abs/{piece.paper_id}"
         title_html = f'<a href="{escape(paper_url)}">{escape(piece.title)}</a>'
         authors_html = ""

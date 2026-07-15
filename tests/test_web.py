@@ -115,6 +115,31 @@ class TestGenerateEditionPage:
         html = generate_edition_page(edition)
         assert 'id="2403.12345"' in html
 
+    def test_rendered_html_does_not_duplicate_hook(self):
+        # NOTE: the hook legitimately appears multiple times on the page
+        # (og:description, twitter:description, meta description, the
+        # `<p class="hook">` byline, and the issue-summary fallback line),
+        # so a whole-page `html.count(hook) == 1` assertion cannot hold
+        # regardless of this fix. What the fix actually changes is whether
+        # the hook is ALSO duplicated as the opening paragraph of the
+        # rendered content — so scope the assertion to that region.
+        hook = "Models fail on most realistic tasks."
+        content = (
+            f"{hook}\n\n"
+            "## The Problem\nProblem text.\n\n"
+            "## What They Did\nApproach text.\n\n"
+            "## The Results\nResults text.\n\n"
+            "## Why It Matters\nMatters text."
+        )
+        piece = make_piece(hook=hook)
+        piece.content = content
+        edition = make_edition(pieces=[piece])
+
+        html = generate_edition_page(edition)
+
+        content_region = html.split('<div class="content">', 1)[1].split('</div>', 1)[0]
+        assert hook not in content_region
+
 
 class TestGenerateIndexPage:
     def test_valid_html(self):
