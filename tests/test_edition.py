@@ -128,6 +128,24 @@ class TestAssembleEdition:
         assert len(edition.quick_takes) == 1
 
 
+class TestCheckEditionLength:
+    def test_check_edition_length_warns_when_over_budget(self):
+        from scipaper.generate.edition import check_edition_length, Edition
+        from scipaper.generate.writer import Piece
+
+        def p(wc):
+            return Piece(paper_id="x", title="t", hook="h", content="c",
+                         word_count=wc, citations=[], generated_at="t", model_used="t")
+
+        over = Edition(week="2026-W29", issue_number=18,
+                       pieces=[p(1500), p(1500), p(1500)], quick_takes=[])
+        within = Edition(week="2026-W29", issue_number=18,
+                         pieces=[p(900), p(900), p(900)], quick_takes=[])
+
+        assert check_edition_length(over) is False      # 4500 > 3000
+        assert check_edition_length(within) is True     # 2700 within budget
+
+
 class TestGenerateEditionSubject:
     def test_with_pieces(self):
         ed = Edition(

@@ -81,6 +81,27 @@ class AssemblyConfig:
     target_word_count: int = 5000
 
 
+EDITION_WORD_BUDGET = 3000
+
+
+def check_edition_length(edition: "Edition", budget: int = EDITION_WORD_BUDGET) -> bool:
+    """
+    Return True if the edition's total feature word count is within budget.
+
+    Non-fatal: logs a warning (does not raise) when over budget. The edition
+    still ships regardless of the result — this check must never block a
+    publish.
+    """
+    total = sum(p.word_count for p in edition.pieces)
+    if total > budget:
+        logger.warning(
+            f"Edition {edition.week} is {total} words (> {budget} budget); "
+            f"tighten the longest pieces."
+        )
+        return False
+    return True
+
+
 async def assemble_edition(
     pieces: List[Piece],
     runners_up: List[ScoredPaper],
@@ -130,6 +151,10 @@ async def assemble_edition(
         f"{len(quick_takes)} quick takes, "
         f"{total_words} words"
     )
+
+    # Non-fatal length check: logs a warning if over budget but never blocks
+    # publishing.
+    check_edition_length(edition)
 
     return edition
 
