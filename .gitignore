@@ -54,3 +54,6 @@ logs/
 .venv/
 .vercel
 .env*.local
+
+# pytest-monitor artifact
+.pymon
