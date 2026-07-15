@@ -230,8 +230,35 @@ def test_scoring_weights_sum_to_one():
     c = ScoringConfig()
     total = (c.topic_match_weight + c.keyword_match_weight + c.institution_weight
              + c.citation_velocity_weight + c.social_signal_weight + c.quality_signal_weight
-             + c.prestige_weight)
+             + c.prestige_weight + c.recency_weight)
     assert abs(total - 1.0) < 1e-9
+
+
+def test_fresher_paper_scores_at_least_as_high_when_signals_equal():
+    from scipaper.curate.score import score_relevance, ScoringConfig
+    from scipaper.curate.models import Paper, AnchorDocument
+    from .conftest import run_async
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    anchor = AnchorDocument(week="2026-W29", updated_by="t", updated_at=now, hot_topics=["agents"])
+    base = dict(title="agents", abstract="agents")
+    fresh = Paper(arxiv_id="a", published_date=now - timedelta(days=2), **base)
+    old = Paper(arxiv_id="b", published_date=now - timedelta(days=25), **base)
+    assert run_async(score_relevance(fresh, anchor, ScoringConfig())) >= run_async(score_relevance(old, anchor, ScoringConfig()))
+
+
+def test_strong_traction_old_paper_beats_fresh_empty():
+    from scipaper.curate.score import score_relevance, ScoringConfig
+    from scipaper.curate.models import Paper, AnchorDocument
+    from .conftest import run_async
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    anchor = AnchorDocument(week="2026-W29", updated_by="t", updated_at=now, hot_topics=["agents"])
+    base = dict(title="agents", abstract="agents")
+    fresh_empty = Paper(arxiv_id="a", published_date=now - timedelta(days=1), **base)
+    old_strong = Paper(arxiv_id="b", published_date=now - timedelta(days=25),
+                       hf_upvotes=300, citation_count=50, influential_citation_count=20, **base)
+    assert run_async(score_relevance(old_strong, anchor, ScoringConfig())) > run_async(score_relevance(fresh_empty, anchor, ScoringConfig()))
 
 
 def test_prestige_lab_raises_relevance():

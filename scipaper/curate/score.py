@@ -21,13 +21,15 @@ logger = logging.getLogger(__name__)
 class ScoringConfig:
     """Configuration for scoring."""
     # Weights for relevance scoring components
-    topic_match_weight: float = 0.25
+    topic_match_weight: float = 0.20
     keyword_match_weight: float = 0.20
     institution_weight: float = 0.15
     citation_velocity_weight: float = 0.10
     social_signal_weight: float = 0.15
     quality_signal_weight: float = 0.10
     prestige_weight: float = 0.05
+    recency_weight: float = 0.05
+    recency_half_life_days: float = 14.0
 
     # Curated prestige list (labs/authors). None means "load default lazily".
     prestige: Optional[dict] = None
@@ -158,6 +160,24 @@ def _quality_signal(paper) -> float:
     return max(infl, hidx)
 
 
+def _recency_signal(paper: Paper, half_life_days: float = 14.0) -> float:
+    """
+    1.0 for a paper published today, decaying with the given half-life.
+    0.5 at one half-life, 0.25 at two half-lives, etc.
+    A small weighted tiebreaker in favor of fresher papers -- not a
+    multiplier, so it cannot override real traction signals.
+    """
+    if not paper.published_date:
+        return 0.5
+
+    from datetime import datetime, timezone
+    days = (datetime.now(timezone.utc).replace(tzinfo=None) - paper.published_date.replace(tzinfo=None)).days
+    if days <= 0:
+        return 1.0
+
+    return 0.5 ** (days / half_life_days)
+
+
 def _declining_topic_penalty(paper: Paper, anchor: AnchorDocument) -> float:
     """Return a penalty (0-1) if paper matches declining topics."""
     if not anchor.declining_topics:
@@ -199,6 +219,7 @@ async def score_relevance(
     social = _social_signal_score(paper)
     quality = _quality_signal(paper)
     prestige_component = prestige_score(paper, prestige)
+    recency = _recency_signal(paper, config.recency_half_life_days)
 
     # Weighted combination (0-1 scale)
     raw_score = (
@@ -209,6 +230,7 @@ async def score_relevance(
         + social * config.social_signal_weight
         + quality * config.quality_signal_weight
         + prestige_component * config.prestige_weight
+        + recency * config.recency_weight
     )
 
     # Apply declining topic penalty
@@ -221,7 +243,8 @@ async def score_relevance(
     logger.debug(
         f"Relevance for {paper.arxiv_id}: {score:.1f} "
         f"(topic={topic_sim:.2f}, kw={keyword:.2f}, inst={institution:.2f}, "
-        f"cite={citation_vel:.2f}, social={social:.2f}, quality={quality:.2f})"
+        f"cite={citation_vel:.2f}, social={social:.2f}, quality={quality:.2f}, "
+        f"recency={recency:.2f})"
     )
 
     return round(score, 2)
