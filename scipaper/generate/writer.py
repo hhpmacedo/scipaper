@@ -78,6 +78,7 @@ STRUCTURE (follow exactly, with word budgets):
    - NEVER start with a method description ("researchers propose", "we present", "this paper introduces").
    - BAD: "Researchers propose a method to identify which AI model wrote a piece of code."
    - GOOD: "You can now identify which specific AI model wrote a piece of code — with 87% accuracy."
+   - The hook appears ONLY in the "hook" field. Do NOT restate it as the first paragraph of "content". The content begins at "## The Problem".
 
 2. Signal Block (2-3 sentences, ~60 words)
    - Visually separated executive summary. Answers three questions in order:
@@ -103,13 +104,14 @@ STRUCTURE (follow exactly, with word budgets):
    - If the paper has NO benchmark numbers (e.g. interpretability, theoretical, or qualitative work): state a specific qualitative finding with concrete detail, then explicitly note "This paper reports no benchmark comparisons — [reason, e.g. 'the contribution is a method, not a performance claim']."
    - UNACCEPTABLE: "reliable attribution performance across diverse settings", "substantially higher fidelity", "measurable fraction" — these are paraphrases, not results.
    - What worked, what didn't. Honest about limitations.
-   - Every limitation must be dual-framed: what's technically incomplete (for builders) AND what that means for production timelines (for decision-makers).
-   - BAD: "The benchmark covers only four LLMs and four languages."
-   - GOOD: "The benchmark covers only four LLMs and four languages — production codebases with mixed model usage and human edits are a harder problem, likely 2-3 years from reliable tooling."
+   - Frame each limitation for builders (what's technically incomplete) AND decision-makers (what would have to be true to use it) — but do NOT invent a numeric timeline. Give a "years to production" number ONLY if the paper discusses deployment maturity.
+   - BAD: "...likely 2-3 years from reliable tooling." (fabricated timeline appended to every limitation)
+   - GOOD: "The benchmark covers only four LLMs and four languages; production codebases mix models and human edits, which this setup doesn't test." (names the gap, no invented number)
+   - Avoid ending every limitations passage with the same timeline phrasing.
 
 6. Why It Matters (~120 words, 1-2 paragraphs)
-   - Implications for practitioners. Grounded, not speculative.
-   - Include one sentence positioning the work on a maturity spectrum: lab proof-of-concept, pattern emerging in production frameworks, or actionable today.
+   - Implications, grounded, not speculative. Serve TWO readers explicitly: at least one sentence for a builder (what to try/test/adopt) AND at least one for a non-builder decision-maker (what it changes about cost, risk, capability, or timing for their org). Do NOT address only "teams building [the paper's niche system]".
+   - Positioning on the maturity spectrum (lab proof-of-concept / emerging / actionable) is ALLOWED but NOT required — do not open every piece with "This is a lab proof-of-concept." Vary it or let the limitations carry it.
    - Every implication must trace back to something the paper demonstrated.
 
 ═══════════════════════════════════════
@@ -158,7 +160,7 @@ Return your response as JSON:
     "key_result": "1-2 sentences: the most important finding, with a concrete number",
     "why_it_matters": "1 sentence: what this means for practitioners, grounded not speculative"
   },
-  "content": "the full piece with citations — Hook paragraph, then ## The Problem, ## What They Did, ## The Results, ## Why It Matters",
+  "content": "the full piece with citations — START at ## The Problem (do NOT repeat the hook as an opening paragraph), then ## What They Did, ## The Results, ## Why It Matters",
   "sections": ["The Problem", "What They Did", "The Results", "Why It Matters"],
   "hero_figure": null or <integer figure number>
 }
@@ -181,7 +183,9 @@ Remember:
 - Signal block = 2-3 sentences: what capability, how mature, what decision
 - Every claim must have a citation [§X.Y]
 - Results section must include at least one specific number with baseline
-- Every limitation dual-framed: technical gap + production timeline implication
+- Content starts at ## The Problem (never repeat the hook as an opening paragraph)
+- Limitations: name the technical gap + what it means for use; no invented "X years" timeline unless the paper discusses maturity
+- Why It Matters serves a builder AND a decision-maker
 - 800-1000 words, hard cap 1000
 - Return as JSON with all fields including signal_block
 """
