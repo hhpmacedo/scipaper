@@ -345,3 +345,49 @@ def test_build_query_includes_broadened_categories():
     from scipaper.curate.ingest import IngestConfig, ArxivSource
     q = ArxivSource(IngestConfig())._build_query()
     assert "cat:cs.RO" in q and "cat:cs.CV" in q and "cat:cs.CL" in q
+
+
+def test_twitter_disabled_makes_no_call_and_returns_zero():
+    from scipaper.curate.ingest import SocialSignalSource
+    from scipaper.curate.models import Paper
+    from .conftest import run_async
+
+    class Boom:
+        async def get(self, *a, **k): raise AssertionError("must not call when disabled")
+
+    src = SocialSignalSource()
+    # disabled by default (no flag, no token)
+    assert run_async(src.get_twitter_mentions(Paper(arxiv_id="a", title="t", abstract="x"), client=Boom())) == 0
+
+
+def test_twitter_enabled_parses_count():
+    from scipaper.curate.ingest import SocialSignalSource
+    from scipaper.curate.models import Paper
+    from .conftest import run_async
+
+    class Resp:
+        status_code = 200
+        def raise_for_status(self): pass
+        def json(self): return {"meta": {"total_tweet_count": 37}}
+    class Client:
+        async def get(self, *a, **k): return Resp()
+
+    src = SocialSignalSource()
+    n = run_async(src.get_twitter_mentions(
+        Paper(arxiv_id="a", title="t", abstract="x"),
+        client=Client(), enabled=True, bearer_token="tok"))
+    assert n == 37
+
+
+def test_twitter_enabled_degrades_on_error():
+    from scipaper.curate.ingest import SocialSignalSource
+    from scipaper.curate.models import Paper
+    from .conftest import run_async
+
+    class Boom:
+        async def get(self, *a, **k): raise RuntimeError("down")
+
+    src = SocialSignalSource()
+    assert run_async(src.get_twitter_mentions(
+        Paper(arxiv_id="a", title="t", abstract="x"),
+        client=Boom(), enabled=True, bearer_token="tok")) == 0
