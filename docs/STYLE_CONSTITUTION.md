@@ -1,8 +1,8 @@
 # Style Constitution
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 **Status:** LOCKED
-**Last Updated:** 2026-03-07
+**Last Updated:** 2026-07-15
 
 > This document defines the writing style for all Signal publications. It is version-controlled and changes require explicit approval. The generation pipeline checks against this document to ensure consistency.
 
@@ -129,18 +129,26 @@ Every named technique, loss function, or abstraction must be followed within two
 - ✅ "DCAN achieves 87% attribution accuracy across four models, compared to 62% for the best existing method."
 - ❌ "reliable attribution performance across diverse settings" (quoting the abstract is not reporting results)
 
-Every limitation must be dual-framed:
+Frame limitations for both audiences, but do NOT invent a numeric timeline:
 
-- Technical dimension (for builders): what's incomplete about the methodology
-- Production timeline dimension (for decision-makers): what this means for applicability
-- ❌ "The benchmark covers only four LLMs and four languages."
-- ✅ "The benchmark covers only four LLMs and four languages — production codebases with mixed model usage and human edits are a harder problem, likely 2-3 years from reliable tooling."
+- Technical dimension (for builders): what's incomplete about the methodology — always state this concretely.
+- Production dimension (for decision-makers): what would have to be true for this to be usable. Name the *gap*, not a fabricated number of years.
+- Include a specific "years to production" estimate ONLY when the paper itself discusses deployment maturity or a concrete adoption barrier. Otherwise describe the gap qualitatively.
+- ❌ "The benchmark covers only four LLMs and four languages — likely 2-3 years from reliable tooling." (invented timeline)
+- ✅ "The benchmark covers only four LLMs and four languages; production codebases mix models and human edits, which this setup doesn't test." (names the gap, no fake number)
+
+**Do not end every limitations section with a "1–2 years out" clause. If you find yourself writing the same timeline phrase across pieces, cut it.**
 
 ### 6. Why It Matters (~120 words, 1-2 paragraphs)
 
 Implications for practitioners. Stay grounded — no speculation about "changing the world." Every implication must trace back to something the paper demonstrated.
 
-Include one sentence positioning the work on the maturity spectrum: lab proof-of-concept, pattern emerging in production frameworks, or actionable today.
+**Serve two readers explicitly.** This section must land for both:
+- a **builder** (what they could try, test, or adopt), and
+- a **non-builder decision-maker** (what it changes about cost, risk, capability, or timing for their org).
+At least one sentence must speak to each. Do NOT address only "teams building [niche infra]" — most readers are not building the paper's system.
+
+Where it genuinely aids the reader, position the work on the maturity spectrum (lab proof-of-concept / pattern emerging / actionable today). This is allowed, not required — do NOT open every "Why It Matters" with "This is a lab proof-of-concept." Vary how maturity is conveyed, or let the limitations carry it.
 
 ### Citations
 
@@ -153,6 +161,8 @@ Inline citations throughout: `[§3.2]`, `[Figure 4]`, `[Abstract]`
 - Full pieces: 800-1000 words (hard cap: 1000)
 - Quick Takes: 1-2 sentences — must include a specific finding or result, not a topic description
 - Headlines: 8-12 words
+
+**Per edition:** target ≈ 2,500–3,000 words total across all feature pieces (≈12-minute read). If an edition exceeds this, tighten the longest pieces first; do not cut the number of pieces below three.
 
 ---
 
@@ -242,6 +252,8 @@ If a claim cannot be cited to a specific passage, it should not be included.
 - Drop jargon without grounding it within two sentences.
 - List more than three model names. "Ten 7B-parameter vision-language models" suffices.
 - Explain the same concept twice across sections.
+- State the same headline number more than once across the hook, signal block, and structured abstract. Pick the single strongest place for each number. (The Results section may restate a number with its baseline — that's where the number is *explained*, not just asserted.)
+- Repeat the hook as the opening line of the article body. The article body starts at "## The Problem". The hook is rendered separately.
 
 ### Anti-patterns (from Issue #1)
 
@@ -287,7 +299,7 @@ Before publishing, verify each feature article:
 3. **Numbers check:** Does The Results section contain at least one specific performance number with interpretable context? If no → revise or flag explicitly in the article.
 4. **Audience ceiling check:** Would a senior PM who's never read an ML paper understand every sentence in What They Did? If any sentence requires knowledge of transformer internals, attention, or math notation → rewrite with analogy first.
 5. **Abstraction grounding check:** Is every named technique/loss function/metric followed within two sentences by a concrete example or analogy? If no → add one or remove the name.
-6. **Limitations dual-frame check:** Is every limitation stated in both technical and production timeline terms? If no → add the production dimension.
+6. **Limitations framing check:** Is every limitation stated concretely for builders (the technical gap) AND for decision-makers (what would have to be true to use it)? A numeric "years to production" estimate appears ONLY where the paper discusses deployment maturity — flag reflexive "1–2 years out" filler. If missing the builder/decision-maker framing → add it; if it has an invented timeline → cut it.
 7. **Duplicate content check:** Is any concept explained twice across sections? If yes → keep the first instance, cut the second.
 8. **Banned words check:** No words from the banned list.
 9. **Citation check:** Every factual claim cites a specific passage. Minimum 3 citations.
