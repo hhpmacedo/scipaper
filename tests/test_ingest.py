@@ -278,6 +278,60 @@ class TestSocialSignals:
         assert score == 0
 
 
+def test_hf_upvotes_parsed():
+    from scipaper.curate.ingest import CommunitySignalSource
+    from scipaper.curate.models import Paper
+    from .conftest import run_async
+    class Resp:
+        status_code = 200
+        def raise_for_status(self): pass
+        def json(self): return {"upvotes": 120, "title": "x"}
+    class Client:
+        async def get(self, *a, **k): return Resp()
+    v = run_async(CommunitySignalSource().get_hf_upvotes(Paper(arxiv_id="2607.1", title="t", abstract="a"), Client()))
+    assert v == 120
+
+
+def test_hf_upvotes_degrades():
+    from scipaper.curate.ingest import CommunitySignalSource
+    from scipaper.curate.models import Paper
+    from .conftest import run_async
+    class Boom:
+        async def get(self, *a, **k): raise RuntimeError("x")
+    assert run_async(CommunitySignalSource().get_hf_upvotes(Paper(arxiv_id="a", title="t", abstract="a"), Boom())) == 0
+    class Weird:
+        async def get(self, *a, **k):
+            class R:
+                status_code = 200
+                def raise_for_status(self): pass
+                def json(self): return {"nope": 1}
+            return R()
+    assert run_async(CommunitySignalSource().get_hf_upvotes(Paper(arxiv_id="a", title="t", abstract="a"), Weird())) == 0
+
+
+def test_github_stars_none_repo_no_call():
+    from scipaper.curate.ingest import CommunitySignalSource
+    from scipaper.curate.models import Paper
+    from .conftest import run_async
+    class Client:
+        async def get(self, *a, **k): raise AssertionError("should not be called when github_repo is None")
+    assert run_async(CommunitySignalSource().get_github_stars(Paper(arxiv_id="a", title="t", abstract="a"), Client())) == 0
+
+
+def test_github_stars_parsed():
+    from scipaper.curate.ingest import CommunitySignalSource
+    from scipaper.curate.models import Paper
+    from .conftest import run_async
+    class Resp:
+        status_code = 200
+        def raise_for_status(self): pass
+        def json(self): return {"stargazers_count": 850}
+    class Client:
+        async def get(self, *a, **k): return Resp()
+    p = Paper(arxiv_id="a", title="t", abstract="a", github_repo="foo/bar")
+    assert run_async(CommunitySignalSource().get_github_stars(p, Client())) == 850
+
+
 def test_ingest_config_covers_broadened_fields():
     from scipaper.curate.ingest import IngestConfig
     cfg = IngestConfig()

@@ -90,7 +90,10 @@ class Paper:
     twitter_mentions: int = 0
     hn_points: int = 0
     reddit_score: int = 0
-    
+    hf_upvotes: int = 0
+    github_stars: int = 0
+    github_repo: Optional[str] = None  # "owner/repo", populated by community signal source when discoverable
+
     # Processing state
     ingested_at: Optional[datetime] = None
     pdf_parsed: bool = False

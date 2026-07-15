@@ -300,6 +300,51 @@ class SocialSignalSource:
         return 0
 
 
+class CommunitySignalSource:
+    """
+    Gather community signals (Hugging Face Papers upvotes, GitHub stars).
+
+    These are the most fragile external sources — any deviation in response
+    shape, any network error, any missing field must degrade to 0. Never raise.
+    """
+
+    async def get_hf_upvotes(self, paper: Paper, client: Optional[httpx.AsyncClient] = None) -> int:
+        """Look up Hugging Face Papers upvotes for this arXiv ID."""
+        try:
+            url = f"https://huggingface.co/api/papers/{paper.arxiv_id}"
+            if client:
+                response = await client.get(url, timeout=5.0)
+            else:
+                async with httpx.AsyncClient(timeout=5.0) as c:
+                    response = await c.get(url)
+            if response.status_code == 200:
+                response.raise_for_status()
+                data = response.json()
+                return int(data.get("upvotes", 0) or 0)
+        except Exception as e:
+            logger.debug(f"HF Papers lookup failed for {paper.arxiv_id}: {e}")
+        return 0
+
+    async def get_github_stars(self, paper: Paper, client: Optional[httpx.AsyncClient] = None) -> int:
+        """Look up GitHub stars for the paper's linked repo, if known."""
+        if not paper.github_repo:
+            return 0
+        try:
+            url = f"https://api.github.com/repos/{paper.github_repo}"
+            if client:
+                response = await client.get(url, timeout=5.0)
+            else:
+                async with httpx.AsyncClient(timeout=5.0) as c:
+                    response = await c.get(url)
+            if response.status_code == 200:
+                response.raise_for_status()
+                data = response.json()
+                return int(data.get("stargazers_count", 0) or 0)
+        except Exception as e:
+            logger.debug(f"GitHub stars lookup failed for {paper.github_repo}: {e}")
+        return 0
+
+
 def _deduplicate(papers: List[Paper]) -> List[Paper]:
     """Deduplicate papers by ArXiv ID."""
     seen = set()
@@ -332,10 +377,12 @@ async def ingest_papers(config: IngestConfig = None, client: Optional[httpx.Asyn
     # Enrich concurrently with rate limiting
     semantic = SemanticScholarSource()
     social = SocialSignalSource()
+    community = CommunitySignalSource()
 
     sem_scholar = asyncio.Semaphore(10)
     sem_hn = asyncio.Semaphore(5)
     sem_reddit = asyncio.Semaphore(5)
+    sem_comm = asyncio.Semaphore(5)
 
     async def _enrich_one(paper):
         async with sem_scholar:
@@ -351,6 +398,15 @@ async def ingest_papers(config: IngestConfig = None, client: Optional[httpx.Asyn
         async with sem_reddit:
             try:
                 paper.reddit_score = await social.get_reddit_score(paper, client)
+            except Exception:
+                pass
+        async with sem_comm:
+            try:
+                paper.hf_upvotes = await community.get_hf_upvotes(paper, client)
+            except Exception:
+                pass
+            try:
+                paper.github_stars = await community.get_github_stars(paper, client)
             except Exception:
                 pass
         return paper

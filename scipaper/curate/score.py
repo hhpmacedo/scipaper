@@ -135,6 +135,14 @@ def _social_signal_score(paper: Paper) -> float:
     if paper.reddit_score > 0:
         score = max(score, min(paper.reddit_score / 100.0, 1.0))
 
+    # Hugging Face Papers: 50+ upvotes is notable
+    if paper.hf_upvotes > 0:
+        score = max(score, min(paper.hf_upvotes / 50.0, 1.0))
+
+    # GitHub stars: 500+ stars is notable
+    if paper.github_stars > 0:
+        score = max(score, min(paper.github_stars / 500.0, 1.0))
+
     return score
 
 

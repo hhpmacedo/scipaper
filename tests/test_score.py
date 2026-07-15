@@ -156,6 +156,32 @@ class TestSocialSignalScore:
         assert _social_signal_score(paper) == 0.0
 
 
+class TestCommunitySignalScore:
+    def test_hf_upvotes_raise_social_score(self):
+        paper = make_paper(hn_points=0, twitter_mentions=0, reddit_score=0, hf_upvotes=100)
+        assert _social_signal_score(paper) == 1.0
+
+    def test_github_stars_raise_social_score(self):
+        paper = make_paper(hn_points=0, twitter_mentions=0, reddit_score=0, github_stars=250)
+        assert _social_signal_score(paper) == 0.5
+
+    def test_no_community_signals(self):
+        paper = make_paper(hn_points=0, twitter_mentions=0, reddit_score=0, hf_upvotes=0, github_stars=0)
+        assert _social_signal_score(paper) == 0.0
+
+    def test_hf_upvotes_raise_relevance_score(self):
+        anchor = make_anchor()
+        base = dict(
+            arxiv_id="a", title="agents paper", abstract="about agents",
+            hn_points=0, twitter_mentions=0, reddit_score=0,
+        )
+        plain = Paper(**base)
+        with_upvotes = Paper(**base, hf_upvotes=200)
+        s_plain = run_async(score_relevance(plain, anchor))
+        s_with_upvotes = run_async(score_relevance(with_upvotes, anchor))
+        assert s_with_upvotes > s_plain
+
+
 class TestScoreRelevance:
     def test_relevant_paper_scores_high(self):
         paper = make_paper()
