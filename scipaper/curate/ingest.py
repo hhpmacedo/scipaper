@@ -273,9 +273,30 @@ class SocialSignalSource:
             logger.debug(f"HN lookup failed for {paper.arxiv_id}: {e}")
         return 0
 
-    async def get_reddit_score(self, paper: Paper) -> int:
-        """Check r/MachineLearning for paper mentions."""
-        # Reddit API requires OAuth; return 0 as default
+    async def get_reddit_score(self, paper: Paper, client: Optional[httpx.AsyncClient] = None) -> int:
+        """Check r/MachineLearning for paper mentions and return the top post score."""
+        try:
+            url = (
+                "https://www.reddit.com/r/MachineLearning/search.json"
+                f"?q={paper.arxiv_id}&restrict_sr=1&sort=top"
+            )
+            headers = {"User-Agent": "signal-newsletter/1.0 (research aggregator)"}
+            if client:
+                response = await client.get(url, headers=headers, timeout=5.0)
+            else:
+                async with httpx.AsyncClient(timeout=5.0) as c:
+                    response = await c.get(url, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                children = (data.get("data") or {}).get("children") or []
+                scores = [
+                    (child.get("data") or {}).get("score", 0) or 0
+                    for child in children
+                ]
+                if scores:
+                    return max(scores)
+        except Exception as e:
+            logger.debug(f"Reddit lookup failed for {paper.arxiv_id}: {e}")
         return 0
 
 
@@ -314,6 +335,7 @@ async def ingest_papers(config: IngestConfig = None, client: Optional[httpx.Asyn
 
     sem_scholar = asyncio.Semaphore(10)
     sem_hn = asyncio.Semaphore(5)
+    sem_reddit = asyncio.Semaphore(5)
 
     async def _enrich_one(paper):
         async with sem_scholar:
@@ -324,6 +346,11 @@ async def ingest_papers(config: IngestConfig = None, client: Optional[httpx.Asyn
         async with sem_hn:
             try:
                 paper.hn_points = await social.get_hn_points(paper, client)
+            except Exception:
+                pass
+        async with sem_reddit:
+            try:
+                paper.reddit_score = await social.get_reddit_score(paper, client)
             except Exception:
                 pass
         return paper

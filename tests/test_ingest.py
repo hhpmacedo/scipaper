@@ -228,6 +228,55 @@ class TestSocialSignals:
         paper = make_paper()
         assert run_async(source.get_reddit_score(paper)) == 0
 
+    def test_reddit_score_returns_max_score(self):
+        from scipaper.curate.ingest import SocialSignalSource
+        from scipaper.curate.models import Paper
+        from .conftest import run_async
+
+        class FakeResp:
+            status_code = 200
+
+            def json(self):
+                return {"data": {"children": [
+                    {"data": {"score": 12}}, {"data": {"score": 47}}, {"data": {"score": 3}}]}}
+
+        class FakeClient:
+            async def get(self, *a, **k):
+                return FakeResp()
+
+        score = run_async(SocialSignalSource().get_reddit_score(Paper(arxiv_id="2607.1", title="t", abstract="a"), FakeClient()))
+        assert score == 47
+
+    def test_reddit_score_degrades_to_zero_on_error(self):
+        from scipaper.curate.ingest import SocialSignalSource
+        from scipaper.curate.models import Paper
+        from .conftest import run_async
+
+        class BoomClient:
+            async def get(self, *a, **k):
+                raise RuntimeError("down")
+
+        score = run_async(SocialSignalSource().get_reddit_score(Paper(arxiv_id="2607.2", title="t", abstract="a"), BoomClient()))
+        assert score == 0
+
+    def test_reddit_score_degrades_on_bad_shape(self):
+        from scipaper.curate.ingest import SocialSignalSource
+        from scipaper.curate.models import Paper
+        from .conftest import run_async
+
+        class WeirdResp:
+            status_code = 200
+
+            def json(self):
+                return {"unexpected": True}
+
+        class WeirdClient:
+            async def get(self, *a, **k):
+                return WeirdResp()
+
+        score = run_async(SocialSignalSource().get_reddit_score(Paper(arxiv_id="2607.3", title="t", abstract="a"), WeirdClient()))
+        assert score == 0
+
 
 def test_ingest_config_covers_broadened_fields():
     from scipaper.curate.ingest import IngestConfig
