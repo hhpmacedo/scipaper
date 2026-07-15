@@ -20,11 +20,12 @@ logger = logging.getLogger(__name__)
 class ScoringConfig:
     """Configuration for scoring."""
     # Weights for relevance scoring components
-    topic_match_weight: float = 0.35
+    topic_match_weight: float = 0.30
     keyword_match_weight: float = 0.20
     institution_weight: float = 0.15
-    citation_velocity_weight: float = 0.15
+    citation_velocity_weight: float = 0.10
     social_signal_weight: float = 0.15
+    quality_signal_weight: float = 0.10
 
     # LLM settings for narrative potential
     llm_provider: str = "anthropic"
@@ -137,6 +138,13 @@ def _social_signal_score(paper: Paper) -> float:
     return score
 
 
+def _quality_signal(paper) -> float:
+    """Influential citations + top author h-index, normalized 0-1."""
+    infl = min((getattr(paper, "influential_citation_count", 0) or 0) / 10.0, 1.0)
+    hidx = min((getattr(paper, "max_author_h_index", 0) or 0) / 60.0, 1.0)
+    return max(infl, hidx)
+
+
 def _declining_topic_penalty(paper: Paper, anchor: AnchorDocument) -> float:
     """Return a penalty (0-1) if paper matches declining topics."""
     if not anchor.declining_topics:
@@ -175,6 +183,7 @@ async def score_relevance(
     institution = _institution_score(paper, anchor)
     citation_vel = _citation_velocity(paper)
     social = _social_signal_score(paper)
+    quality = _quality_signal(paper)
 
     # Weighted combination (0-1 scale)
     raw_score = (
@@ -183,6 +192,7 @@ async def score_relevance(
         + institution * config.institution_weight
         + citation_vel * config.citation_velocity_weight
         + social * config.social_signal_weight
+        + quality * config.quality_signal_weight
     )
 
     # Apply declining topic penalty
@@ -195,7 +205,7 @@ async def score_relevance(
     logger.debug(
         f"Relevance for {paper.arxiv_id}: {score:.1f} "
         f"(topic={topic_sim:.2f}, kw={keyword:.2f}, inst={institution:.2f}, "
-        f"cite={citation_vel:.2f}, social={social:.2f})"
+        f"cite={citation_vel:.2f}, social={social:.2f}, quality={quality:.2f})"
     )
 
     return round(score, 2)

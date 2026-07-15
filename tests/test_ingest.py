@@ -160,6 +160,42 @@ class TestSemanticScholarSource:
         assert result.citation_count == 0
 
 
+def test_semantic_scholar_pulls_influential_and_hindex():
+    from scipaper.curate.ingest import SemanticScholarSource
+    from scipaper.curate.models import Paper
+    from .conftest import run_async
+
+    class FakeResp:
+        status_code = 200
+        def raise_for_status(self): pass
+        def json(self):
+            return {"citationCount": 40, "referenceCount": 30,
+                    "influentialCitationCount": 7,
+                    "externalIds": {"CorpusId": 123},
+                    "authors": [{"hIndex": 55}, {"hIndex": 12}]}
+    class FakeClient:
+        async def get(self, *a, **k): return FakeResp()
+
+    paper = Paper(arxiv_id="2607.00001", title="t", abstract="a")
+    out = run_async(SemanticScholarSource().enrich(paper, FakeClient()))
+    assert out.citation_count == 40
+    assert out.influential_citation_count == 7
+    assert out.max_author_h_index == 55
+
+
+def test_semantic_scholar_degrades_on_error():
+    from scipaper.curate.ingest import SemanticScholarSource
+    from scipaper.curate.models import Paper
+    from .conftest import run_async
+
+    class BoomClient:
+        async def get(self, *a, **k): raise RuntimeError("down")
+
+    paper = Paper(arxiv_id="2607.00002", title="t", abstract="a")
+    out = run_async(SemanticScholarSource().enrich(paper, BoomClient()))
+    assert out.influential_citation_count == 0 and out.max_author_h_index == 0
+
+
 class TestDeduplication:
     def test_removes_duplicates(self):
         papers = [

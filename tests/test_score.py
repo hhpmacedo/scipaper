@@ -183,6 +183,30 @@ class TestScoreRelevance:
         assert 1.0 <= score <= 10.0
 
 
+def test_quality_signal_raises_relevance():
+    from scipaper.curate.score import score_relevance, ScoringConfig
+    from scipaper.curate.models import Paper, AnchorDocument
+    from .conftest import run_async
+    from datetime import datetime, timezone
+
+    anchor = AnchorDocument(week="2026-W29", updated_by="t", updated_at=datetime.now(timezone.utc),
+                            hot_topics=["agents"])
+    base = dict(arxiv_id="a", title="agents paper", abstract="about agents")
+    plain = Paper(**base)
+    strong = Paper(**base, influential_citation_count=20, max_author_h_index=60)
+    s_plain = run_async(score_relevance(plain, anchor, ScoringConfig()))
+    s_strong = run_async(score_relevance(strong, anchor, ScoringConfig()))
+    assert s_strong > s_plain
+
+
+def test_scoring_weights_sum_to_one():
+    from scipaper.curate.score import ScoringConfig
+    c = ScoringConfig()
+    total = (c.topic_match_weight + c.keyword_match_weight + c.institution_weight
+             + c.citation_velocity_weight + c.social_signal_weight + c.quality_signal_weight)
+    assert abs(total - 1.0) < 1e-9
+
+
 class TestParseScoreResponse:
     def test_valid_json(self):
         response = '{"score": 7, "reasoning": "good paper"}'

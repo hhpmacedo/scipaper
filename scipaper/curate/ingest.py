@@ -206,7 +206,7 @@ class SemanticScholarSource:
 
         url = (
             f"{self.BASE_URL}/paper/ArXiv:{paper.arxiv_id}"
-            f"?fields=citationCount,referenceCount,externalIds"
+            f"?fields=citationCount,referenceCount,influentialCitationCount,externalIds,authors.hIndex"
         )
 
         try:
@@ -230,7 +230,12 @@ class SemanticScholarSource:
             if ext_ids:
                 paper.semantic_scholar_id = ext_ids.get("CorpusId")
 
-        except httpx.HTTPError as e:
+            paper.influential_citation_count = data.get("influentialCitationCount", 0) or 0
+            authors = data.get("authors") or []
+            h_indices = [(a.get("hIndex") or 0) for a in authors]
+            paper.max_author_h_index = max(h_indices) if h_indices else 0
+
+        except Exception as e:
             logger.warning(f"Semantic Scholar lookup failed for {paper.arxiv_id}: {e}")
 
         return paper

@@ -83,7 +83,9 @@ class Paper:
     semantic_scholar_id: Optional[str] = None
     citation_count: int = 0
     reference_count: int = 0
-    
+    influential_citation_count: int = 0
+    max_author_h_index: int = 0
+
     # Social signals
     twitter_mentions: int = 0
     hn_points: int = 0
