@@ -96,6 +96,24 @@ class TestHybridRendering:
         assert "Problem text." in html
         assert "Read more" not in html
 
+    def test_relevance_note_rendered_when_present(self):
+        lead = make_piece(paper_id="lead-id")
+        lead.relevance_note = "Why now: 120 upvotes on Hugging Face Papers."
+        edition = make_edition(pieces=[lead])
+
+        html = render_edition_html(edition, WEB_BASE_URL)
+
+        assert "Why now: 120 upvotes on Hugging Face Papers." in html
+
+    def test_no_relevance_note_when_absent(self):
+        lead = make_piece(paper_id="lead-id")
+        lead.relevance_note = None
+        edition = make_edition(pieces=[lead])
+
+        html = render_edition_html(edition, WEB_BASE_URL)
+
+        assert "Why now:" not in html
+
     def test_quick_takes_rendered(self):
         """Quick Takes section should appear with titles and summaries."""
         edition = make_edition()

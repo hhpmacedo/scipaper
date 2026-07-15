@@ -94,6 +94,7 @@ def _render_piece_full_html(piece: Piece, is_lead: bool = False) -> str:
 
     abstract_html = _render_structured_abstract_html(piece)
     signal_block_html = _render_signal_block_html(piece)
+    relevance_note_html = _render_relevance_note_html(piece)
 
     return (
         f'<article id="{escape(piece.paper_id)}" style="margin-top: 32px; padding-bottom: 24px; '
@@ -104,6 +105,7 @@ def _render_piece_full_html(piece: Piece, is_lead: bool = False) -> str:
         f'{escape(piece.hook)}</p>'
         f'{signal_block_html}'
         f'{abstract_html}'
+        f'{relevance_note_html}'
         f'<div style="font-size: 16px;">{content_html}</div>'
         f'</article>'
     )
@@ -115,6 +117,7 @@ def _render_piece_preview_html(piece: Piece, week: str, web_base_url: str) -> st
     body = strip_leading_hook(piece.content, piece.hook)
     first_paragraph = _extract_first_paragraph(body)
     read_more_url = f"{web_base_url}/editions/{week}.html#{piece.paper_id}"
+    relevance_note_html = _render_relevance_note_html(piece)
 
     return (
         f'<article id="{escape(piece.paper_id)}" style="margin-top: 32px; padding-bottom: 24px; '
@@ -123,6 +126,7 @@ def _render_piece_preview_html(piece: Piece, week: str, web_base_url: str) -> st
         f'{escape(piece.title)}</h2>'
         f'<p style="color: #666; font-style: italic; margin-top: 0;">'
         f'{escape(piece.hook)}</p>'
+        f'{relevance_note_html}'
         f'<div style="font-size: 16px;">'
         f'<p style="margin: 12px 0;">{escape(first_paragraph)}</p>'
         f'</div>'
@@ -190,6 +194,17 @@ def _render_signal_block_html(piece: Piece) -> str:
         f'display: block; margin-bottom: 6px;">Signal</span>'
         f'{escape(piece.signal_block.strip())}'
         f'</div>'
+    )
+
+
+def _render_relevance_note_html(piece: Piece) -> str:
+    """Render the deterministic 'why this, now' line for email, when present."""
+    note = getattr(piece, "relevance_note", None)
+    if not note or not note.strip():
+        return ""
+    return (
+        f'<p style="font-family: Helvetica Neue, Arial, sans-serif; font-size: 13px; '
+        f'color: #888; margin: 4px 0 12px;">{escape(note.strip())}</p>'
     )
 
 
@@ -313,6 +328,10 @@ def render_edition_text(edition: Edition, web_base_url: str) -> str:
         lines.append("")
         lines.append(piece.hook)
         lines.append("")
+
+        if getattr(piece, "relevance_note", None) and piece.relevance_note.strip():
+            lines.append(piece.relevance_note.strip())
+            lines.append("")
 
         if piece.structured_abstract:
             sa = piece.structured_abstract

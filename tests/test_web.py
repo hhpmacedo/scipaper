@@ -154,6 +154,21 @@ class TestGenerateEditionPage:
         html = generate_edition_page(ed, WebConfig())
         assert "This week, one clear throughline about agents." in html
 
+    def test_relevance_note_rendered_when_present(self):
+        piece = make_piece()
+        piece.relevance_note = "Why now: 120 upvotes on Hugging Face Papers."
+        edition = make_edition(pieces=[piece])
+        html = generate_edition_page(edition)
+        assert 'class="relevance-note"' in html
+        assert "Why now: 120 upvotes on Hugging Face Papers." in html
+
+    def test_no_relevance_note_markup_when_absent(self):
+        piece = make_piece()
+        piece.relevance_note = None
+        edition = make_edition(pieces=[piece])
+        html = generate_edition_page(edition)
+        assert 'class="relevance-note"' not in html
+
     def test_falls_back_to_bullets_without_editor_note(self):
         piece = Piece(
             paper_id="1", title="A Title For The Piece Here", hook="Hook one.",

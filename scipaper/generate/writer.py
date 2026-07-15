@@ -51,6 +51,11 @@ class Piece:
     verified: bool = False
     verification_report: Optional[dict] = None
 
+    # Deterministic "why this, now" line built from the paper's traction/quality
+    # signals (HF upvotes, HN points, citations, GitHub stars, prestige lab).
+    # "" or None means no signal cleared threshold; renderer shows nothing.
+    relevance_note: Optional[str] = None
+
     def __post_init__(self):
         if self.authors is None:
             self.authors = []
@@ -291,6 +296,15 @@ async def generate_piece(
     )
     # Attach the selected figure object for the pipeline to save later
     piece._hero_figure = selected_figure
+
+    # Deterministic "why this, now" line, computed from the paper's own signals.
+    # Never allowed to block generation.
+    from ..curate.relevance_note import relevance_note as _relevance_note
+    from ..curate.prestige import load_prestige
+    try:
+        piece.relevance_note = _relevance_note(paper, load_prestige())
+    except Exception:
+        piece.relevance_note = None
 
     logger.info(
         f"Generated piece for {paper.arxiv_id}: "

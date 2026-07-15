@@ -228,6 +228,9 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
                 f'{escape(piece.signal_block.strip())}'
                 f'</aside>'
             )
+        relevance_note_html = ""
+        if getattr(piece, "relevance_note", None) and piece.relevance_note.strip():
+            relevance_note_html = f'<p class="relevance-note">{escape(piece.relevance_note.strip())}</p>'
 
         pieces_html.append(
             f'<article class="piece" id="{escape(piece.paper_id)}">'
@@ -236,6 +239,7 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
             f'<p class="hook">{escape(piece.hook)}</p>'
             f'{signal_block_html}'
             f'{abstract_html}'
+            f'{relevance_note_html}'
             f'{hero_figure_html}'
             f'<div class="content">{content_html}</div>'
             f'</article>'
@@ -340,6 +344,7 @@ header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; let
 .structured-abstract {{ list-style: none; padding: 0; margin: 0 0 20px; font-size: 15px; color: #333; }}
 .structured-abstract li {{ margin-bottom: 6px; }}
 .structured-abstract strong {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #000; }}
+.relevance-note {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; color: #888; margin: 4px 0 12px; }}
 .hero-figure {{ margin: 24px 0; }}
 .hero-figure img {{ max-width: 100%; height: auto; border: 2px solid #000; display: block; }}
 .hero-figure figcaption {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; color: #666; margin-top: 8px; }}
