@@ -9,11 +9,19 @@ from enum import Enum
 
 
 class PaperCategory(str, Enum):
-    """ArXiv categories we track."""
-    CS_AI = "cs.AI"
-    CS_LG = "cs.LG"  
-    CS_CL = "cs.CL"
-    STAT_ML = "stat.ML"
+    """ArXiv categories we track. Broadened (Phase 2) to span the field, not just LLM/ML."""
+    CS_AI = "cs.AI"      # AI / agents / reasoning
+    CS_LG = "cs.LG"      # machine learning methods
+    CS_CL = "cs.CL"      # NLP / language
+    STAT_ML = "stat.ML"  # statistical ML
+    CS_CV = "cs.CV"      # computer vision
+    CS_RO = "cs.RO"      # robotics
+    CS_MA = "cs.MA"      # multi-agent systems
+    CS_HC = "cs.HC"      # human-computer interaction
+    CS_CY = "cs.CY"      # computers & society (policy, economics, ethics)
+    CS_SE = "cs.SE"      # software engineering
+    CS_CR = "cs.CR"      # security & cryptography
+    EESS_AS = "eess.AS"  # audio & speech
 
 
 @dataclass

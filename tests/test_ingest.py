@@ -191,3 +191,18 @@ class TestSocialSignals:
         source = SocialSignalSource()
         paper = make_paper()
         assert run_async(source.get_reddit_score(paper)) == 0
+
+
+def test_ingest_config_covers_broadened_fields():
+    from scipaper.curate.ingest import IngestConfig
+    cfg = IngestConfig()
+    cats = set(cfg.categories)
+    assert {"cs.AI", "cs.LG", "cs.CL", "stat.ML"} <= cats
+    for c in ["cs.CV", "cs.RO", "cs.MA", "cs.HC", "cs.CY", "cs.SE", "cs.CR", "eess.AS"]:
+        assert c in cats, f"missing broadened category {c}"
+
+
+def test_build_query_includes_broadened_categories():
+    from scipaper.curate.ingest import IngestConfig, ArxivSource
+    q = ArxivSource(IngestConfig())._build_query()
+    assert "cat:cs.RO" in q and "cat:cs.CV" in q and "cat:cs.CL" in q
