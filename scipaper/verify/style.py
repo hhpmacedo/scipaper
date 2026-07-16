@@ -57,6 +57,14 @@ the absence of benchmarks with a reason.
 4. **Required sections** — The article must contain all four sections: \
 "## The Problem", "## What They Did", "## The Results", "## Why It Matters".
 
+5. **No repeated headline number** — The same headline metric should not be asserted verbatim in BOTH \
+the signal block AND the structured abstract's key_result. Restating a number in "## The Results" with \
+its baseline is fine (that's where it's explained). Flag only true redundant assertions, severity "warning".
+
+6. **Dual-layer implications** — "## Why It Matters" should serve both a builder (what to try/adopt) \
+and a non-builder decision-maker (cost/risk/capability/timing). If it speaks only to niche-infra builders, \
+flag severity "warning".
+
 ## Article to Check
 
 **Hook:** {hook}
@@ -73,7 +81,7 @@ Return a JSON object with this exact structure:
   "issues": [
     {{
       "severity": "error" | "warning",
-      "issue_type": "hook_method_description" | "missing_performance_number" | "missing_signal_block" | "signal_block_too_short" | "missing_section" | "other",
+      "issue_type": "hook_method_description" | "missing_performance_number" | "missing_signal_block" | "signal_block_too_short" | "missing_section" | "repeated_number" | "single_audience" | "other",
       "location": "<brief location description>",
       "description": "<what the issue is>",
       "suggestion": "<how to fix it>"
@@ -157,6 +165,32 @@ def _check_word_count(content: str, config: StyleConfig) -> tuple:
     return words, ok
 
 
+def check_banned_words(content: str) -> List[StyleIssue]:
+    """Public wrapper: fast local banned/caution word check."""
+    return _check_banned_words(content)
+
+
+def check_word_count(content: str, config: Optional[StyleConfig] = None) -> tuple:
+    """Public wrapper: returns (word_count, ok)."""
+    return _check_word_count(content, config or StyleConfig())
+
+
+def check_repeated_hook(piece: Piece) -> Optional[StyleIssue]:
+    """Error if the hook is repeated as the opening paragraph of the content."""
+    from ..text_utils import strip_leading_hook
+    if not piece.hook or not piece.content:
+        return None
+    if strip_leading_hook(piece.content, piece.hook) != piece.content:
+        return StyleIssue(
+            severity="error",
+            issue_type="duplicate_hook",
+            location="content opening",
+            description="The hook is repeated as the opening paragraph of the article body.",
+            suggestion="Start the content at '## The Problem'; the hook is rendered separately.",
+        )
+    return None
+
+
 async def check_style_compliance(
     piece: Piece,
     config: Optional[StyleConfig] = None,
@@ -173,6 +207,10 @@ async def check_style_compliance(
 
     # --- Fast local checks ---
     issues.extend(_check_banned_words(piece.content))
+
+    hook_issue = check_repeated_hook(piece)
+    if hook_issue:
+        issues.append(hook_issue)
 
     word_count, word_count_ok = _check_word_count(piece.content, config)
     if not word_count_ok:

@@ -3,7 +3,7 @@ Tests for the edition assembly module.
 """
 
 from datetime import datetime
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 
 from .conftest import run_async
@@ -95,12 +95,14 @@ class TestAssembleEdition:
         pieces = [make_piece(paper_id=str(i)) for i in range(3)]
         runners = [make_scored_paper(arxiv_id=str(i + 10)) for i in range(2)]
 
-        # Mock generate_quick_take to avoid LLM calls
-        with patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt:
+        # Mock generate_quick_take and generate_editor_note to avoid LLM calls
+        with patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt, \
+                patch("scipaper.generate.edition.generate_editor_note", new_callable=AsyncMock) as mock_note:
             mock_qt.side_effect = [
                 QuickTake(paper_id=str(i + 10), title=f"Paper {i}", one_liner="Summary.", paper_url="https://arxiv.org")
                 for i in range(2)
             ]
+            mock_note.return_value = "Editor's note."
             edition = run_async(assemble_edition(pieces, runners, "2026-W10", 1))
 
         assert edition.week == "2026-W10"
@@ -108,24 +110,101 @@ class TestAssembleEdition:
         assert len(edition.pieces) == 3
         assert len(edition.quick_takes) == 2
         assert edition.total_words > 0
+        assert edition.editor_note == "Editor's note."
 
     def test_respects_max_pieces(self):
         pieces = [make_piece(paper_id=str(i)) for i in range(10)]
         config = AssemblyConfig(max_pieces=3, max_quick_takes=0)
 
-        edition = run_async(assemble_edition(pieces, [], "2026-W10", 1, config))
+        with patch("scipaper.generate.edition.generate_editor_note", new_callable=AsyncMock) as mock_note:
+            mock_note.return_value = None
+            edition = run_async(assemble_edition(pieces, [], "2026-W10", 1, config))
         assert len(edition.pieces) == 3
 
     def test_quick_take_fallback_on_error(self):
         pieces = [make_piece()]
         runners = [make_scored_paper(arxiv_id="r1")]
 
-        with patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt:
+        with patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt, \
+                patch("scipaper.generate.edition.generate_editor_note", new_callable=AsyncMock) as mock_note:
             mock_qt.side_effect = Exception("API error")
+            mock_note.return_value = None
             edition = run_async(assemble_edition(pieces, runners, "2026-W10", 1))
 
         # Should still have a quick take from fallback
         assert len(edition.quick_takes) == 1
+
+    def test_survives_editor_note_failure(self):
+        pieces = [make_piece()]
+
+        with patch("scipaper.generate.edition.anthropic") as mock_anthropic:
+            mock_anthropic.AsyncAnthropic.return_value.messages.create = AsyncMock(
+                side_effect=RuntimeError("api down")
+            )
+            edition = run_async(assemble_edition(pieces, [], "2026-W10", 1))
+
+        # Editor's Note generation failed, but the edition still assembles.
+        assert edition is not None
+        assert edition.editor_note is None
+        assert len(edition.pieces) == 1
+
+
+class TestCheckEditionLength:
+    def test_check_edition_length_warns_when_over_budget(self):
+        from scipaper.generate.edition import check_edition_length, Edition
+        from scipaper.generate.writer import Piece
+
+        def p(wc):
+            return Piece(paper_id="x", title="t", hook="h", content="c",
+                         word_count=wc, citations=[], generated_at="t", model_used="t")
+
+        over = Edition(week="2026-W29", issue_number=18,
+                       pieces=[p(1500), p(1500), p(1500)], quick_takes=[])
+        within = Edition(week="2026-W29", issue_number=18,
+                         pieces=[p(900), p(900), p(900)], quick_takes=[])
+
+        assert check_edition_length(over) is False      # 4500 > 3000
+        assert check_edition_length(within) is True     # 2700 within budget
+
+
+class TestEditorNote:
+    def _pieces(self):
+        from scipaper.generate.writer import Piece
+
+        def mk(pid, hook):
+            return Piece(paper_id=pid, title=f"t{pid}", hook=hook, content="c",
+                         word_count=800, citations=[], generated_at="t", model_used="t",
+                         signal_block=f"{hook} It is emerging. It informs a decision.")
+        return [mk("1", "Routing cuts cost."), mk("2", "Agents fail on noise.")]
+
+    def test_generate_editor_note_returns_text(self):
+        from scipaper.generate.edition import generate_editor_note
+
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        mock_response.content = [
+            MagicMock(text="This week, two threads converge on agent reliability.")
+        ]
+        mock_client.messages.create = AsyncMock(return_value=mock_response)
+
+        with patch("scipaper.generate.edition.anthropic") as mock_anthropic:
+            mock_anthropic.AsyncAnthropic.return_value = mock_client
+            note = run_async(generate_editor_note(self._pieces(), AssemblyConfig()))
+
+        assert note
+        assert "agent reliability" in note
+
+    def test_generate_editor_note_degrades_on_failure(self):
+        from scipaper.generate.edition import generate_editor_note
+
+        mock_client = MagicMock()
+        mock_client.messages.create = AsyncMock(side_effect=RuntimeError("api down"))
+
+        with patch("scipaper.generate.edition.anthropic") as mock_anthropic:
+            mock_anthropic.AsyncAnthropic.return_value = mock_client
+            note = run_async(generate_editor_note(self._pieces(), AssemblyConfig()))
+
+        assert note is None  # degrades, does not raise
 
 
 class TestGenerateEditionSubject:

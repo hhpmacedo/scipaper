@@ -16,7 +16,7 @@ Autonomous weekly newsletter pipeline that curates AI research papers and transl
 
 ## Team
 
-This project uses the MetaDeveloper agent team. Agents are defined in `~/Developer/MetaDeveloper/.claude/agents/` and spawned via Task tool.
+This project uses the MetaDeveloper agent team. Agents are defined in `~/dev/MetaDeveloper/AGENTS.md` and can be delegated to via subagents.
 
 | Agent  | Role                          | When to engage                                           |
 | ------ | ----------------------------- | -------------------------------------------------------- |

@@ -2,18 +2,28 @@
 Tests for the style compliance checker.
 """
 
+import json
+from unittest.mock import MagicMock, patch
 
 from .conftest import run_async
 
 from scipaper.verify.style import (
     StyleConfig,
     check_banned_words,
-    check_citations,
-    check_structure,
-    check_style_compliance,
     check_word_count,
+    check_repeated_hook,
+    check_style_compliance,
 )
 from scipaper.generate.writer import Piece
+
+
+def _mock_anthropic_client(issues=None):
+    """Build a mock anthropic.Anthropic() client returning a canned issues list."""
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text=json.dumps({"issues": issues or []}))]
+    mock_client.messages.create.return_value = mock_response
+    return mock_client
 
 
 def make_piece(content=None, **kwargs):
@@ -63,30 +73,6 @@ class TestCheckBannedWords:
         assert len(issues) == 0
 
 
-class TestCheckStructure:
-    def test_all_sections_present(self):
-        content = (
-            "## The Problem\nProblem text.\n"
-            "## What They Did\nApproach text.\n"
-            "## The Results\nResults text.\n"
-            "## Why It Matters\nImplications text."
-        )
-        issues = check_structure(content)
-        assert len(issues) == 0
-
-    def test_missing_section(self):
-        content = "## The Problem\nText.\n## The Results\nResults."
-        issues = check_structure(content)
-        missing = [i.description for i in issues]
-        assert any("What They Did" in m for m in missing)
-        assert any("Why It Matters" in m for m in missing)
-
-    def test_all_sections_missing(self):
-        content = "Just some random text without any sections."
-        issues = check_structure(content)
-        assert len(issues) == 4
-
-
 class TestCheckWordCount:
     def test_within_range(self):
         content = " ".join(["word"] * 1000)
@@ -105,28 +91,12 @@ class TestCheckWordCount:
         assert ok is False
 
 
-class TestCheckCitations:
-    def test_sufficient_citations(self):
-        content = "Claim one [§1]. Claim two [§2.1]. Claim three [Abstract]."
-        issues = check_citations(content)
-        assert len(issues) == 0
-
-    def test_insufficient_citations(self):
-        content = "Text with only one citation [§1]."
-        issues = check_citations(content)
-        assert len(issues) == 1
-        assert "insufficient" in issues[0].issue_type
-
-    def test_no_citations(self):
-        content = "No citations at all in this text."
-        issues = check_citations(content)
-        assert len(issues) == 1
-
-
 class TestCheckStyleCompliance:
     def test_compliant_piece(self):
         piece = make_piece()
-        report = run_async(check_style_compliance(piece))
+        with patch("scipaper.verify.style.anthropic") as mock_anthropic:
+            mock_anthropic.Anthropic.return_value = _mock_anthropic_client()
+            report = run_async(check_style_compliance(piece))
         assert report.compliant is True
 
     def test_non_compliant_banned_word(self):
@@ -138,7 +108,9 @@ class TestCheckStyleCompliance:
                 "## Why It Matters\nImplications [§4]."
             )
         )
-        report = run_async(check_style_compliance(piece))
+        with patch("scipaper.verify.style.anthropic") as mock_anthropic:
+            mock_anthropic.Anthropic.return_value = _mock_anthropic_client()
+            report = run_async(check_style_compliance(piece))
         assert report.compliant is False
 
     def test_strict_mode_warnings_fail(self):
@@ -151,5 +123,43 @@ class TestCheckStyleCompliance:
             )
         )
         config = StyleConfig(strict_mode=True)
-        report = run_async(check_style_compliance(piece, config))
+        with patch("scipaper.verify.style.anthropic") as mock_anthropic:
+            mock_anthropic.Anthropic.return_value = _mock_anthropic_client()
+            report = run_async(check_style_compliance(piece, config))
         assert report.compliant is False
+
+
+def test_check_repeated_hook_flags_duplicate():
+    piece = make_piece(
+        hook="Models fail on most tasks.",
+        content=(
+            "Models fail on most tasks.\n\n"
+            "## The Problem\nX [§1].\n\n## What They Did\nY [§2].\n\n"
+            "## The Results\nZ [§3].\n\n## Why It Matters\nW [§4]."
+        ),
+    )
+    issue = check_repeated_hook(piece)
+    assert issue is not None
+    assert issue.severity == "error"
+    assert issue.issue_type == "duplicate_hook"
+
+
+def test_check_repeated_hook_passes_clean():
+    piece = make_piece(
+        hook="Models fail on most tasks.",
+        content=(
+            "## The Problem\nX [§1].\n\n## What They Did\nY [§2].\n\n"
+            "## The Results\nZ [§3].\n\n## Why It Matters\nW [§4]."
+        ),
+    )
+    assert check_repeated_hook(piece) is None
+
+
+def test_check_banned_words_still_flags():
+    issues = check_banned_words("This is a revolutionary result.")
+    assert any(i.issue_type == "banned_word" for i in issues)
+
+
+def test_check_word_count_reports_ok():
+    words, ok = check_word_count("one two three", StyleConfig(min_words=1, max_words=10))
+    assert words == 3 and ok is True

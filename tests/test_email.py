@@ -96,6 +96,24 @@ class TestHybridRendering:
         assert "Problem text." in html
         assert "Read more" not in html
 
+    def test_relevance_note_rendered_when_present(self):
+        lead = make_piece(paper_id="lead-id")
+        lead.relevance_note = "Why now: 120 upvotes on Hugging Face Papers."
+        edition = make_edition(pieces=[lead])
+
+        html = render_edition_html(edition, WEB_BASE_URL)
+
+        assert "Why now: 120 upvotes on Hugging Face Papers." in html
+
+    def test_no_relevance_note_when_absent(self):
+        lead = make_piece(paper_id="lead-id")
+        lead.relevance_note = None
+        edition = make_edition(pieces=[lead])
+
+        html = render_edition_html(edition, WEB_BASE_URL)
+
+        assert "Why now:" not in html
+
     def test_quick_takes_rendered(self):
         """Quick Takes section should appear with titles and summaries."""
         edition = make_edition()
@@ -127,6 +145,37 @@ class TestHybridRendering:
 
         assert html.startswith("<!DOCTYPE html>")
         assert "</html>" in html
+
+    def test_editor_note_in_email_html(self):
+        """When editor_note is present, it should render as the lead in the email."""
+        edition = make_edition(editor_note="This week, one clear throughline about agents.")
+        html = render_edition_html(edition, WEB_BASE_URL)
+        assert "This week, one clear throughline about agents." in html
+
+
+    def test_email_html_does_not_duplicate_hook(self):
+        # NOTE: like the web renderer, the hook legitimately appears more
+        # than once in the email (the issue-summary fallback line and the
+        # italic hook byline), so a whole-page count == 1 assertion cannot
+        # hold regardless of this fix. What the fix changes is whether the
+        # hook is ALSO duplicated as the opening paragraph of the rendered
+        # content — scope the assertion to that region. Use a single-piece
+        # edition so it renders through the full (lead) renderer.
+        hook = "Models fail on most realistic tasks."
+        content = (
+            f"{hook}\n\n"
+            "## The Problem\nProblem text.\n\n"
+            "## What They Did\nApproach text.\n\n"
+            "## The Results\nResults text.\n\n"
+            "## Why It Matters\nMatters text."
+        )
+        piece = make_piece(hook=hook, content=content)
+        edition = make_edition(pieces=[piece])
+
+        html = render_edition_html(edition, WEB_BASE_URL)
+
+        content_region = html.split('<div style="font-size: 16px;">', 1)[1].split('</div>', 1)[0]
+        assert hook not in content_region
 
 
 class TestPlainTextRendering:
@@ -167,6 +216,42 @@ class TestPlainTextRendering:
 
         assert "QUICK TAKES" in text
         assert "Quick Take Paper" in text
+
+    def test_email_text_does_not_duplicate_hook(self):
+        # In plain text the hook is printed once as its own line (the byline),
+        # so without the fix it appears twice: once as the byline and again as
+        # the opening line of the rendered body. The fix strips the duplicated
+        # leading paragraph, leaving exactly one occurrence.
+        hook = "Models fail on most realistic tasks."
+        content = (
+            f"{hook}\n\n"
+            "## The Problem\nProblem text.\n\n"
+            "## What They Did\nApproach text.\n\n"
+            "## The Results\nResults text.\n\n"
+            "## Why It Matters\nMatters text."
+        )
+        piece = make_piece(hook=hook, content=content)
+        edition = make_edition(pieces=[piece])
+
+        text = render_edition_text(edition, WEB_BASE_URL)
+
+        assert text.count(hook) == 1
+
+    def test_editor_note_in_email_text(self):
+        """When editor_note is present, it should appear at the top, before the first piece."""
+        edition = make_edition(editor_note="This week, one clear throughline about agents.")
+        text = render_edition_text(edition, WEB_BASE_URL)
+
+        note = "This week, one clear throughline about agents."
+        assert note in text
+        assert text.index(note) < text.index(edition.pieces[0].title.upper())
+
+    def test_no_editor_note_unchanged_in_email_text(self):
+        """Without editor_note, plain text output should not gain any new content."""
+        edition = make_edition()  # no editor_note
+        text = render_edition_text(edition, WEB_BASE_URL)
+
+        assert "This week" not in text
 
 
 class TestButtondownConfig:

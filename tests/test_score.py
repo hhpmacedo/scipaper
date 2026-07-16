@@ -156,6 +156,32 @@ class TestSocialSignalScore:
         assert _social_signal_score(paper) == 0.0
 
 
+class TestCommunitySignalScore:
+    def test_hf_upvotes_raise_social_score(self):
+        paper = make_paper(hn_points=0, twitter_mentions=0, reddit_score=0, hf_upvotes=100)
+        assert _social_signal_score(paper) == 1.0
+
+    def test_github_stars_raise_social_score(self):
+        paper = make_paper(hn_points=0, twitter_mentions=0, reddit_score=0, github_stars=250)
+        assert _social_signal_score(paper) == 0.5
+
+    def test_no_community_signals(self):
+        paper = make_paper(hn_points=0, twitter_mentions=0, reddit_score=0, hf_upvotes=0, github_stars=0)
+        assert _social_signal_score(paper) == 0.0
+
+    def test_hf_upvotes_raise_relevance_score(self):
+        anchor = make_anchor()
+        base = dict(
+            arxiv_id="a", title="agents paper", abstract="about agents",
+            hn_points=0, twitter_mentions=0, reddit_score=0,
+        )
+        plain = Paper(**base)
+        with_upvotes = Paper(**base, hf_upvotes=200)
+        s_plain = run_async(score_relevance(plain, anchor))
+        s_with_upvotes = run_async(score_relevance(with_upvotes, anchor))
+        assert s_with_upvotes > s_plain
+
+
 class TestScoreRelevance:
     def test_relevant_paper_scores_high(self):
         paper = make_paper()
@@ -181,6 +207,70 @@ class TestScoreRelevance:
         anchor = make_anchor()
         score = run_async(score_relevance(paper, anchor))
         assert 1.0 <= score <= 10.0
+
+
+def test_quality_signal_raises_relevance():
+    from scipaper.curate.score import score_relevance, ScoringConfig
+    from scipaper.curate.models import Paper, AnchorDocument
+    from .conftest import run_async
+    from datetime import datetime, timezone
+
+    anchor = AnchorDocument(week="2026-W29", updated_by="t", updated_at=datetime.now(timezone.utc),
+                            hot_topics=["agents"])
+    base = dict(arxiv_id="a", title="agents paper", abstract="about agents")
+    plain = Paper(**base)
+    strong = Paper(**base, influential_citation_count=20, max_author_h_index=60)
+    s_plain = run_async(score_relevance(plain, anchor, ScoringConfig()))
+    s_strong = run_async(score_relevance(strong, anchor, ScoringConfig()))
+    assert s_strong > s_plain
+
+
+def test_scoring_weights_sum_to_one():
+    from scipaper.curate.score import ScoringConfig
+    c = ScoringConfig()
+    total = (c.topic_match_weight + c.keyword_match_weight + c.institution_weight
+             + c.citation_velocity_weight + c.social_signal_weight + c.quality_signal_weight
+             + c.prestige_weight + c.recency_weight)
+    assert abs(total - 1.0) < 1e-9
+
+
+def test_fresher_paper_scores_at_least_as_high_when_signals_equal():
+    from scipaper.curate.score import score_relevance, ScoringConfig
+    from scipaper.curate.models import Paper, AnchorDocument
+    from .conftest import run_async
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    anchor = AnchorDocument(week="2026-W29", updated_by="t", updated_at=now, hot_topics=["agents"])
+    base = dict(title="agents", abstract="agents")
+    fresh = Paper(arxiv_id="a", published_date=now - timedelta(days=2), **base)
+    old = Paper(arxiv_id="b", published_date=now - timedelta(days=25), **base)
+    assert run_async(score_relevance(fresh, anchor, ScoringConfig())) >= run_async(score_relevance(old, anchor, ScoringConfig()))
+
+
+def test_strong_traction_old_paper_beats_fresh_empty():
+    from scipaper.curate.score import score_relevance, ScoringConfig
+    from scipaper.curate.models import Paper, AnchorDocument
+    from .conftest import run_async
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    anchor = AnchorDocument(week="2026-W29", updated_by="t", updated_at=now, hot_topics=["agents"])
+    base = dict(title="agents", abstract="agents")
+    fresh_empty = Paper(arxiv_id="a", published_date=now - timedelta(days=1), **base)
+    old_strong = Paper(arxiv_id="b", published_date=now - timedelta(days=25),
+                       hf_upvotes=300, citation_count=50, influential_citation_count=20, **base)
+    assert run_async(score_relevance(old_strong, anchor, ScoringConfig())) > run_async(score_relevance(fresh_empty, anchor, ScoringConfig()))
+
+
+def test_prestige_lab_raises_relevance():
+    from scipaper.curate.score import score_relevance, ScoringConfig
+    from scipaper.curate.models import Paper, Author, AnchorDocument
+    from .conftest import run_async
+    from datetime import datetime, timezone
+    anchor = AnchorDocument(week="2026-W29", updated_by="t", updated_at=datetime.now(timezone.utc), hot_topics=["agents"])
+    cfg = ScoringConfig(prestige={"labs": ["deepmind"], "authors": []})
+    plain = Paper(arxiv_id="a", title="agents", abstract="agents", authors=[Author(name="X", affiliation="Startup")])
+    prestige = Paper(arxiv_id="b", title="agents", abstract="agents", authors=[Author(name="Y", affiliation="Google DeepMind")])
+    assert run_async(score_relevance(prestige, anchor, cfg)) > run_async(score_relevance(plain, anchor, cfg))
 
 
 class TestParseScoreResponse:

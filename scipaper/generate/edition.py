@@ -9,7 +9,10 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 from datetime import datetime, timezone
 
+import anthropic
+
 from .writer import Piece
+from ..config import get_config
 from ..curate.models import ScoredPaper
 from ..retry import api_retry
 
@@ -36,6 +39,21 @@ Paper Abstract: {abstract}
 Return ONLY a JSON object:
 {{"one_liner": "<your one-sentence quick take>"}}
 """
+
+
+EDITOR_NOTE_PROMPT = """You are the editor of Signal, a weekly newsletter that explains AI research to software engineers and PMs who use AI daily but don't read papers.
+
+Write a 60-100 word "Editor's Note" that opens this week's edition. It must:
+- Find the genuine throughline across the pieces below (a shared tension, a theme, or a useful contrast) — do NOT just list them.
+- Be the MOST accessible text in the issue: plain language, no jargon, no piece titles dumped in a row.
+- Have a point of view — what this week means for someone building with or deciding on AI.
+- Zero hype. No "revolutionary", "breakthrough", "game-changing". State things plainly.
+- End with one sentence orienting the reader ("If you read one thing this week...").
+
+This week's pieces (hook — signal block):
+{pieces_block}
+
+Return ONLY the note text, no preamble, no heading."""
 
 
 @dataclass
@@ -68,6 +86,9 @@ class Edition:
     papers_considered: int = 0
     papers_rejected: int = 0
 
+    # Machine-generated connective throughline shown at the top of the edition.
+    editor_note: Optional[str] = None
+
     def __post_init__(self):
         if self.created_at is None:
             self.created_at = datetime.now(timezone.utc)
@@ -79,6 +100,27 @@ class AssemblyConfig:
     max_pieces: int = 5
     max_quick_takes: int = 5
     target_word_count: int = 5000
+
+
+EDITION_WORD_BUDGET = 3000
+
+
+def check_edition_length(edition: "Edition", budget: int = EDITION_WORD_BUDGET) -> bool:
+    """
+    Return True if the edition's total feature word count is within budget.
+
+    Non-fatal: logs a warning (does not raise) when over budget. The edition
+    still ships regardless of the result — this check must never block a
+    publish.
+    """
+    total = sum(p.word_count for p in edition.pieces)
+    if total > budget:
+        logger.warning(
+            f"Edition {edition.week} is {total} words (> {budget} budget); "
+            f"tighten the longest pieces."
+        )
+        return False
+    return True
 
 
 async def assemble_edition(
@@ -130,6 +172,14 @@ async def assemble_edition(
         f"{len(quick_takes)} quick takes, "
         f"{total_words} words"
     )
+
+    # Autonomous, degradable Editor's Note: never raises, returns None on
+    # any failure so the edition still assembles and ships.
+    edition.editor_note = await generate_editor_note(edition.pieces, config)
+
+    # Non-fatal length check: logs a warning if over budget but never blocks
+    # publishing.
+    check_edition_length(edition)
 
     return edition
 
@@ -210,6 +260,42 @@ async def _llm_quick_take(
     except (json.JSONDecodeError, KeyError):
         # If not JSON, treat entire response as the one-liner
         return text.strip('"').strip()
+
+
+async def generate_editor_note(
+    pieces: List[Piece],
+    config: Optional[AssemblyConfig] = None,
+) -> Optional[str]:
+    """
+    Generate the edition's Editor's Note throughline.
+
+    Degradable: returns None on any failure (missing pieces, API error) so
+    the edition still ships and the renderers fall back to per-piece bullets.
+    This must never raise — it's part of the fully autonomous pipeline and
+    cannot be allowed to block a publish.
+    """
+    config = config or AssemblyConfig()
+    if not pieces:
+        return None
+
+    pieces_block = "\n".join(
+        f"- {p.hook} — {(p.signal_block or '').strip()}" for p in pieces
+    )
+    prompt = EDITOR_NOTE_PROMPT.format(pieces_block=pieces_block)
+
+    try:
+        signal_config = get_config()
+        client = anthropic.AsyncAnthropic(api_key=signal_config.anthropic_api_key)
+        response = await client.messages.create(
+            model=signal_config.llm_model,
+            max_tokens=400,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text = response.content[0].text.strip()
+        return text or None
+    except Exception as e:
+        logger.warning(f"Editor's Note generation failed ({e}); edition ships without it")
+        return None
 
 
 def _fallback_quick_take(paper: ScoredPaper) -> QuickTake:

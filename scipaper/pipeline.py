@@ -12,6 +12,7 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 
@@ -60,6 +61,9 @@ class PipelineConfig:
     skip_pdf_download: bool = False  # For testing without network
     use_cache: bool = True
     cache_db_path: Path = Path("data/cache.db")
+    backlog_path: Path = Path("data/backlog.json")
+    rolling_window_days: int = 28
+    use_rolling_window: bool = True
 
 
 @dataclass
@@ -105,7 +109,29 @@ async def run_pipeline(
     result.papers_ingested = len(papers)
     logger.info(f"Ingested {len(papers)} papers")
 
-    scored = await score_papers_two_pass(papers, anchor, config.scoring)
+    pool = papers
+    backlog = None
+    if config.use_rolling_window:
+        try:
+            from .curate.backlog import Backlog
+
+            backlog = Backlog(config.backlog_path)
+            backlog.merge_new(papers, seen_at=datetime.now(timezone.utc))
+            eligible = backlog.eligible(within_days=config.rolling_window_days)
+            # Prefer the in-memory paper (may carry full_text or other
+            # transient fields the backlog doesn't persist) over the
+            # reconstructed backlog copy for anything ingested this run.
+            fresh_by_id = {p.arxiv_id: p for p in papers}
+            pool = [fresh_by_id.get(p.arxiv_id, p) for p in eligible]
+            if not pool:  # empty backlog window → don't starve the edition
+                pool = papers
+            logger.info(f"Rolling window: {len(pool)} eligible ({len(papers)} fresh)")
+        except Exception as e:
+            logger.warning(f"Backlog unavailable ({e}); using fresh papers only")
+            pool = papers
+            backlog = None
+
+    scored = await score_papers_two_pass(pool, anchor, config.scoring)
     result.papers_scored = len(scored)
     logger.info(f"Scored {len(scored)} papers")
 
@@ -113,6 +139,7 @@ async def run_pipeline(
     runners_up = get_runners_up(scored, selected)
     result.papers_selected = len(selected)
     logger.info(f"Selected {len(selected)} papers, {len(runners_up)} runners-up")
+
     logger.info(f"Stage 1 complete in {time.time() - stage_start:.1f}s")
 
     # ── Stage 2: Generate ────────────────────────────────────────────
@@ -258,6 +285,19 @@ async def run_pipeline(
         f"{len(edition.quick_takes)} quick takes, "
         f"{edition.total_words} words"
     )
+
+    # Only now — after we know which papers actually made it into the
+    # published edition — mark them covered. A paper that was selected but
+    # dropped during generation or verification must stay eligible so it
+    # can be reconsidered next week as its traction keeps accruing.
+    if backlog is not None:
+        try:
+            covered_ids = [p.paper_id for p in edition.pieces] + [
+                qt.paper_id for qt in edition.quick_takes
+            ]
+            backlog.mark_covered(covered_ids, week=edition_week)
+        except Exception as e:
+            logger.warning(f"Failed to mark covered: {e}")
 
     # Email — skip on idempotent re-runs to avoid duplicate Buttondown drafts.
     if config.email:

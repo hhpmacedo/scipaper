@@ -15,6 +15,86 @@ from scipaper.curate.select import (
 )
 
 
+def _mk(pid, cats, score):
+    from scipaper.curate.models import Paper, ScoredPaper
+    paper = Paper(arxiv_id=pid, title=f"t{pid}", abstract="a", categories=cats)
+    return ScoredPaper(
+        paper=paper,
+        relevance_score=score,
+        narrative_potential_score=score,
+        composite_score=score,
+    )
+
+
+def test_primary_area_maps_categories():
+    from scipaper.curate.models import primary_area, Paper
+    assert primary_area(Paper(arxiv_id="1", title="", abstract="", categories=["cs.RO", "cs.AI"])) == "robotics"
+    assert primary_area(Paper(arxiv_id="2", title="", abstract="", categories=["cs.CL"])) == "nlp"
+    assert primary_area(Paper(arxiv_id="3", title="", abstract="", categories=["cs.LG"])) == "ml-methods"
+    assert primary_area(Paper(arxiv_id="4", title="", abstract="", categories=[])) == "other"
+
+
+def test_selection_spans_min_distinct_areas():
+    from scipaper.curate.select import select_edition_papers, SelectionConfig
+    from scipaper.curate.models import primary_area
+    papers = (
+        [_mk(f"a{i}", ["cs.AI"], score=9.0) for i in range(6)]
+        + [_mk("r1", ["cs.RO"], score=6.0), _mk("v1", ["cs.CV"], score=6.0)]
+    )
+    selected = select_edition_papers(papers, SelectionConfig(target_count=5, min_distinct_areas=3, max_same_topic=2))
+    areas = {primary_area(p.paper) for p in selected}
+    assert len(areas) >= 3
+    assert "robotics" in areas and "vision" in areas
+
+
+def test_span_pass_swaps_out_lowest_when_target_full():
+    # Greedy fills every target slot with over-represented (agents) papers before
+    # any missing-area paper is reached, so the span-pass MUST drop the lowest-
+    # scoring agent paper and swap in robotics. Exercises the drop+swap path.
+    from scipaper.curate.select import select_edition_papers, SelectionConfig
+    from scipaper.curate.models import primary_area
+    papers = [
+        _mk("hi", ["cs.AI"], score=9.0),
+        _mk("mid", ["cs.AI"], score=8.9),
+        _mk("lo", ["cs.AI"], score=8.8),
+        _mk("robo", ["cs.RO"], score=5.0),
+    ]
+    selected = select_edition_papers(
+        papers,
+        SelectionConfig(target_count=3, max_same_topic=5, min_distinct_areas=2),
+    )
+    selected_ids = {p.paper.arxiv_id for p in selected}
+    areas = {primary_area(p.paper) for p in selected}
+    assert "robo" in selected_ids          # missing area swapped in
+    assert "lo" not in selected_ids        # lowest-scoring agent paper dropped
+    assert len(areas) >= 2
+
+
+def test_span_pass_respects_institution_cap():
+    # The ONLY paper covering the missing area (nlp) is from an institution
+    # already at max_same_institution. Area diversity is a SOFT target and must
+    # NOT breach the HARD institution cap: the paper stays out, edition ships
+    # with fewer areas.
+    from scipaper.curate.select import select_edition_papers, SelectionConfig
+    from scipaper.curate.models import primary_area
+    papers = [
+        make_scored_paper(arxiv_id="1", relevance=9.0, narrative=9.0, affiliation="OpenAI Research", categories=["cs.AI"]),
+        make_scored_paper(arxiv_id="2", relevance=8.5, narrative=8.5, affiliation="OpenAI Research", categories=["cs.LG"]),
+        make_scored_paper(arxiv_id="3", relevance=8.0, narrative=8.0, affiliation="OpenAI Research", categories=["cs.CL"]),
+    ]
+    config = SelectionConfig(target_count=2, max_same_institution=2, min_distinct_areas=3, min_count=2)
+    selected = select_edition_papers(papers, config)
+
+    openai_count = sum(
+        1 for p in selected
+        if any("openai" in (a.affiliation or "").lower() for a in p.paper.authors)
+    )
+    assert openai_count <= 2
+    # The cs.CL (nlp) paper is OpenAI-at-cap, so it must not be swapped in.
+    assert "3" not in {p.paper.arxiv_id for p in selected}
+    assert "nlp" not in {primary_area(p.paper) for p in selected}
+
+
 def make_scored_paper(
     arxiv_id="2403.12345",
     relevance=7.0,
@@ -157,14 +237,16 @@ class TestGetInstitutions:
 
 
 class TestGetTopics:
-    def test_returns_categories(self):
+    def test_returns_primary_area(self):
+        # _get_topics now returns the coarse research AREA (single-element set),
+        # not the raw arXiv categories, so cap-per-area diversity actually bites.
         paper = Paper(
             arxiv_id="1",
             title="Test",
             abstract="Test",
             categories=["cs.AI", "cs.LG"],
         )
-        assert _get_topics(paper) == {"cs.AI", "cs.LG"}
+        assert _get_topics(paper) == {"agents"}
 
 
 class TestGetRunnersUp:

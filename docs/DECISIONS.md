@@ -109,6 +109,34 @@ The dual-depth architecture (builder path + executive path through the same arti
 
 ---
 
+### DEC-011: Style Constitution v1.2.0 — de-templatize editorial voice
+
+**Status:** RESOLVED
+**Priority:** HIGH
+**Owner:** Hugo
+
+**Context:**
+Reader-lens review of #16–#18 found the prose had become formulaic: a
+mandated production-timeline produced a reflexive "1–2 years out" clause on
+nearly every limitation; a mandated maturity sentence made every "Why It
+Matters" open with "lab proof-of-concept"; the hook was repeated verbatim as
+the article's opening paragraph; headline numbers were restated 3–4 times; and
+implications addressed only niche-infra builders rather than the actual reader.
+
+**Decision:**
+Amend the Style Constitution to v1.2.0: production-timeline and maturity-spectrum
+sentences become optional (allowed only when grounded), add a "state each number
+once" rule, forbid repeating the hook in the body, require dual-layer
+(builder + decision-maker) "Why It Matters", and add a per-edition length budget.
+
+**Rationale:**
+These tics all trace to *mandatory* prompt instructions, not to any editorial
+need. Making them optional and machine-checkable removes the sameness without a
+human review step. Part of the Phase 1 editorial-quality work (see
+docs/plans/2026-07-15-editorial-improvement-plan.md).
+
+---
+
 ## Decision Template
 
 ```markdown

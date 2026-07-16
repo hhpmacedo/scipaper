@@ -9,11 +9,51 @@ from enum import Enum
 
 
 class PaperCategory(str, Enum):
-    """ArXiv categories we track."""
-    CS_AI = "cs.AI"
-    CS_LG = "cs.LG"  
-    CS_CL = "cs.CL"
-    STAT_ML = "stat.ML"
+    """ArXiv categories we track. Broadened (Phase 2) to span the field, not just LLM/ML."""
+    CS_AI = "cs.AI"      # AI / agents / reasoning
+    CS_LG = "cs.LG"      # machine learning methods
+    CS_CL = "cs.CL"      # NLP / language
+    STAT_ML = "stat.ML"  # statistical ML
+    CS_CV = "cs.CV"      # computer vision
+    CS_RO = "cs.RO"      # robotics
+    CS_MA = "cs.MA"      # multi-agent systems
+    CS_HC = "cs.HC"      # human-computer interaction
+    CS_CY = "cs.CY"      # computers & society (policy, economics, ethics)
+    CS_SE = "cs.SE"      # software engineering
+    CS_CR = "cs.CR"      # security & cryptography
+    EESS_AS = "eess.AS"  # audio & speech
+
+
+# Coarse research areas for edition diversity. Maps arXiv category -> area label.
+CATEGORY_AREAS = {
+    "cs.CL": "nlp",
+    "cs.CV": "vision",
+    "eess.IV": "vision",
+    "cs.RO": "robotics",
+    "cs.AI": "agents",
+    "cs.MA": "agents",
+    "cs.LG": "ml-methods",
+    "stat.ML": "ml-methods",
+    "cs.HC": "hci",
+    "cs.CY": "society",
+    "cs.SE": "software",
+    "cs.CR": "security",
+    "eess.AS": "speech",
+}
+
+
+def primary_area(paper: "Paper") -> str:
+    """
+    Map a paper to ONE coarse research area via its primary (first) arXiv
+    category. Falls back to scanning all categories, then "other".
+    """
+    cats = paper.categories or []
+    if cats and cats[0] in CATEGORY_AREAS:
+        return CATEGORY_AREAS[cats[0]]
+    for c in cats:
+        if c in CATEGORY_AREAS:
+            return CATEGORY_AREAS[c]
+    return "other"
 
 
 @dataclass
@@ -43,12 +83,17 @@ class Paper:
     semantic_scholar_id: Optional[str] = None
     citation_count: int = 0
     reference_count: int = 0
-    
+    influential_citation_count: int = 0
+    max_author_h_index: int = 0
+
     # Social signals
     twitter_mentions: int = 0
     hn_points: int = 0
     reddit_score: int = 0
-    
+    hf_upvotes: int = 0
+    github_stars: int = 0
+    github_repo: Optional[str] = None  # "owner/repo", populated by community signal source when discoverable
+
     # Processing state
     ingested_at: Optional[datetime] = None
     pdf_parsed: bool = False

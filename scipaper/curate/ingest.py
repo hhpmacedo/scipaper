@@ -4,6 +4,7 @@ Paper ingestion from multiple sources.
 
 import asyncio
 import logging
+import os
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
@@ -27,10 +28,14 @@ class IngestConfig:
     categories: List[str] = None
     days_back: int = 7
     max_papers: int = 200
+    enable_twitter: bool = False
+    twitter_bearer_token: Optional[str] = None
 
     def __post_init__(self):
         if self.categories is None:
             self.categories = [c.value for c in PaperCategory]
+        if self.twitter_bearer_token is None:
+            self.twitter_bearer_token = os.environ.get("TWITTER_BEARER_TOKEN")
 
 
 class ArxivSource:
@@ -206,7 +211,7 @@ class SemanticScholarSource:
 
         url = (
             f"{self.BASE_URL}/paper/ArXiv:{paper.arxiv_id}"
-            f"?fields=citationCount,referenceCount,externalIds"
+            f"?fields=citationCount,referenceCount,influentialCitationCount,externalIds,authors.hIndex"
         )
 
         try:
@@ -230,7 +235,12 @@ class SemanticScholarSource:
             if ext_ids:
                 paper.semantic_scholar_id = ext_ids.get("CorpusId")
 
-        except httpx.HTTPError as e:
+            paper.influential_citation_count = data.get("influentialCitationCount", 0) or 0
+            authors = data.get("authors") or []
+            h_indices = [(a.get("hIndex") or 0) for a in authors]
+            paper.max_author_h_index = max(h_indices) if h_indices else 0
+
+        except Exception as e:
             logger.warning(f"Semantic Scholar lookup failed for {paper.arxiv_id}: {e}")
 
         return paper
@@ -242,9 +252,40 @@ class SocialSignalSource:
     These are optional enrichments — failures are silently ignored.
     """
 
-    async def get_twitter_mentions(self, paper: Paper) -> int:
-        """Count mentions on Twitter/X. Requires API access."""
-        # Twitter API requires paid access; return 0 as default
+    async def get_twitter_mentions(
+        self,
+        paper: Paper,
+        client: Optional[httpx.AsyncClient] = None,
+        enabled: bool = False,
+        bearer_token: Optional[str] = None,
+    ) -> int:
+        """
+        Count mentions on X/Twitter via the recent-search counts endpoint.
+
+        Off by default: makes NO network call unless explicitly enabled
+        AND a bearer token is configured. Any error degrades to 0.
+        """
+        if not enabled or not bearer_token:
+            return 0
+
+        try:
+            url = (
+                "https://api.twitter.com/2/tweets/counts/recent"
+                f"?query={paper.arxiv_id}"
+            )
+            headers = {"Authorization": f"Bearer {bearer_token}"}
+            if client:
+                response = await client.get(url, headers=headers, timeout=5.0)
+            else:
+                async with httpx.AsyncClient(timeout=5.0) as c:
+                    response = await c.get(url, headers=headers)
+            if response.status_code == 200:
+                response.raise_for_status()
+                data = response.json()
+                meta = data.get("meta") or {}
+                return int(meta.get("total_tweet_count", 0) or 0)
+        except Exception as e:
+            logger.debug(f"Twitter lookup failed for {paper.arxiv_id}: {e}")
         return 0
 
     async def get_hn_points(self, paper: Paper, client: Optional[httpx.AsyncClient] = None) -> int:
@@ -268,9 +309,75 @@ class SocialSignalSource:
             logger.debug(f"HN lookup failed for {paper.arxiv_id}: {e}")
         return 0
 
-    async def get_reddit_score(self, paper: Paper) -> int:
-        """Check r/MachineLearning for paper mentions."""
-        # Reddit API requires OAuth; return 0 as default
+    async def get_reddit_score(self, paper: Paper, client: Optional[httpx.AsyncClient] = None) -> int:
+        """Check r/MachineLearning for paper mentions and return the top post score."""
+        try:
+            url = (
+                "https://www.reddit.com/r/MachineLearning/search.json"
+                f"?q={paper.arxiv_id}&restrict_sr=1&sort=top"
+            )
+            headers = {"User-Agent": "signal-newsletter/1.0 (research aggregator)"}
+            if client:
+                response = await client.get(url, headers=headers, timeout=5.0)
+            else:
+                async with httpx.AsyncClient(timeout=5.0) as c:
+                    response = await c.get(url, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                children = (data.get("data") or {}).get("children") or []
+                scores = [
+                    (child.get("data") or {}).get("score", 0) or 0
+                    for child in children
+                ]
+                if scores:
+                    return max(scores)
+        except Exception as e:
+            logger.debug(f"Reddit lookup failed for {paper.arxiv_id}: {e}")
+        return 0
+
+
+class CommunitySignalSource:
+    """
+    Gather community signals (Hugging Face Papers upvotes, GitHub stars).
+
+    These are the most fragile external sources — any deviation in response
+    shape, any network error, any missing field must degrade to 0. Never raise.
+    """
+
+    async def get_hf_upvotes(self, paper: Paper, client: Optional[httpx.AsyncClient] = None) -> int:
+        """Look up Hugging Face Papers upvotes for this arXiv ID."""
+        try:
+            url = f"https://huggingface.co/api/papers/{paper.arxiv_id}"
+            if client:
+                response = await client.get(url, timeout=5.0)
+            else:
+                async with httpx.AsyncClient(timeout=5.0) as c:
+                    response = await c.get(url)
+            if response.status_code == 200:
+                response.raise_for_status()
+                data = response.json()
+                return int(data.get("upvotes", 0) or 0)
+        except Exception as e:
+            logger.debug(f"HF Papers lookup failed for {paper.arxiv_id}: {e}")
+        return 0
+
+    async def get_github_stars(self, paper: Paper, client: Optional[httpx.AsyncClient] = None) -> int:
+        """Look up GitHub stars for the paper's linked repo, if known."""
+        if not paper.github_repo:
+            return 0
+        try:
+            url = f"https://api.github.com/repos/{paper.github_repo}"
+            if client:
+                response = await client.get(url, timeout=5.0)
+            else:
+                async with httpx.AsyncClient(timeout=5.0) as c:
+                    response = await c.get(url)
+            if response.status_code == 200:
+                response.raise_for_status()
+                data = response.json()
+                return int(data.get("stargazers_count", 0) or 0)
+        except Exception as e:
+            logger.debug(f"GitHub stars lookup failed for {paper.github_repo}: {e}")
         return 0
 
 
@@ -306,9 +413,13 @@ async def ingest_papers(config: IngestConfig = None, client: Optional[httpx.Asyn
     # Enrich concurrently with rate limiting
     semantic = SemanticScholarSource()
     social = SocialSignalSource()
+    community = CommunitySignalSource()
 
     sem_scholar = asyncio.Semaphore(10)
     sem_hn = asyncio.Semaphore(5)
+    sem_reddit = asyncio.Semaphore(5)
+    sem_twitter = asyncio.Semaphore(5)
+    sem_comm = asyncio.Semaphore(5)
 
     async def _enrich_one(paper):
         async with sem_scholar:
@@ -319,6 +430,28 @@ async def ingest_papers(config: IngestConfig = None, client: Optional[httpx.Asyn
         async with sem_hn:
             try:
                 paper.hn_points = await social.get_hn_points(paper, client)
+            except Exception:
+                pass
+        async with sem_reddit:
+            try:
+                paper.reddit_score = await social.get_reddit_score(paper, client)
+            except Exception:
+                pass
+        if config.enable_twitter:
+            async with sem_twitter:
+                try:
+                    paper.twitter_mentions = await social.get_twitter_mentions(
+                        paper, client, enabled=True, bearer_token=config.twitter_bearer_token
+                    )
+                except Exception:
+                    pass
+        async with sem_comm:
+            try:
+                paper.hf_upvotes = await community.get_hf_upvotes(paper, client)
+            except Exception:
+                pass
+            try:
+                paper.github_stars = await community.get_github_stars(paper, client)
             except Exception:
                 pass
         return paper

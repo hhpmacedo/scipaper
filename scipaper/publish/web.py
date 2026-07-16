@@ -11,6 +11,7 @@ from typing import List, Optional
 from xml.sax.saxutils import escape as xml_escape
 
 from ..generate.edition import Edition
+from ..text_utils import strip_leading_hook
 from .email import _content_to_html
 
 logger = logging.getLogger(__name__)
@@ -182,7 +183,7 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
 
     pieces_html = []
     for i, piece in enumerate(edition.pieces):
-        content_html = _content_to_html(piece.content)
+        content_html = _content_to_html(strip_leading_hook(piece.content, piece.hook))
         paper_url = piece.paper_url or f"https://arxiv.org/abs/{piece.paper_id}"
         title_html = f'<a href="{escape(paper_url)}">{escape(piece.title)}</a>'
         authors_html = ""
@@ -227,6 +228,9 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
                 f'{escape(piece.signal_block.strip())}'
                 f'</aside>'
             )
+        relevance_note_html = ""
+        if getattr(piece, "relevance_note", None) and piece.relevance_note.strip():
+            relevance_note_html = f'<p class="relevance-note">{escape(piece.relevance_note.strip())}</p>'
 
         pieces_html.append(
             f'<article class="piece" id="{escape(piece.paper_id)}">'
@@ -235,6 +239,7 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
             f'<p class="hook">{escape(piece.hook)}</p>'
             f'{signal_block_html}'
             f'{abstract_html}'
+            f'{relevance_note_html}'
             f'{hero_figure_html}'
             f'<div class="content">{content_html}</div>'
             f'</article>'
@@ -277,25 +282,34 @@ def generate_edition_page(edition: Edition, config: Optional[WebConfig] = None) 
             f'</section>'
         )
 
-    # Issue summary: one line per piece, derived from signal_block first sentence
+    # Lead: the editor's note when present (machine-generated connective throughline),
+    # else fall back to one bullet per piece derived from signal_block first sentence.
     issue_summary_html = ""
-    summary_lines = []
-    for piece in edition.pieces:
-        if piece.signal_block and piece.signal_block.strip():
-            # Use the first sentence of the signal block
-            first_sentence = piece.signal_block.strip().split(". ")[0]
-            if not first_sentence.endswith("."):
-                first_sentence += "."
-            summary_lines.append(f'<li>{escape(first_sentence)}</li>')
-        elif piece.hook:
-            summary_lines.append(f'<li>{escape(piece.hook)}</li>')
-    if summary_lines:
+    if getattr(edition, "editor_note", None) and edition.editor_note.strip():
         issue_summary_html = (
-            f'<div class="issue-summary">'
-            f'<p class="issue-summary-label">This week in Signal</p>'
-            f'<ul>{"".join(summary_lines)}</ul>'
+            f'<div class="editor-note">'
+            f'<p class="editor-note-label">This week in Signal</p>'
+            f'<p class="editor-note-body">{escape(edition.editor_note.strip())}</p>'
             f'</div>'
         )
+    else:
+        summary_lines = []
+        for piece in edition.pieces:
+            if piece.signal_block and piece.signal_block.strip():
+                # Use the first sentence of the signal block
+                first_sentence = piece.signal_block.strip().split(". ")[0]
+                if not first_sentence.endswith("."):
+                    first_sentence += "."
+                summary_lines.append(f'<li>{escape(first_sentence)}</li>')
+            elif piece.hook:
+                summary_lines.append(f'<li>{escape(piece.hook)}</li>')
+        if summary_lines:
+            issue_summary_html = (
+                f'<div class="issue-summary">'
+                f'<p class="issue-summary-label">This week in Signal</p>'
+                f'<ul>{"".join(summary_lines)}</ul>'
+                f'</div>'
+            )
 
     og_description = edition.pieces[0].hook if edition.pieces else "AI research, translated."
     og_title = f"Signal #{edition.issue_number} — {edition.week}"
@@ -330,6 +344,7 @@ header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; let
 .structured-abstract {{ list-style: none; padding: 0; margin: 0 0 20px; font-size: 15px; color: #333; }}
 .structured-abstract li {{ margin-bottom: 6px; }}
 .structured-abstract strong {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #000; }}
+.relevance-note {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; color: #888; margin: 4px 0 12px; }}
 .hero-figure {{ margin: 24px 0; }}
 .hero-figure img {{ max-width: 100%; height: auto; border: 2px solid #000; display: block; }}
 .hero-figure figcaption {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 13px; color: #666; margin-top: 8px; }}
@@ -349,6 +364,9 @@ header p {{ font-size: 14px; font-weight: 400; color: #000; margin-top: 8px; let
 .issue-summary ul {{ list-style: none; padding: 0; margin: 0; }}
 .issue-summary li {{ font-size: 15px; line-height: 1.5; padding: 8px 0; border-bottom: 1px solid #e0e0e0; color: #222; }}
 .issue-summary li:last-child {{ border-bottom: none; }}
+.editor-note {{ margin: 0 0 28px; }}
+.editor-note-label {{ font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 900; text-transform: uppercase; font-size: 13px; letter-spacing: 0.04em; color: #666; margin-bottom: 6px; }}
+.editor-note-body {{ font-size: 18px; line-height: 1.5; }}
 .quick-takes {{ margin-top: 40px; padding-top: 30px; border-top: 4px solid #000; }}
 .quick-takes h2 {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }}
 .quick-takes ul {{ list-style: none; padding: 0; }}

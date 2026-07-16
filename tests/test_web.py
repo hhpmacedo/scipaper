@@ -115,6 +115,71 @@ class TestGenerateEditionPage:
         html = generate_edition_page(edition)
         assert 'id="2403.12345"' in html
 
+    def test_rendered_html_does_not_duplicate_hook(self):
+        # NOTE: the hook legitimately appears multiple times on the page
+        # (og:description, twitter:description, meta description, the
+        # `<p class="hook">` byline, and the issue-summary fallback line),
+        # so a whole-page `html.count(hook) == 1` assertion cannot hold
+        # regardless of this fix. What the fix actually changes is whether
+        # the hook is ALSO duplicated as the opening paragraph of the
+        # rendered content — so scope the assertion to that region.
+        hook = "Models fail on most realistic tasks."
+        content = (
+            f"{hook}\n\n"
+            "## The Problem\nProblem text.\n\n"
+            "## What They Did\nApproach text.\n\n"
+            "## The Results\nResults text.\n\n"
+            "## Why It Matters\nMatters text."
+        )
+        piece = make_piece(hook=hook)
+        piece.content = content
+        edition = make_edition(pieces=[piece])
+
+        html = generate_edition_page(edition)
+
+        content_region = html.split('<div class="content">', 1)[1].split('</div>', 1)[0]
+        assert hook not in content_region
+
+    def test_editor_note_rendered_as_lead(self):
+        piece = Piece(
+            paper_id="1", title="A Title For The Piece Here", hook="Hook one.",
+            content="## The Problem\nX [§1].\n\n## Why It Matters\nY [§2].",
+            word_count=50, citations=[], generated_at="t", model_used="t",
+            signal_block="Hook one. It is emerging. It informs a decision.",
+        )
+        ed = Edition(
+            week="2026-W29", issue_number=18, pieces=[piece], quick_takes=[],
+            editor_note="This week, one clear throughline about agents.",
+        )
+        html = generate_edition_page(ed, WebConfig())
+        assert "This week, one clear throughline about agents." in html
+
+    def test_relevance_note_rendered_when_present(self):
+        piece = make_piece()
+        piece.relevance_note = "Why now: 120 upvotes on Hugging Face Papers."
+        edition = make_edition(pieces=[piece])
+        html = generate_edition_page(edition)
+        assert 'class="relevance-note"' in html
+        assert "Why now: 120 upvotes on Hugging Face Papers." in html
+
+    def test_no_relevance_note_markup_when_absent(self):
+        piece = make_piece()
+        piece.relevance_note = None
+        edition = make_edition(pieces=[piece])
+        html = generate_edition_page(edition)
+        assert 'class="relevance-note"' not in html
+
+    def test_falls_back_to_bullets_without_editor_note(self):
+        piece = Piece(
+            paper_id="1", title="A Title For The Piece Here", hook="Hook one.",
+            content="## The Problem\nX [§1].", word_count=50, citations=[],
+            generated_at="t", model_used="t",
+            signal_block="Hook one. It is emerging. It informs a decision.",
+        )
+        ed = Edition(week="2026-W29", issue_number=18, pieces=[piece], quick_takes=[])  # no note
+        html = generate_edition_page(ed, WebConfig())
+        assert "This week in Signal" in html
+
 
 class TestGenerateIndexPage:
     def test_valid_html(self):

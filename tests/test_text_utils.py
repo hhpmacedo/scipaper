@@ -56,3 +56,49 @@ def test_strips_appendix():
     from scipaper.text_utils import prepare_text_for_llm
     result = prepare_text_for_llm(text, max_chars=5000)
     assert "Supplementary material" not in result
+
+
+from scipaper.text_utils import strip_leading_hook
+
+
+def test_strip_leading_hook_removes_duplicated_hook():
+    hook = "You can now identify which AI wrote a snippet with 87% accuracy."
+    content = (
+        "You can now identify which AI wrote a snippet with 87% accuracy.\n\n"
+        "## The Problem\nAttribution is hard [§1]."
+    )
+    result = strip_leading_hook(content, hook)
+    assert result.startswith("## The Problem")
+    assert "87% accuracy" not in result.split("## The Problem")[0]
+
+
+def test_strip_leading_hook_leaves_clean_content_untouched():
+    hook = "You can now identify which AI wrote a snippet."
+    content = "## The Problem\nAttribution is hard [§1]."
+    assert strip_leading_hook(content, hook) == content
+
+
+def test_strip_leading_hook_matches_despite_whitespace_and_case():
+    hook = "A single misleading document can override five accurate ones."
+    content = (
+        "A single   misleading document can override five accurate ones.\n\n"
+        "## The Problem\nRAG is messy."
+    )
+    assert strip_leading_hook(content, hook).startswith("## The Problem")
+
+
+def test_strip_leading_hook_does_not_strip_long_paragraph():
+    # A real Problem paragraph that merely shares opening words must survive.
+    hook = "Models fail on noisy inputs."
+    content = (
+        "Models fail on noisy inputs in ways that matter enormously for anyone "
+        "shipping to production, and this section explains exactly why that "
+        "happens across a dozen distinct failure modes that compound.\n\n"
+        "## The Problem\nMore detail."
+    )
+    assert strip_leading_hook(content, hook) == content
+
+
+def test_strip_leading_hook_handles_empty():
+    assert strip_leading_hook("", "hook") == ""
+    assert strip_leading_hook("content", "") == "content"

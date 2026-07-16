@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 
 from .models import Paper, AnchorDocument, ScoredPaper
+from .prestige import load_prestige, prestige_score
 from ..retry import api_retry
 
 logger = logging.getLogger(__name__)
@@ -20,11 +21,18 @@ logger = logging.getLogger(__name__)
 class ScoringConfig:
     """Configuration for scoring."""
     # Weights for relevance scoring components
-    topic_match_weight: float = 0.35
+    topic_match_weight: float = 0.20
     keyword_match_weight: float = 0.20
     institution_weight: float = 0.15
-    citation_velocity_weight: float = 0.15
+    citation_velocity_weight: float = 0.10
     social_signal_weight: float = 0.15
+    quality_signal_weight: float = 0.10
+    prestige_weight: float = 0.05
+    recency_weight: float = 0.05
+    recency_half_life_days: float = 14.0
+
+    # Curated prestige list (labs/authors). None means "load default lazily".
+    prestige: Optional[dict] = None
 
     # LLM settings for narrative potential
     llm_provider: str = "anthropic"
@@ -134,7 +142,40 @@ def _social_signal_score(paper: Paper) -> float:
     if paper.reddit_score > 0:
         score = max(score, min(paper.reddit_score / 100.0, 1.0))
 
+    # Hugging Face Papers: 50+ upvotes is notable
+    if paper.hf_upvotes > 0:
+        score = max(score, min(paper.hf_upvotes / 50.0, 1.0))
+
+    # GitHub stars: 500+ stars is notable
+    if paper.github_stars > 0:
+        score = max(score, min(paper.github_stars / 500.0, 1.0))
+
     return score
+
+
+def _quality_signal(paper) -> float:
+    """Influential citations + top author h-index, normalized 0-1."""
+    infl = min((getattr(paper, "influential_citation_count", 0) or 0) / 10.0, 1.0)
+    hidx = min((getattr(paper, "max_author_h_index", 0) or 0) / 60.0, 1.0)
+    return max(infl, hidx)
+
+
+def _recency_signal(paper: Paper, half_life_days: float = 14.0) -> float:
+    """
+    1.0 for a paper published today, decaying with the given half-life.
+    0.5 at one half-life, 0.25 at two half-lives, etc.
+    A small weighted tiebreaker in favor of fresher papers -- not a
+    multiplier, so it cannot override real traction signals.
+    """
+    if not paper.published_date:
+        return 0.5
+
+    from datetime import datetime, timezone
+    days = (datetime.now(timezone.utc).replace(tzinfo=None) - paper.published_date.replace(tzinfo=None)).days
+    if days <= 0:
+        return 1.0
+
+    return 0.5 ** (days / half_life_days)
 
 
 def _declining_topic_penalty(paper: Paper, anchor: AnchorDocument) -> float:
@@ -166,6 +207,7 @@ async def score_relevance(
     Returns float between 1 and 10.
     """
     config = config or ScoringConfig()
+    prestige = config.prestige if config.prestige is not None else load_prestige()
 
     # Compute individual components (each 0-1)
     topic_sim = _text_similarity(
@@ -175,6 +217,9 @@ async def score_relevance(
     institution = _institution_score(paper, anchor)
     citation_vel = _citation_velocity(paper)
     social = _social_signal_score(paper)
+    quality = _quality_signal(paper)
+    prestige_component = prestige_score(paper, prestige)
+    recency = _recency_signal(paper, config.recency_half_life_days)
 
     # Weighted combination (0-1 scale)
     raw_score = (
@@ -183,6 +228,9 @@ async def score_relevance(
         + institution * config.institution_weight
         + citation_vel * config.citation_velocity_weight
         + social * config.social_signal_weight
+        + quality * config.quality_signal_weight
+        + prestige_component * config.prestige_weight
+        + recency * config.recency_weight
     )
 
     # Apply declining topic penalty
@@ -195,7 +243,8 @@ async def score_relevance(
     logger.debug(
         f"Relevance for {paper.arxiv_id}: {score:.1f} "
         f"(topic={topic_sim:.2f}, kw={keyword:.2f}, inst={institution:.2f}, "
-        f"cite={citation_vel:.2f}, social={social:.2f})"
+        f"cite={citation_vel:.2f}, social={social:.2f}, quality={quality:.2f}, "
+        f"recency={recency:.2f})"
     )
 
     return round(score, 2)
@@ -409,6 +458,8 @@ async def score_papers(
     Returns list of ScoredPaper objects sorted by composite score.
     """
     config = config or ScoringConfig()
+    if config.prestige is None:
+        config.prestige = load_prestige()
     scored = []
 
     for paper in papers:
@@ -444,6 +495,8 @@ async def score_papers_two_pass(
     only for the top N candidates.
     """
     config = config or ScoringConfig()
+    if config.prestige is None:
+        config.prestige = load_prestige()
 
     # Pass 1: score relevance for all papers (no LLM, instant)
     relevance_scores = {}
