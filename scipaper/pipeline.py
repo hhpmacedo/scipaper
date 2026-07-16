@@ -140,14 +140,6 @@ async def run_pipeline(
     result.papers_selected = len(selected)
     logger.info(f"Selected {len(selected)} papers, {len(runners_up)} runners-up")
 
-    if backlog is not None:
-        try:
-            backlog.mark_covered(
-                [sp.paper.arxiv_id for sp in selected], week=config.week or anchor.week
-            )
-        except Exception as e:
-            logger.warning(f"Failed to mark covered: {e}")
-
     logger.info(f"Stage 1 complete in {time.time() - stage_start:.1f}s")
 
     # ── Stage 2: Generate ────────────────────────────────────────────
@@ -293,6 +285,19 @@ async def run_pipeline(
         f"{len(edition.quick_takes)} quick takes, "
         f"{edition.total_words} words"
     )
+
+    # Only now — after we know which papers actually made it into the
+    # published edition — mark them covered. A paper that was selected but
+    # dropped during generation or verification must stay eligible so it
+    # can be reconsidered next week as its traction keeps accruing.
+    if backlog is not None:
+        try:
+            covered_ids = [p.paper_id for p in edition.pieces] + [
+                qt.paper_id for qt in edition.quick_takes
+            ]
+            backlog.mark_covered(covered_ids, week=edition_week)
+        except Exception as e:
+            logger.warning(f"Failed to mark covered: {e}")
 
     # Email — skip on idempotent re-runs to avoid duplicate Buttondown drafts.
     if config.email:

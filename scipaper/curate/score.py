@@ -458,6 +458,8 @@ async def score_papers(
     Returns list of ScoredPaper objects sorted by composite score.
     """
     config = config or ScoringConfig()
+    if config.prestige is None:
+        config.prestige = load_prestige()
     scored = []
 
     for paper in papers:
@@ -493,6 +495,8 @@ async def score_papers_two_pass(
     only for the top N candidates.
     """
     config = config or ScoringConfig()
+    if config.prestige is None:
+        config.prestige = load_prestige()
 
     # Pass 1: score relevance for all papers (no LLM, instant)
     relevance_scores = {}

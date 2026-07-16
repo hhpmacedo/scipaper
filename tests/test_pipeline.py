@@ -398,6 +398,62 @@ class TestEndToEndPipeline:
         eligible_ids = {p.arxiv_id for p in bl.eligible(within_days=28)}
         assert selected_ids.isdisjoint(eligible_ids)
 
+    def test_pipeline_only_covers_papers_that_reach_the_edition(self, tmp_path):
+        """A paper that gets SELECTED but then DROPPED (generation failure)
+        must stay eligible in the backlog -- only papers that actually make
+        it into the published edition should be marked covered."""
+        papers = make_sample_papers()[:2]
+        dropped_paper, published_paper = papers[1], papers[0]
+        anchor = make_anchor()
+        config = self._make_config(tmp_path)
+        config.selection = SelectionConfig(target_count=2, min_count=2)
+        config.backlog_path = tmp_path / "backlog.json"
+        config.use_rolling_window = True
+
+        async def flaky_generate(prompt, gen_config):
+            # Fail generation only for the paper we want dropped from the
+            # edition; the other paper generates normally.
+            if dropped_paper.title in prompt:
+                raise Exception("Simulated LLM failure")
+            return MOCK_GENERATION_RESPONSE
+
+        with (
+            patch("scipaper.curate.score._score_with_anthropic", new_callable=AsyncMock) as mock_narrative,
+            patch("scipaper.generate.writer._generate_with_anthropic", new=flaky_generate),
+            patch("scipaper.verify.checker._verify_with_anthropic", new_callable=AsyncMock) as mock_verify,
+            patch("scipaper.generate.edition.generate_quick_take", new_callable=AsyncMock) as mock_qt,
+            patch("scipaper.generate.edition.generate_editor_note", new_callable=AsyncMock) as mock_note,
+        ):
+            mock_narrative.return_value = 7.0
+            mock_note.return_value = "This week's throughline."
+            mock_verify.return_value = MOCK_VERIFICATION_RESPONSE
+            from scipaper.generate.edition import QuickTake
+            mock_qt.return_value = QuickTake(
+                paper_id="runner",
+                title="Runner-Up Paper",
+                one_liner=MOCK_QUICK_TAKE_RESPONSE,
+                paper_url="https://arxiv.org/abs/runner",
+            )
+
+            result = run_async(run_pipeline(anchor, config, papers=papers))
+
+        assert result.edition is not None
+        published_ids = {piece.paper_id for piece in result.edition.pieces}
+        assert published_ids == {published_paper.arxiv_id}, (
+            "expected exactly the non-flaky paper to reach the edition"
+        )
+
+        from scipaper.curate.backlog import Backlog
+
+        bl = Backlog(config.backlog_path)
+        eligible_ids = {p.arxiv_id for p in bl.eligible(within_days=28)}
+
+        # The published paper is covered -> excluded from eligibility.
+        assert published_paper.arxiv_id not in eligible_ids
+        # The selected-but-dropped paper never made the edition -> it must
+        # remain eligible so it can be reconsidered next week.
+        assert dropped_paper.arxiv_id in eligible_ids
+
     def test_pipeline_without_rolling_window_behaves_as_before(self, tmp_path):
         """use_rolling_window=False must score/select over fresh papers only,
         with no backlog file created — degrading to the pre-Task-6 behavior."""
