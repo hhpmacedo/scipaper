@@ -117,5 +117,12 @@
     "title": "Routing AI Agents Through Multiple Models Cuts Costs Up to 90%",
     "pieces": 5,
     "words": 4568
+  },
+  {
+    "week": "2026-W30",
+    "issue_number": 19,
+    "title": "Merging Different-Sized LLMs by Simple Weight Averaging Actually Works",
+    "pieces": 5,
+    "words": 4310
   }
 ]
