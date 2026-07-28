@@ -124,5 +124,12 @@
     "title": "Merging Different-Sized LLMs by Simple Weight Averaging Actually Works",
     "pieces": 5,
     "words": 4310
+  },
+  {
+    "week": "2026-W31",
+    "issue_number": 20,
+    "title": "A Medical AI System That Reads Both X-Rays and CT Scans Natively",
+    "pieces": 5,
+    "words": 4233
   }
 ]
