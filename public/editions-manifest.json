@@ -131,5 +131,12 @@
     "title": "A Medical AI System That Reads Both X-Rays and CT Scans Natively",
     "pieces": 5,
     "words": 4233
+  },
+  {
+    "week": "2026-W32",
+    "issue_number": 21,
+    "title": "Qwen-CUA Operates Any Software Using Only Screenshots and Mouse Clicks",
+    "pieces": 5,
+    "words": 4388
   }
 ]
