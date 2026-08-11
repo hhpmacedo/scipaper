@@ -138,5 +138,12 @@
     "title": "Qwen-CUA Operates Any Software Using Only Screenshots and Mouse Clicks",
     "pieces": 5,
     "words": 4388
+  },
+  {
+    "week": "2026-W33",
+    "issue_number": 22,
+    "title": "Finding Anomalous Pedestrians from Text When Training Data Is Synthetic",
+    "pieces": 5,
+    "words": 4299
   }
 ]
