@@ -145,5 +145,12 @@
     "title": "Finding Anomalous Pedestrians from Text When Training Data Is Synthetic",
     "pieces": 5,
     "words": 4299
+  },
+  {
+    "week": "2026-W34",
+    "issue_number": 23,
+    "title": "Splitting Audio Into Chapters Without Reading a Transcript",
+    "pieces": 5,
+    "words": 4345
   }
 ]
